@@ -1,0 +1,6 @@
+﻿services:
+  dndtracker:
+    image: dndtracker
+    build:
+      context: .
+      dockerfile: DNDTracker/Dockerfile
