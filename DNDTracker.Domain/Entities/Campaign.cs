@@ -1,4 +1,5 @@
 using DNDTracker.Domain.Common;
+using DNDTracker.Domain.DomainEvents;
 using DNDTracker.Domain.ValueObjects;
 
 namespace DNDTracker.Domain.Entities;
@@ -33,7 +34,15 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     public DateTime? DeletedDate { get; private set; }
     
     public List<Hero> Heroes { get; private set; } = [];
-    
+
+    /// <summary>
+    /// Creates a new campaign with the provided details.
+    /// </summary>
+    /// <param name="campaignName">The name of the campaign.</param>
+    /// <param name="campaignDescription">The description of the campaign.</param>
+    /// <param name="campaignImage">The representative image for the campaign.</param>
+    /// <param name="isActive">A boolean indicating whether the campaign is active.</param>
+    /// <returns>A new instance of the <see cref="Campaign"/> class.</returns>
     public static Campaign Create(
         string campaignName,
         string campaignDescription,
@@ -53,5 +62,19 @@ public sealed class Campaign : AggregateRoot<CampaignId>
             currentDate,
             null
         );
+    }
+
+    /// <summary>
+    /// Adds a hero to the campaign and triggers the corresponding domain event.
+    /// </summary>
+    /// <param name="hero">The hero to add to the campaign.</param>
+    public void AddHero(Hero hero)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        
+        // Add the hero to the domain event collection.
+        HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
+        
+        this.AddDomainEvent(heroAddedEvent);
     }
 }
