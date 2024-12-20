@@ -3,8 +3,6 @@ using DNDTracker.Domain.ValueObjects;
 
 namespace DNDTracker.Domain.Entities;
 
-
-
 public sealed class Campaign : AggregateRoot<CampaignId>
 {
     private Campaign(

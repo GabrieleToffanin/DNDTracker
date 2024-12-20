@@ -7,15 +7,15 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["DNDTracker/DNDTracker.csproj", "DNDTracker/"]
-RUN dotnet restore "DNDTracker/DNDTracker.csproj"
+COPY ["DNDTracker/DNDTracker.Presentation.csproj", "DNDTracker/"]
+RUN dotnet restore "DNDTracker/DNDTracker.Presentation.csproj"
 COPY . .
 WORKDIR "/src/DNDTracker"
-RUN dotnet build "DNDTracker.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "DNDTracker.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "DNDTracker.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "DNDTracker.Presentation.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

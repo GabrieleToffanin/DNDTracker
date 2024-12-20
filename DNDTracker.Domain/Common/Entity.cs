@@ -1,10 +1,10 @@
 namespace DNDTracker.Domain.Common;
 
-public class Entity
+public abstract class Entity
 {
-    private List<DomainEvent> _domainEvents = [];
+    private readonly List<DomainEvent> _domainEvents = [];
     
-    public IEnumerable<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    public IEnumerable<DomainEvent> DomainEvents => _domainEvents;
     
     protected void AddDomainEvent(DomainEvent domainEvent)
     {

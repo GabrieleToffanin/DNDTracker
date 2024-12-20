@@ -1,13 +1,9 @@
 namespace DNDTracker.Domain.Common;
 
-public abstract class AggregateRoot<TIdentifier> : Entity, IEquatable<AggregateRoot<TIdentifier>>
+public abstract class AggregateRoot<TIdentifier>(TIdentifier id) 
+    : Entity, IEquatable<AggregateRoot<TIdentifier>> where TIdentifier : notnull
 {
-    protected AggregateRoot(TIdentifier id)
-    {
-        this.Id = id;
-    }
-    
-    public TIdentifier Id { get; protected set; }
+    private TIdentifier Id { get; } = id;
 
     public bool Equals(AggregateRoot<TIdentifier>? other)
     {
@@ -26,7 +22,7 @@ public abstract class AggregateRoot<TIdentifier> : Entity, IEquatable<AggregateR
 
     public override int GetHashCode()
     {
-        return EqualityComparer<TIdentifier>.Default.GetHashCode(Id);
+        return EqualityComparer<TIdentifier>.Default.GetHashCode(this.Id);
     }
 
     public static bool operator ==(AggregateRoot<TIdentifier>? left, AggregateRoot<TIdentifier>? right)
