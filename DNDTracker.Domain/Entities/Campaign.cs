@@ -1,6 +1,5 @@
 using DNDTracker.Domain.Common;
 using DNDTracker.Domain.DomainEvents;
-using DNDTracker.Domain.ValueObjects;
 
 namespace DNDTracker.Domain.Entities;
 
