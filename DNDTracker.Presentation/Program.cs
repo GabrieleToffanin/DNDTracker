@@ -1,9 +1,11 @@
+using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddMediatR(ConfigureMediatR);
 
 var app = builder.Build();
 
@@ -23,3 +25,8 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+void ConfigureMediatR(MediatRServiceConfiguration configuration)
+{
+    configuration.RegisterServicesFromAssembly(typeof(GetCampaignByIdHandler).Assembly);
+}
