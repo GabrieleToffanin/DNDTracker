@@ -17,6 +17,7 @@ public sealed class Hero : AggregateRoot<HeroId>
     public int HitPoints { get; init; }
     public int HitDice { get; init; }
     public HashSet<Spell> Spells { get; } = [];
+    public Campaign Campaign { get; init; }
     
     private Hero(
         HeroId id,

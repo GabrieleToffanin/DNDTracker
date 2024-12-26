@@ -3,7 +3,7 @@ namespace DNDTracker.Domain.Common;
 public abstract class AggregateRoot<TIdentifier>(TIdentifier id) 
     : Entity, IEquatable<AggregateRoot<TIdentifier>> where TIdentifier : notnull
 {
-    private TIdentifier Id { get; } = id;
+    public TIdentifier Id { get; } = id;
 
     public bool Equals(AggregateRoot<TIdentifier>? other)
     {
