@@ -1,32 +1,42 @@
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
 using Scalar.AspNetCore;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace DNDTracker.Presentation;
 
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
-builder.Services.AddMediatR(ConfigureMediatR);
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
+public partial class Program
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference(options =>
+
+    public static void Main(string[] args)
     {
-        options
-            .WithTheme(ScalarTheme.Mars)
-            .WithTitle("DNDTracker API")
-            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
-    });
-}
+        var builder = WebApplication.CreateBuilder(args);
 
-app.UseHttpsRedirection();
-app.MapControllers();
+        builder.Services.AddControllers();
+        builder.Services.AddOpenApi();
+        builder.Services.AddMediatR(ConfigureMediatR);
 
-app.Run();
+        var app = builder.Build();
 
-void ConfigureMediatR(MediatRServiceConfiguration configuration)
-{
-    configuration.RegisterServicesFromAssembly(typeof(GetCampaignByIdHandler).Assembly);
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapOpenApi();
+            app.MapScalarApiReference(options =>
+            {
+                options
+                    .WithTheme(ScalarTheme.Mars)
+                    .WithTitle("DNDTracker API")
+                    .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+            });
+        }
+
+        app.UseHttpsRedirection();
+        app.MapControllers();
+
+        app.Run();
+    }
+
+
+    static void ConfigureMediatR(MediatRServiceConfiguration configuration)
+    {
+        configuration.RegisterServicesFromAssembly(typeof(GetCampaignByIdHandler).Assembly);
+    }
 }
