@@ -1,7 +1,10 @@
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
+using DNDTracker.Infrastructure.Database.Postgres;
+using DNDTracker.Infrastructure.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
-namespace DNDTracker.Presentation;
+namespace DNDTracker.Api;
 
 public partial class Program
 {
@@ -10,9 +13,15 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Services.AddDbContext<DNDTrackerPostgresDbContext>(options =>
+        {
+            options.UseNpgsql(builder.Configuration["ConnectionStrings:DNDTrackerPostgres"]);
+        });
+
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
+        builder.Services.AddInfrastructure();
 
         var app = builder.Build();
 
@@ -33,8 +42,7 @@ public partial class Program
 
         app.Run();
     }
-
-
+    
     static void ConfigureMediatR(MediatRServiceConfiguration configuration)
     {
         configuration.RegisterServicesFromAssembly(typeof(GetCampaignByIdHandler).Assembly);

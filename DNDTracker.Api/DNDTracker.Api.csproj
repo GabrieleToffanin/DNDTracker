@@ -4,10 +4,14 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <InvariantGlobalization>true</InvariantGlobalization>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <PreserveCompilationContext>true</PreserveCompilationContext>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MediatR" Version="12.4.1" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="1.2.72" />
+    </ItemGroup>
 
     <ItemGroup>
       <Content Include="..\.dockerignore">
@@ -16,13 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MediatR" Version="12.4.1" />
-      <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
-      <PackageReference Include="Scalar.AspNetCore" Version="1.2.70" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\DNDTracker.Application\DNDTracker.Application.csproj" />
+      <ProjectReference Include="..\DNDTracker.Infrastructure\DNDTracker.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

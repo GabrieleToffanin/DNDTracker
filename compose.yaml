@@ -1,9 +1,9 @@
 ﻿services:
-  dndtracker:
-    image: dndtracker:latest
+  dndtracker.api:
+    image: dndtracker.api
     build:
       context: .
-      dockerfile: DNDTracker.Presentation/Dockerfile
+      dockerfile: DNDTracker.Api/Dockerfile
     ports:
       - "5169:8080"
       - "8081:8081"

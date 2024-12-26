@@ -21,7 +21,7 @@ public class GetCampaignQueryIntegrationTest : IClassFixture<IntegrationTestEnvi
     }
 
     [Trait( "Category", "Integration" )]
-    [Theory(Skip = "Too much config for a simple thing on Actions :(")]
+    [Theory]
     [InlineData("00000000-0000-0000-0000-000000000000")]
     public async Task GetCampaignQuery_ReturnsCorrectCampaign(string campaignId)
     {

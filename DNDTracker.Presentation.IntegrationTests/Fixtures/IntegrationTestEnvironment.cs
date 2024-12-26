@@ -1,6 +1,6 @@
 
+using DNDTracker.Api;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
