@@ -4,5 +4,5 @@ namespace DNDTracker.Application.Abstractions;
 
 public interface ICampaignRepository
 {
-    Task<Campaign> GetCampaignAsync(Guid campaignId);
+    Task<Campaign> GetCampaignAsync(string campaignName);
 }

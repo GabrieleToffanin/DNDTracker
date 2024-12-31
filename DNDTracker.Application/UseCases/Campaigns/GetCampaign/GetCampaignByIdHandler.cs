@@ -6,25 +6,25 @@ using DNDTracker.SharedKernel.Queries;
 namespace DNDTracker.Application.UseCases.Campaigns.GetCampaign;
 
 public class GetCampaignByIdHandler(
-    ICampaignRepository campaignRepository) : IQueryHandler<GetCampaignById, Campaign>
+    ICampaignRepository campaignRepository) : IQueryHandler<GetCampaignByName, Campaign>
 {
-    public async Task<Campaign> Handle(GetCampaignById request, CancellationToken cancellationToken)
+    public async Task<Campaign> Handle(GetCampaignByName request, CancellationToken cancellationToken)
     {
         // Simulate fetching the campaign using the CampaignId from the request.
         // You might replace this with a real database or repository call in your implementation.
-        var campaign = await campaignRepository.GetCampaignAsync(request.CampaignId);
+        var campaign = await campaignRepository.GetCampaignAsync(request.CampaignName);
 
-        this.ThrowIfCampaignNotFound(request.CampaignId, campaign);
+        this.ThrowIfCampaignNotFound(request.CampaignName, campaign);
         
         return campaign;
     }
     
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ThrowIfCampaignNotFound(Guid campaignId, Campaign campaign)
+    private void ThrowIfCampaignNotFound(string campaignName, Campaign campaign)
     {
         if (campaign is null)
         {
-            throw new KeyNotFoundException($"Campaign with ID {campaignId} was not found.");
+            throw new KeyNotFoundException($"Campaign with ID {campaignName} was not found.");
         }
     }
 }

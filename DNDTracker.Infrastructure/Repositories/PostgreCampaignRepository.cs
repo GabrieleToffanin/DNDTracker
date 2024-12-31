@@ -8,10 +8,10 @@ namespace DNDTracker.Infrastructure.Repositories;
 public class PostgreCampaignRepository(
     DNDTrackerPostgresDbContext context) : ICampaignRepository
 {
-    public async Task<Campaign> GetCampaignAsync(Guid campaignId)
+    public async Task<Campaign?> GetCampaignAsync(string campaignName)
     {
         // Just a placeholder for making the test pass and fail
         return await context.Set<Campaign>()
-            .FirstOrDefaultAsync(c => c.CampaignName == campaignId.ToString());
+            .FirstOrDefaultAsync(c => c.CampaignName == campaignName);
     }
 }

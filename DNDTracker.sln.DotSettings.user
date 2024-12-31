@@ -15,5 +15,6 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=ffe455a2_002D710f_002D4197_002D9153_002D4182d6279cfc/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="GetCampaignQuery_ReturnsCorrectCampaign" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::05063598-3279-44B3-A92B-17D4F0AD61B9::net9.0::DNDTracker.Presentation.IntegrationTests.GetCampaignQueryIntegrationTest.GetCampaignQuery_ReturnsCorrectCampaign&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::7FED808E-1314-47B1-860A-FAA0AD78A2A7::net9.0::DNDTracker.Presentation.Test.CampaignTests.When_CreatingCampaign_WithValidData_Then_CampaignCreated&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

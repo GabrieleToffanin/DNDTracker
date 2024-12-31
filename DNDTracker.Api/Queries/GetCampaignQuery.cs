@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNDTracker.Presentation.Queries;
+namespace DNDTracker.Api.Queries;
 
 public class GetCampaignQuery
 {
-    [FromRoute] public Guid CampaignId { get; set; }
+    [FromRoute] public required string CampaignName { get; set; }
 }
