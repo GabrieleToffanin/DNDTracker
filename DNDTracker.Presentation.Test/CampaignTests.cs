@@ -1,4 +1,5 @@
 using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Exceptions;
 using FluentAssertions;
 
 namespace DNDTracker.Presentation.Test;
@@ -12,7 +13,7 @@ public sealed class CampaignTests
         // *** Arrange
         string name = "Test Campaign";
         string description = "Test Description";
-        string campaignImageUrl = "Test Image Url";
+        string campaignImageUrl = "testimageurl.png";
         bool isActive = true;
         
         // *** Act
@@ -27,5 +28,25 @@ public sealed class CampaignTests
         campaign.CampaignName.Should().Be(name);
         campaign.CampaignDescription.Should().Be(description);
         campaign.IsActive.Should().Be(isActive);
+    }
+    
+    [Fact]
+    public void When_CreatingCampaign_WithInvalidData_Then_CampaignNotCreated()
+    {
+        // *** Arrange
+        string name = "";
+        string description = "";
+        string campaignImageUrl = "";
+        bool isActive = true;
+        
+        // *** Act
+        Action creationAction = () => Campaign.Create(
+            name,
+            description,
+            campaignImageUrl,
+            isActive);
+        
+        // *** Assert
+        creationAction.Should().Throw<InvalidCampaignDataException>();
     }
 }

@@ -1,5 +1,7 @@
+using System.Runtime.CompilerServices;
 using DNDTracker.Domain.Common;
 using DNDTracker.Domain.DomainEvents;
+using DNDTracker.Domain.Exceptions;
 
 namespace DNDTracker.Domain.Entities;
 
@@ -48,6 +50,10 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         string campaignImage,
         bool isActive)
     {
+        ThrowIfInvalidName(campaignName);
+        ThrowIfInvalidDescription(campaignDescription);
+        ThrowIfInvalidImage(campaignImage);
+            
         var id = CampaignId.Create();
         var currentDate = DateTime.UtcNow;
 
@@ -75,5 +81,42 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
         
         this.AddDomainEvent(heroAddedEvent);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowIfInvalidName(string campaignName)
+    {
+        if (!HasValidCampaignName(campaignName))
+            throw new InvalidCampaignDataException($"Invalid campaign name. {campaignName}");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowIfInvalidDescription(string campaignDescription)
+    {
+        if (!HasValidCampaignDescription(campaignDescription))
+            throw new InvalidCampaignDataException($"Invalid campaign description. {campaignDescription}");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowIfInvalidImage(string campaignImage)
+    {
+        if (!HasValidCampaignImage(campaignImage))
+            throw new InvalidCampaignDataException($"Invalid campaign image. {campaignImage}");
+    }
+
+    private static bool HasValidCampaignName(string campaignName)
+    {
+        return !string.IsNullOrWhiteSpace(campaignName);
+    }
+    
+    private static bool HasValidCampaignDescription(string campaignDescription)
+    {
+        return !string.IsNullOrWhiteSpace(campaignDescription);
+    }
+
+    private static bool HasValidCampaignImage(string campaignImage)
+    {
+        string extension = Path.GetExtension(campaignImage).ToLower();
+        return extension == ".jpg" || extension == ".jpeg" || extension == ".png";
     }
 }
