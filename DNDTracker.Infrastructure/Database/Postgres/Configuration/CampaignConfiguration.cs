@@ -11,7 +11,7 @@ public class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
         builder.HasKey(c => c.Id);
         builder.Property(c => c.Id)
             .HasConversion(
-                v => v.ToString(),
-                r => CampaignId.Create(Guid.Parse(r)));
+                v => v.Id.ToString(),
+                r => CampaignId.ParseFromString(r));
     }
 }

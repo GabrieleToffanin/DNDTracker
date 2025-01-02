@@ -10,6 +10,8 @@ public class PostgreCampaignRepository(
 {
     public async Task<Campaign?> GetCampaignAsync(string campaignName)
     {
+        var connectionString = context.Database.GetDbConnection().ConnectionString;
+        
         // Just a placeholder for making the test pass and fail
         return await context.Set<Campaign>()
             .FirstOrDefaultAsync(c => c.CampaignName == campaignName);

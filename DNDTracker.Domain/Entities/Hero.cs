@@ -42,7 +42,6 @@ public sealed class Hero : AggregateRoot<HeroId>
     }
     
     public static Hero Create(
-        HeroId id,
         string name,
         string @class,
         string race,
@@ -52,6 +51,8 @@ public sealed class Hero : AggregateRoot<HeroId>
         int hitPoints,
         int hitDice)
     {
+        HeroId id = HeroId.Create();
+        
         return new Hero(
             id,
             name,
