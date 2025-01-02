@@ -77,6 +77,8 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     {
         ArgumentNullException.ThrowIfNull(hero);
         
+        this.Heroes.Add(hero);
+        
         // Add the hero to the domain event collection.
         HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
         

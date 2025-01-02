@@ -19,4 +19,11 @@ public sealed record CampaignId
 
     public static CampaignId Create(Guid id)
         => new CampaignId(id);
+
+    public static CampaignId ParseFromString(string id)
+    {
+        var resultingId = Guid.Parse(id);
+        
+        return new CampaignId(resultingId);
+    }
 }

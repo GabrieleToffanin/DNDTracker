@@ -1,3 +1,4 @@
+using DNDTracker.Application.Responses;
 using DNDTracker.Domain.Entities;
 using DNDTracker.Presentation.IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Hosting;
@@ -8,33 +9,26 @@ using FluentAssertions;
 
 namespace DNDTracker.Presentation.IntegrationTests;
 
-public class GetCampaignQueryIntegrationTest : IClassFixture<IntegrationTestEnvironment>
+public class GetCampaignQueryIntegrationTest(IntegrationTestEnvironment testEnvironment)
+    : IClassFixture<IntegrationTestEnvironment>
 {
-    private readonly HttpClient _client;
-    private readonly IntegrationTestEnvironment _testEnvironment;
-
-    public GetCampaignQueryIntegrationTest(IntegrationTestEnvironment testEnvironment)
-    {
-        // Arrange
-        _testEnvironment = testEnvironment;
-        _client = _testEnvironment.CreateClient();
-    }
+    private readonly HttpClient _client = testEnvironment.CreateClient();
 
     [Trait( "Category", "Integration" )]
     [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task GetCampaignQuery_ReturnsCorrectCampaign(string campaignId)
+    [InlineData("TestCampaign")]
+    public async Task GetCampaignQuery_ReturnsCorrectCampaign(string campaignName)
     {
         // Arrange
-        Guid id = Guid.Parse(campaignId);
+        
         
         // Act
-        var response = await _client.GetAsync($"/api/campaigns/{id}");
+        var response = await _client.GetAsync($"/api/campaign/{campaignName}");
         
         // Assert
         response.EnsureSuccessStatusCode(); // StatusCode should be 200
 
-        var campaign = JsonConvert.DeserializeObject<Campaign>(await response.Content.ReadAsStringAsync());
+        var campaign = JsonConvert.DeserializeObject<CampaignDto>(await response.Content.ReadAsStringAsync());
         campaign.Should().NotBeNull();
     }
 }
