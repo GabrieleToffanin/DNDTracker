@@ -1,4 +1,4 @@
-using DNDTracker.Application.Abstractions;
+using DNDTracker.Domain.Abstractions;
 using DNDTracker.Domain.Entities;
 using DNDTracker.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;

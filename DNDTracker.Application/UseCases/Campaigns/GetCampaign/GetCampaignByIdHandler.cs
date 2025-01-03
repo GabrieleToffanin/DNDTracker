@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
-using DNDTracker.Application.Abstractions;
 using DNDTracker.Application.Responses;
+using DNDTracker.Domain.Abstractions;
 using DNDTracker.Domain.Entities;
 using DNDTracker.SharedKernel.Queries;
 

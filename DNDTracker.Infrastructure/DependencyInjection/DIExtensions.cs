@@ -1,4 +1,4 @@
-using DNDTracker.Application.Abstractions;
+using DNDTracker.Domain.Abstractions;
 using DNDTracker.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 

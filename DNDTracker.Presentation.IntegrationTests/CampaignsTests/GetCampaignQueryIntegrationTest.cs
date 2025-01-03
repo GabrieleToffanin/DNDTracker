@@ -1,13 +1,9 @@
 using DNDTracker.Application.Responses;
-using DNDTracker.Domain.Entities;
 using DNDTracker.Presentation.IntegrationTests.Fixtures;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using Newtonsoft.Json;
 using FluentAssertions;
+using Newtonsoft.Json;
 
-namespace DNDTracker.Presentation.IntegrationTests;
+namespace DNDTracker.Presentation.IntegrationTests.CampaignsTests;
 
 public class GetCampaignQueryIntegrationTest(IntegrationTestEnvironment testEnvironment)
     : IClassFixture<IntegrationTestEnvironment>
@@ -20,7 +16,6 @@ public class GetCampaignQueryIntegrationTest(IntegrationTestEnvironment testEnvi
     public async Task GetCampaignQuery_ReturnsCorrectCampaign(string campaignName)
     {
         // Arrange
-        
         
         // Act
         var response = await _client.GetAsync($"/api/campaign/{campaignName}");
