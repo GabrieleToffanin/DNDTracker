@@ -14,10 +14,10 @@ public class CreateCampaignCommandIntegrationTest(IntegrationTestEnvironment tes
 
     [Fact]
     [Trait( "Category", "Integration" )]
-    public async Task GetCampaignQuery_ReturnsCorrectCampaign()
+    public async Task CreateCampaignCommand_CorrectlyCreatesCampaign()
     {
         // Arrange
-        string campaignName = "TestCampaign";
+        string campaignName = "NewTestCampaign";
         string campaignDescription = "TestCampaignDescription";
         string campaignImageUrl = "TestCampaignImageUrl.jpg";
         
@@ -28,10 +28,14 @@ public class CreateCampaignCommandIntegrationTest(IntegrationTestEnvironment tes
             $"/api/campaign",
             createCampaignCommand);
         
-        // Assert
-        response.EnsureSuccessStatusCode(); // StatusCode should be 200
-
-        var campaign = JsonConvert.DeserializeObject<CampaignDto>(await response.Content.ReadAsStringAsync());
+        response.EnsureSuccessStatusCode();
+        
+        var getResponse = await _client.GetAsync($"/api/campaign/{campaignName}");
+        
+        //Assert
+        response.EnsureSuccessStatusCode();
+        var campaign = JsonConvert.DeserializeObject<CampaignDto>(await getResponse.Content.ReadAsStringAsync());
+        
         campaign.Should().NotBeNull();
     }
 }
