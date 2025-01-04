@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
-using DNDTracker.Application.Abstractions;
+using DNDTracker.Application.Exceptions;
 using DNDTracker.Application.Responses;
+using DNDTracker.Domain.Abstractions;
 using DNDTracker.Domain.Entities;
 using DNDTracker.SharedKernel.Queries;
 
@@ -13,11 +14,14 @@ public class GetCampaignByIdHandler(
     {
         // Simulate fetching the campaign using the CampaignId from the request.
         // You might replace this with a real database or repository call in your implementation.
-        var campaign = await campaignRepository.GetCampaignAsync(request.CampaignName);
+        var campaign = await campaignRepository.GetCampaignAsync(
+            request.CampaignName,
+            cancellationToken);
 
         this.ThrowIfCampaignNotFound(request.CampaignName, campaign);
         
-        return this.MapToDto(campaign);
+        // If we reach this, for sure campaign is not null.
+        return this.MapToDto(campaign!);
     }
 
     private CampaignDto MapToDto(Campaign campaign)
@@ -28,11 +32,11 @@ public class GetCampaignByIdHandler(
     }
     
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void ThrowIfCampaignNotFound(string campaignName, Campaign campaign)
+    private void ThrowIfCampaignNotFound(string campaignName, Campaign? campaign)
     {
         if (campaign is null)
         {
-            throw new KeyNotFoundException($"Campaign with ID {campaignName} was not found.");
+            throw new CampaignNotFoundException($"Campaign with Name {campaignName} was not found.");
         }
     }
 }
