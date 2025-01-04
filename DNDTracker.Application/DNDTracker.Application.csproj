@@ -15,8 +15,4 @@
       <ProjectReference Include="..\DNDTracker.SharedKernel\DNDTracker.SharedKernel.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="UseCases\Campaigns\CreateCampaign\" />
-    </ItemGroup>
-
 </Project>

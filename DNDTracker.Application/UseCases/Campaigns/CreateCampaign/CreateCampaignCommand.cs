@@ -1,10 +1,11 @@
 using DNDTracker.Application.Responses;
+using DNDTracker.Domain.Entities;
 using DNDTracker.SharedKernel.Commands;
 
-namespace DNDTracker.Api.Commmands;
+namespace DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 
 public record CreateCampaignCommand(
     string CampaignName,
     string CampaignDescription,
     string CampaignImage,
-    bool IsActive = true) : ICommand<CampaignDto>;
+    bool IsActive = true) : ICommand;

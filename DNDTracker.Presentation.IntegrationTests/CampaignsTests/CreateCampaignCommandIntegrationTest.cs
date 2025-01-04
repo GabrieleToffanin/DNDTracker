@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using DNDTracker.Api.Commmands;
 using DNDTracker.Application.Responses;
+using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Presentation.IntegrationTests.Fixtures;
 using FluentAssertions;
 using Newtonsoft.Json;
