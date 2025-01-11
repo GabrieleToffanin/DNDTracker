@@ -48,6 +48,7 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         string campaignName,
         string campaignDescription,
         string campaignImage,
+        DateTime createdDate,
         bool isActive)
     {
         ThrowIfInvalidName(campaignName);
@@ -55,7 +56,6 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         ThrowIfInvalidImage(campaignImage);
             
         var id = CampaignId.Create();
-        var currentDate = DateTime.UtcNow;
 
         return new Campaign(
             id,
@@ -63,8 +63,8 @@ public sealed class Campaign : AggregateRoot<CampaignId>
             campaignDescription,
             campaignImage,
             isActive,
-            currentDate,
-            currentDate,
+            createdDate,
+            createdDate,
             null
         );
     }

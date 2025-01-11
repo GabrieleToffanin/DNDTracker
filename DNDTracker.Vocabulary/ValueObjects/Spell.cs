@@ -1,4 +1,4 @@
-namespace DNDTracker.Domain.ValueObjects;
+namespace DNDTracker.Vocabulary.ValueObjects;
 
 public sealed record Spell
 {

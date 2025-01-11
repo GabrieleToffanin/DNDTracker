@@ -13,6 +13,7 @@ public sealed class CreateCampaignCommandHandler(
             request.CampaignName,
             request.CampaignDescription,
             request.CampaignImage,
+            request.CreatedDate,
             request.IsActive);
 
         await campaignRepository.CreateCampaignAsync(toBeCreated, cancellationToken);

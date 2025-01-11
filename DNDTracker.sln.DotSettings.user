@@ -26,6 +26,12 @@
     &lt;TestId&gt;xUnit::7FED808E-1314-47B1-860A-FAA0AD78A2A7::net9.0::DNDTracker.Presentation.Test.CampaignTests.DoStuff&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=95ead487_002D5752_002D448d_002Da066_002D4a54d781f3a2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="GivenValidRequest_WhenHandle_ThenCampaignIsCreated" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::CE168163-3966-4B46-A2AF-C6978829CDE7::net9.0::DNDTracker.Application.Tests.CreateCampaignUseCaseTest.GivenValidRequest_WhenHandle_ThenCampaignIsCreated&lt;/TestId&gt;
+    &lt;TestId&gt;xUnit::05063598-3279-44B3-A92B-17D4F0AD61B9::net9.0::DNDTracker.Presentation.IntegrationTests.CampaignsTests.CampaignIntegrationTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a543bbd4_002D3b48_002D4e84_002D9a50_002Db2e99f762e48/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="GetCampaignQuery_ReturnsCorrectCampaign #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;TestAncestor&gt;
     &lt;TestId&gt;xUnit::05063598-3279-44B3-A92B-17D4F0AD61B9::net9.0::DNDTracker.Presentation.IntegrationTests.GetCampaignQueryIntegrationTest.GetCampaignQuery_ReturnsCorrectCampaign&lt;/TestId&gt;
