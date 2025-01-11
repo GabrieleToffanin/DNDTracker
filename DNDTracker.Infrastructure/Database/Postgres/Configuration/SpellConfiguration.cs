@@ -1,4 +1,4 @@
-using DNDTracker.Domain.ValueObjects;
+using DNDTracker.Vocabulary.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

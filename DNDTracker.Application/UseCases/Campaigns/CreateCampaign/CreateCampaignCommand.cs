@@ -8,4 +8,5 @@ public record CreateCampaignCommand(
     string CampaignName,
     string CampaignDescription,
     string CampaignImage,
+    DateTime CreatedDate,
     bool IsActive = true) : ICommand;

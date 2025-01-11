@@ -1,7 +1,7 @@
 using DNDTracker.Domain.Common;
 using DNDTracker.Domain.DomainEvents;
 using DNDTracker.Domain.Exceptions;
-using DNDTracker.Domain.ValueObjects;
+using DNDTracker.Vocabulary.ValueObjects;
 
 namespace DNDTracker.Domain.Entities;
 

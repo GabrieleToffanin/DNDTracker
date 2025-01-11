@@ -7,7 +7,8 @@ using Newtonsoft.Json;
 
 namespace DNDTracker.Presentation.IntegrationTests.CampaignsTests;
 
-public class CreateCampaignCommandIntegrationTest(IntegrationTestEnvironment testEnvironment)
+[Collection( "IntegrationTest" )]
+public class CampaignIntegrationTests(IntegrationTestEnvironment testEnvironment)
     : IClassFixture<IntegrationTestEnvironment>
 {
     private readonly HttpClient _client = testEnvironment.CreateClient();
@@ -21,7 +22,8 @@ public class CreateCampaignCommandIntegrationTest(IntegrationTestEnvironment tes
         string campaignDescription = "TestCampaignDescription";
         string campaignImageUrl = "TestCampaignImageUrl.jpg";
         
-        CreateCampaignCommand createCampaignCommand = new(campaignName, campaignDescription, campaignImageUrl);
+        CreateCampaignCommand createCampaignCommand =
+            new(campaignName, campaignDescription, campaignImageUrl, DateTime.UtcNow);
         
         // Act
         var response = await _client.PostAsJsonAsync(
@@ -36,6 +38,23 @@ public class CreateCampaignCommandIntegrationTest(IntegrationTestEnvironment tes
         response.EnsureSuccessStatusCode();
         var campaign = JsonConvert.DeserializeObject<CampaignDto>(await getResponse.Content.ReadAsStringAsync());
         
+        campaign.Should().NotBeNull();
+    }
+    
+    [Fact]
+    [Trait( "Category", "Integration" )]
+    public async Task GetCampaignQuery_ReturnsCorrectCampaign()
+    {
+        // Arrange
+        string campaignName = "TestCampaign";
+        
+        // Act
+        var response = await _client.GetAsync($"/api/campaign/{campaignName}");
+        
+        // Assert
+        response.EnsureSuccessStatusCode(); // StatusCode should be 200
+
+        var campaign = JsonConvert.DeserializeObject<CampaignDto>(await response.Content.ReadAsStringAsync());
         campaign.Should().NotBeNull();
     }
 }
