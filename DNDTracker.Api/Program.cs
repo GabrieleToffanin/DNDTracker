@@ -45,6 +45,6 @@ public partial class Program
     
     static void ConfigureMediatR(MediatRServiceConfiguration configuration)
     {
-        configuration.RegisterServicesFromAssembly(typeof(GetCampaignByIdHandler).Assembly);
+        configuration.RegisterServicesFromAssembly(typeof(GetCampaignByNameHandler).Assembly);
     }
 }

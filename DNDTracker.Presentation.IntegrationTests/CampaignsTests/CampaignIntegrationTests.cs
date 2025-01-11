@@ -23,7 +23,7 @@ public class CampaignIntegrationTests(IntegrationTestEnvironment testEnvironment
         string campaignImageUrl = "TestCampaignImageUrl.jpg";
         
         CreateCampaignCommand createCampaignCommand =
-            new(campaignName, campaignDescription, campaignImageUrl, DateTime.Now);
+            new(campaignName, campaignDescription, campaignImageUrl, DateTime.UtcNow);
         
         // Act
         var response = await _client.PostAsJsonAsync(
@@ -46,7 +46,7 @@ public class CampaignIntegrationTests(IntegrationTestEnvironment testEnvironment
     public async Task GetCampaignQuery_ReturnsCorrectCampaign()
     {
         // Arrange
-        string campaignName = "NewTestCampaign";
+        string campaignName = "TestCampaign";
         
         // Act
         var response = await _client.GetAsync($"/api/campaign/{campaignName}");

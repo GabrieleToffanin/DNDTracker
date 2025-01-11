@@ -67,7 +67,7 @@ public class IntegrationTestEnvironment
             "TestCampaign",
             "TestDescription",
             "TestUrl.jpg",
-            DateTime.Now,
+            DateTime.UtcNow,
             true);
         
         db.Add(campaign);

@@ -7,7 +7,7 @@ using DNDTracker.SharedKernel.Queries;
 
 namespace DNDTracker.Application.UseCases.Campaigns.GetCampaign;
 
-public class GetCampaignByIdHandler(
+public class GetCampaignByNameHandler(
     ICampaignRepository campaignRepository) : IQueryHandler<GetCampaignByName, CampaignDto>
 {
     public async Task<CampaignDto> Handle(GetCampaignByName request, CancellationToken cancellationToken)
