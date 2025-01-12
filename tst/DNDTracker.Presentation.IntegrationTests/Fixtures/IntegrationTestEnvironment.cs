@@ -1,11 +1,11 @@
 
-using DNDTracker.Api;
 using DNDTracker.Domain.Entities;
 using DNDTracker.Infrastructure.Database.Postgres;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
