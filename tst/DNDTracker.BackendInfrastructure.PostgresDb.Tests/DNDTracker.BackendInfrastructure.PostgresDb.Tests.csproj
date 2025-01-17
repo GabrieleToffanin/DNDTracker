@@ -28,4 +28,10 @@
       <ProjectReference Include="..\..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="DNDTracker.Domain.Tests">
+        <HintPath>bin\Debug\net9.0\DNDTracker.Domain.Tests.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
+      <ProjectReference Include="..\..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
     </ItemGroup>
 
 </Project>
