@@ -1,9 +1,9 @@
+using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.Domain.Abstractions;
 using DNDTracker.Domain.Entities;
-using DNDTracker.Infrastructure.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 
-namespace DNDTracker.Infrastructure.Repositories;
+namespace DNDTracker.BackendInfrastructure.PostgresDb.Repositories;
 
 public class PostgreCampaignRepository(
     DNDTrackerPostgresDbContext context) : ICampaignRepository

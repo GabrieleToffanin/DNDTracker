@@ -1,5 +1,5 @@
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
-using DNDTracker.Infrastructure.Database.Postgres;
+using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;

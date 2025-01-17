@@ -2,7 +2,7 @@ using DNDTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DNDTracker.Infrastructure.Database.Postgres.Configuration;
+namespace DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres.Configuration;
 
 public class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
 {

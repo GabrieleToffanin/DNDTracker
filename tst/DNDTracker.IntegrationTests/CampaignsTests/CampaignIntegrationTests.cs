@@ -1,11 +1,11 @@
 using System.Net.Http.Json;
 using DNDTracker.Application.Responses;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
-using DNDTracker.Presentation.IntegrationTests.Fixtures;
+using DNDTracker.IntegrationTests.Fixtures;
 using FluentAssertions;
 using Newtonsoft.Json;
 
-namespace DNDTracker.Presentation.IntegrationTests.CampaignsTests;
+namespace DNDTracker.IntegrationTests.CampaignsTests;
 
 [Collection( "IntegrationTest" )]
 public class CampaignIntegrationTests(IntegrationTestEnvironment testEnvironment)

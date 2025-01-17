@@ -1,6 +1,5 @@
-
+using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.Domain.Entities;
-using DNDTracker.Infrastructure.Database.Postgres;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +8,9 @@ using Microsoft.VisualStudio.TestPlatform.TestHost;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
-namespace DNDTracker.Presentation.IntegrationTests.Fixtures;
+namespace DNDTracker.IntegrationTests.Fixtures;
 
-public class IntegrationTestEnvironment
+public abstract class IntegrationTestEnvironment
     : WebApplicationFactory<Program> , IAsyncLifetime
 {
     private RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder()

@@ -1,5 +1,5 @@
+using DNDTracker.BackendInfrastructure.PostgresDb.Repositories;
 using DNDTracker.Domain.Abstractions;
-using DNDTracker.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DNDTracker.Infrastructure.DependencyInjection;
