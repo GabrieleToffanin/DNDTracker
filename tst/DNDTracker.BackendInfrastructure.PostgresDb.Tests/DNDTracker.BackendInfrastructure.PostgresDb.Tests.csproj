@@ -22,16 +22,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\DNDTracker.Domain.Tests\DNDTracker.Domain.Tests.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.Api\DNDTracker.Api.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.BackendInfrastructure.PostgresDb\DNDTracker.BackendInfrastructure.PostgresDb.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="DNDTracker.Domain.Tests">
-        <HintPath>bin\Debug\net9.0\DNDTracker.Domain.Tests.dll</HintPath>
-      </Reference>
+      <ProjectReference Include="..\DNDTracker.Domain.Tests\DNDTracker.Domain.Tests.csproj" />
     </ItemGroup>
 
 </Project>
