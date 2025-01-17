@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Net.Http.Json;
 using DNDTracker.Application.Responses;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
@@ -8,6 +9,7 @@ using Newtonsoft.Json;
 namespace DNDTracker.IntegrationTests.CampaignsTests;
 
 [Collection( "IntegrationTest" )]
+[Category("Integration")]
 public class CampaignIntegrationTests(IntegrationTestEnvironment testEnvironment)
     : IClassFixture<IntegrationTestEnvironment>
 {

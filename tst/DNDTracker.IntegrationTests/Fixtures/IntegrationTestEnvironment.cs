@@ -10,7 +10,7 @@ using Testcontainers.RabbitMq;
 
 namespace DNDTracker.IntegrationTests.Fixtures;
 
-public abstract class IntegrationTestEnvironment
+public class IntegrationTestEnvironment
     : WebApplicationFactory<Program> , IAsyncLifetime
 {
     private RabbitMqContainer RabbitMqContainer { get; } = new RabbitMqBuilder()
@@ -28,7 +28,7 @@ public abstract class IntegrationTestEnvironment
         .WithUsername("test")
         .WithDatabase("testdb")
         .Build();
-
+    
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         var connectionString = this.PostgresContainer.GetConnectionString();
