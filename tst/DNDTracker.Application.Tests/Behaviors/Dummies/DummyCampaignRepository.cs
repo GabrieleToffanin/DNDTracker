@@ -5,7 +5,7 @@ namespace DNDTracker.Application.Tests.Behaviors.Dummies;
 
 public class DummyCampaignRepository : ICampaignRepository
 {
-    public Dictionary<string, Campaign> Campaigns { get; } = new Dictionary<string, Campaign>();
+    public Dictionary<string, Campaign> Campaigns { get; } = new();
     
     public Task<Campaign?> GetCampaignAsync(string campaignName, CancellationToken cancellationToken)
     {

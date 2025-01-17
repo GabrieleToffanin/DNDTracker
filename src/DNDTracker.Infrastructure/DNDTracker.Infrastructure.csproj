@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\DNDTracker.BackendInfrastructure.PostgresDb\DNDTracker.BackendInfrastructure.PostgresDb.csproj" />
       <ProjectReference Include="..\DNDTracker.Application\DNDTracker.Application.csproj" />
       <ProjectReference Include="..\DNDTracker.BackendInfrastructure.PostgresDb\DNDTracker.BackendInfrastructure.PostgresDb.csproj" />
       <ProjectReference Include="..\DNDTracker.Vocabulary\DNDTracker.Vocabulary.csproj" />
