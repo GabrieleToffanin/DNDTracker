@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.BackendInfrastructure.PostgresDb.Repositories;
-using DNDTracker.Domain.Abstractions;
+using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Tests.Behaviors;
 using JetBrains.Annotations;
 using Testcontainers.PostgreSql;

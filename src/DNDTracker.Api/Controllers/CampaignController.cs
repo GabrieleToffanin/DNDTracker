@@ -2,11 +2,10 @@ using DNDTracker.Api.Queries;
 using DNDTracker.Application.Responses;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
-using DNDTracker.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNDTracker.Presentation.Controllers;
+namespace DNDTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

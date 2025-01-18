@@ -1,12 +1,11 @@
-using DNDTracker.Domain.Abstractions;
-using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Campaigns;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 namespace DNDTracker.Domain.Tests.Behaviors;
 
 /// <summary>
 /// Provides a reusable specification for testing various implementations
-/// of the <see cref="ICampaignRepository"/> interface.
+/// of the <see cref="Campaign.ICampaignRepository"/> interface.
 /// </summary>
 /// <remarks>
 /// This abstract class serves as a base for creating test scenarios and behaviors
@@ -16,10 +15,10 @@ namespace DNDTracker.Domain.Tests.Behaviors;
 /// </remarks>
 /// <example>
 /// Implementations of this specification should derive from this class and provide
-/// their own specific <see cref="ICampaignRepository"/> setup.
+/// their own specific <see cref="Campaign.ICampaignRepository"/> setup.
 /// </example>
 /// <seealso cref="WebApplicationFactory{TEntryPoint}"/>
-/// <seealso cref="ICampaignRepository"/>
+/// <seealso cref="Campaign.ICampaignRepository"/>
 /// <seealso cref="Campaign"/>
 public abstract class CampaignRepositorySpecification
 {
@@ -29,15 +28,15 @@ public abstract class CampaignRepositorySpecification
     public async Task GivenCorrectData_WhenCreatingCampaign_ThenCampaignIsCreated()
     {
         Campaign campaign = Campaign.Create(
-            "Test Campaign",
-            "Test Campaign Description",
+            "Test Campaigns",
+            "Test Campaigns Description",
             "testurl.jpg",
             DateTime.UtcNow,
             true);
         
         await _campaignRepository.CreateCampaignAsync(campaign, CancellationToken.None);
         
-        var createdCampaign = await _campaignRepository.GetCampaignAsync("Test Campaign", CancellationToken.None);
+        var createdCampaign = await _campaignRepository.GetCampaignAsync("Test Campaigns", CancellationToken.None);
         
         createdCampaign.Should().BeEquivalentTo(campaign);
     }

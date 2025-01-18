@@ -13,7 +13,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Campaign",
+                name: "Campaigns",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -31,7 +31,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Hero",
+                name: "Heroes",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -51,7 +51,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                     table.ForeignKey(
                         name: "FK_Hero_Campaign_CampaignId",
                         column: x => x.CampaignId,
-                        principalTable: "Campaign",
+                        principalTable: "Campaigns",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -71,12 +71,12 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                     table.ForeignKey(
                         name: "FK_DomainEvent_Campaign_CampaignId",
                         column: x => x.CampaignId,
-                        principalTable: "Campaign",
+                        principalTable: "Campaigns",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_DomainEvent_Hero_HeroId",
                         column: x => x.HeroId,
-                        principalTable: "Hero",
+                        principalTable: "Heroes",
                         principalColumn: "Id");
                 });
 
@@ -109,7 +109,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                     table.ForeignKey(
                         name: "FK_Spell_Hero_HeroId",
                         column: x => x.HeroId,
-                        principalTable: "Hero",
+                        principalTable: "Heroes",
                         principalColumn: "Id");
                 });
 
@@ -125,7 +125,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Hero_CampaignId",
-                table: "Hero",
+                table: "Heroes",
                 column: "CampaignId");
 
             migrationBuilder.CreateIndex(
@@ -144,10 +144,10 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                 name: "Spell");
 
             migrationBuilder.DropTable(
-                name: "Hero");
+                name: "Heroes");
 
             migrationBuilder.DropTable(
-                name: "Campaign");
+                name: "Campaigns");
         }
     }
 }

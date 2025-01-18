@@ -4,7 +4,8 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 
 public class DNDTrackerPostgresDbContext : DbContext
 {
-    public DNDTrackerPostgresDbContext(DbContextOptions<DNDTrackerPostgresDbContext> options) 
+    public DNDTrackerPostgresDbContext(
+        DbContextOptions<DNDTrackerPostgresDbContext> options) 
         : base(options)
     {
     }
@@ -25,5 +26,10 @@ public class DNDTrackerPostgresDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DNDTrackerPostgresDbContext).Assembly);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    {
+        return base.SaveChangesAsync(cancellationToken);
     }
 }

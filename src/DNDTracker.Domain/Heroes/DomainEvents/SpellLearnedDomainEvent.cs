@@ -1,7 +1,7 @@
-using DNDTracker.Domain.Common;
+using DNDTracker.Domain.Primitives;
 using DNDTracker.Vocabulary.ValueObjects;
 
-namespace DNDTracker.Domain.DomainEvents;
+namespace DNDTracker.Domain.Heroes.DomainEvents;
 
 public record SpellLearnedDomainEvent(
     Guid Id,

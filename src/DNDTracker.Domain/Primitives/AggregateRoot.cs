@@ -1,4 +1,4 @@
-namespace DNDTracker.Domain.Common;
+namespace DNDTracker.Domain.Primitives;
 
 public abstract class AggregateRoot<TIdentifier>(TIdentifier id) 
     : Entity, IEquatable<AggregateRoot<TIdentifier>> where TIdentifier : notnull

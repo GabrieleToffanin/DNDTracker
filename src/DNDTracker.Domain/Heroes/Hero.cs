@@ -1,9 +1,10 @@
-using DNDTracker.Domain.Common;
-using DNDTracker.Domain.DomainEvents;
+using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Exceptions;
+using DNDTracker.Domain.Heroes.DomainEvents;
+using DNDTracker.Domain.Primitives;
 using DNDTracker.Vocabulary.ValueObjects;
 
-namespace DNDTracker.Domain.Entities;
+namespace DNDTracker.Domain.Heroes;
 
 public sealed class Hero : AggregateRoot<HeroId>
 {

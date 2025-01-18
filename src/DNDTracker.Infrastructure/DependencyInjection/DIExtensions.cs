@@ -1,6 +1,6 @@
 
 using DNDTracker.BackendInfrastructure.PostgresDb.Repositories;
-using DNDTracker.Domain.Abstractions;
+using DNDTracker.Domain.Campaigns;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DNDTracker.Infrastructure.DependencyInjection;

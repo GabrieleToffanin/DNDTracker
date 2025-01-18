@@ -22,7 +22,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DNDTracker.Domain.Common.DomainEvent", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Primitives.DomainEvent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -46,7 +46,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                     b.ToTable("DomainEvent");
                 });
 
-            modelBuilder.Entity("DNDTracker.Domain.Entities.Campaign", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Entities.Campaigns", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -77,10 +77,10 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Campaign");
+                    b.ToTable("Campaigns");
                 });
 
-            modelBuilder.Entity("DNDTracker.Domain.Entities.Hero", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Entities.Heroes", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -121,7 +121,7 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("Hero");
+                    b.ToTable("Heroes");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.ValueObjects.Spell", b =>
@@ -187,43 +187,43 @@ namespace DNDTracker.BackendInfrastructure.PostgresDb.Migrations
                     b.ToTable("Spell");
                 });
 
-            modelBuilder.Entity("DNDTracker.Domain.Common.DomainEvent", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Primitives.DomainEvent", b =>
                 {
-                    b.HasOne("DNDTracker.Domain.Entities.Campaign", null)
+                    b.HasOne("DNDTracker.Domain.Entities.Campaigns", null)
                         .WithMany("DomainEvents")
                         .HasForeignKey("CampaignId");
 
-                    b.HasOne("DNDTracker.Domain.Entities.Hero", null)
+                    b.HasOne("DNDTracker.Domain.Entities.Heroes", null)
                         .WithMany("DomainEvents")
                         .HasForeignKey("HeroId");
                 });
 
-            modelBuilder.Entity("DNDTracker.Domain.Entities.Hero", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Entities.Heroes", b =>
                 {
-                    b.HasOne("DNDTracker.Domain.Entities.Campaign", "Campaign")
+                    b.HasOne("DNDTracker.Domain.Entities.Campaigns", "Campaigns")
                         .WithMany("Heroes")
                         .HasForeignKey("CampaignId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Campaign");
+                    b.Navigation("Campaigns");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.ValueObjects.Spell", b =>
                 {
-                    b.HasOne("DNDTracker.Domain.Entities.Hero", null)
+                    b.HasOne("DNDTracker.Domain.Entities.Heroes", null)
                         .WithMany("Spells")
                         .HasForeignKey("HeroId");
                 });
 
-            modelBuilder.Entity("DNDTracker.Domain.Entities.Campaign", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Entities.Campaigns", b =>
                 {
                     b.Navigation("DomainEvents");
 
                     b.Navigation("Heroes");
                 });
 
-            modelBuilder.Entity("DNDTracker.Domain.Entities.Hero", b =>
+            modelBuilder.Entity("DNDTracker.Domain.Entities.Heroes", b =>
                 {
                     b.Navigation("DomainEvents");
 

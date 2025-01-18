@@ -1,8 +1,7 @@
 using System.Runtime.CompilerServices;
 using DNDTracker.Application.Exceptions;
 using DNDTracker.Application.Responses;
-using DNDTracker.Domain.Abstractions;
-using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Campaigns;
 using DNDTracker.SharedKernel.Queries;
 
 namespace DNDTracker.Application.UseCases.Campaigns.GetCampaign;
@@ -36,7 +35,7 @@ public class GetCampaignByNameHandler(
     {
         if (campaign is null)
         {
-            throw new CampaignNotFoundException($"Campaign with Name {campaignName} was not found.");
+            throw new CampaignNotFoundException($"Campaigns with Name {campaignName} was not found.");
         }
     }
 }

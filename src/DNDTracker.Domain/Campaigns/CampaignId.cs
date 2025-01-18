@@ -1,4 +1,4 @@
-namespace DNDTracker.Domain.Entities;
+namespace DNDTracker.Domain.Campaigns;
 
 public sealed record CampaignId
 {

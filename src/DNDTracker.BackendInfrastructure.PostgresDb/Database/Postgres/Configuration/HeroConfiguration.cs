@@ -1,4 +1,4 @@
-using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Heroes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

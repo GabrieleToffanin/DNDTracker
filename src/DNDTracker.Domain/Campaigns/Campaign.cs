@@ -1,9 +1,10 @@
 using System.Runtime.CompilerServices;
-using DNDTracker.Domain.Common;
-using DNDTracker.Domain.DomainEvents;
+using DNDTracker.Domain.Campaigns.DomainEvents;
 using DNDTracker.Domain.Exceptions;
+using DNDTracker.Domain.Heroes;
+using DNDTracker.Domain.Primitives;
 
-namespace DNDTracker.Domain.Entities;
+namespace DNDTracker.Domain.Campaigns;
 
 public sealed class Campaign : AggregateRoot<CampaignId>
 {
@@ -37,13 +38,14 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     public List<Hero> Heroes { get; private set; } = [];
 
     /// <summary>
-    /// Creates a new campaign with the provided details.
+    /// Creates a new campaign entity with the specified details.
     /// </summary>
     /// <param name="campaignName">The name of the campaign.</param>
-    /// <param name="campaignDescription">The description of the campaign.</param>
-    /// <param name="campaignImage">The representative image for the campaign.</param>
-    /// <param name="isActive">A boolean indicating whether the campaign is active.</param>
-    /// <returns>A new instance of the <see cref="Campaign"/> class.</returns>
+    /// <param name="campaignDescription">A description of the campaign.</param>
+    /// <param name="campaignImage">The URL or path to the campaign's image.</param>
+    /// <param name="createdDate">The date the campaign was created.</param>
+    /// <param name="isActive">Indicates whether the campaign is currently active.</param>
+    /// <returns>A new instance of the <see cref="Campaign"/> class initialized with the provided details.</returns>
     public static Campaign Create(
         string campaignName,
         string campaignDescription,

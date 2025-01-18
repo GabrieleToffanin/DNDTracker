@@ -1,5 +1,4 @@
-using DNDTracker.Domain.Abstractions;
-using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Campaigns;
 using DNDTracker.SharedKernel.Commands;
 
 namespace DNDTracker.Application.UseCases.Campaigns.CreateCampaign;

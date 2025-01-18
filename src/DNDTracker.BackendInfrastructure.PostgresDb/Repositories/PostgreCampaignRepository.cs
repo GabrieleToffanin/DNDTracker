@@ -1,7 +1,5 @@
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
-using DNDTracker.Domain.Abstractions;
-using DNDTracker.Domain.Entities;
-using JetBrains.Annotations;
+using DNDTracker.Domain.Campaigns;
 using Microsoft.EntityFrameworkCore;
 
 namespace DNDTracker.BackendInfrastructure.PostgresDb.Repositories;

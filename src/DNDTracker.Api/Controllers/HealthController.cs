@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNDTracker.Presentation.Controllers;
+namespace DNDTracker.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

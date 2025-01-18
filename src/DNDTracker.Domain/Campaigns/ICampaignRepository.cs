@@ -1,6 +1,4 @@
-using DNDTracker.Domain.Entities;
-
-namespace DNDTracker.Domain.Abstractions;
+namespace DNDTracker.Domain.Campaigns;
 
 public interface ICampaignRepository
 {

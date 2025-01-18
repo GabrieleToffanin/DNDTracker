@@ -1,5 +1,5 @@
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
-using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Campaigns;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;

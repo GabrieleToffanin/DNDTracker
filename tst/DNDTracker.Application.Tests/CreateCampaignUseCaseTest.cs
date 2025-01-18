@@ -1,6 +1,6 @@
 using DNDTracker.Application.Tests.Behaviors.Dummies;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
-using DNDTracker.Domain.Entities;
+using DNDTracker.Domain.Campaigns;
 using FluentAssertions;
 using Xunit;
 
@@ -21,8 +21,8 @@ public sealed class CreateCampaignUseCaseTest
     {
         DateTime createDate = DateTime.Now;
         CreateCampaignCommand command = new(
-            "Test Campaign",
-            "Test Campaign Description",
+            "Test Campaigns",
+            "Test Campaigns Description",
             "testurl.jpg", 
             createDate);
         
