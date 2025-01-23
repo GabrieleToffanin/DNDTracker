@@ -4,7 +4,7 @@ public abstract class Entity
 {
     private readonly List<DomainEvent> _domainEvents = [];
     
-    public IEnumerable<DomainEvent> DomainEvents => _domainEvents;
+    public List<DomainEvent> DomainEvents => _domainEvents;
     
     protected void AddDomainEvent(DomainEvent domainEvent)
     {

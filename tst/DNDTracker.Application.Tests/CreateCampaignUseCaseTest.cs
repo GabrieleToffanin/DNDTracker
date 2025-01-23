@@ -55,6 +55,31 @@ public sealed class CreateCampaignUseCaseTest
 
         await createAction.Should().ThrowAsync<InvalidCampaignDataException>();
     }
+
+    [Fact]
+    public async Task GivenValidRequestHavingHeroes_WhenHandle_ThenCampaignIsCreated()
+    {
+        DateTime createDate = DateTime.Now;
+        CreateCampaignCommand command = new(
+            "Test Campaigns",
+            "Test Campaigns Description",
+            "testurl.jpg", 
+            createDate);
+        
+        await _handler.Handle(command, CancellationToken.None);
+
+        var createdCampaign = _campaignRepository.Campaigns.Values.First();
+        var expectedCampaign = Campaign.Create(
+            command.CampaignName,
+            command.CampaignDescription,
+            command.CampaignImage,
+            createDate,
+            true);
+        
+        expectedCampaign.AddHero();
+
+        AssertCampaignEquals(createdCampaign, expectedCampaign);
+    }
     
     private void AssertCampaignEquals(Campaign createdCampaign, Campaign expectedCampaign)
     {

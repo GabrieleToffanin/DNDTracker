@@ -75,11 +75,11 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     /// Adds a hero to the campaign and triggers the corresponding domain event.
     /// </summary>
     /// <param name="hero">The hero to add to the campaign.</param>
-    public void AddHero(Hero hero)
+    public void AddHero(params Hero[] hero)
     {
         ArgumentNullException.ThrowIfNull(hero);
         
-        this.Heroes.Add(hero);
+        this.Heroes.AddRange(hero);
         
         // Add the hero to the domain event collection.
         HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
