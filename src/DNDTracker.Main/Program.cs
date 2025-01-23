@@ -4,7 +4,7 @@ using DNDTracker.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
-namespace DNDTracker.Api;
+namespace DNDTracker.Main;
 
 public partial class Program
 {

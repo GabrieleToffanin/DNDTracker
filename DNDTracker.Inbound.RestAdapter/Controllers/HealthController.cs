@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNDTracker.Api.Controllers;
+namespace DNDTracker.Inbound.RestAdapter.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

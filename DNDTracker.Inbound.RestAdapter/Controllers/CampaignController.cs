@@ -1,11 +1,12 @@
-using DNDTracker.Api.Queries;
 using DNDTracker.Application.Responses;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
+using DNDTracker.Inbound.RestAdapter.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNDTracker.Api.Controllers;
+namespace DNDTracker.Inbound.RestAdapter.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -37,7 +38,7 @@ public class CampaignController(
         await mediator.Send(command, cancellationToken);
 
         // if successful, return status code 201 (Created) with campaign data
-        return Created();
+        return CreatedAtAction(nameof(Get), new { campaignName = command.CampaignName }, null);
     }
     
 }

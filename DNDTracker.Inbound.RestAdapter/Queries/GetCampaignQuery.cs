@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace DNDTracker.Api.Queries;
+namespace DNDTracker.Inbound.RestAdapter.Queries;
 
 public class GetCampaignQuery
 {

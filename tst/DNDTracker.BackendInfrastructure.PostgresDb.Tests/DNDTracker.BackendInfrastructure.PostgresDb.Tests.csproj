@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\DNDTracker.Api\DNDTracker.Api.csproj" />
+      <ProjectReference Include="..\..\src\DNDTracker.Main\DNDTracker.Main.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.BackendInfrastructure.PostgresDb\DNDTracker.BackendInfrastructure.PostgresDb.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
       <ProjectReference Include="..\DNDTracker.Domain.Tests\DNDTracker.Domain.Tests.csproj" />
