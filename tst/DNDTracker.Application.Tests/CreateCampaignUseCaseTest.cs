@@ -2,6 +2,7 @@ using DNDTracker.Application.Tests.Behaviors.Dummies;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain.Campaigns;
 using FluentAssertions;
+using FluentAssertions.Equivalency;
 using Xunit;
 
 namespace DNDTracker.Application.Tests;
@@ -35,17 +36,19 @@ public sealed class CreateCampaignUseCaseTest
                 command.CampaignImage,
                 createDate,
                 true);
-        
-        createdCampaign.CampaignName.Should()
-            .Be(expectedCampaign.CampaignName);
-        
-        createdCampaign.CampaignDescription.Should()
-            .Be(expectedCampaign.CampaignDescription);
-        
-        createdCampaign.CampaignImage.Should()
-            .Be(expectedCampaign.CampaignImage);
-        
-        createdCampaign.CreatedDate.Should()
-            .Be(expectedCampaign.CreatedDate); 
+
+        AssertCampaignEquals(createdCampaign, expectedCampaign);
+    }
+    
+    private void AssertCampaignEquals(Campaign createdCampaign, Campaign expectedCampaign)
+    {
+        createdCampaign.CampaignName.Should().Be(expectedCampaign.CampaignName);
+        createdCampaign.CampaignDescription.Should().Be(expectedCampaign.CampaignDescription);
+        createdCampaign.CampaignImage.Should().Be(expectedCampaign.CampaignImage);
+        createdCampaign.IsActive.Should().Be(expectedCampaign.IsActive);
+        createdCampaign.CreatedDate.Should().Be(expectedCampaign.CreatedDate);
+        createdCampaign.UpdatedDate.Should().Be(expectedCampaign.UpdatedDate);
+        createdCampaign.DeletedDate.Should().Be(expectedCampaign.DeletedDate);
+        createdCampaign.Heroes.Should().BeEquivalentTo(expectedCampaign.Heroes);
     }
 }

@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\DNDTracker.Application\DNDTracker.Application.csproj" />
+      <ProjectReference Include="..\DNDTracker.Domain.Tests\DNDTracker.Domain.Tests.csproj" />
     </ItemGroup>
 
     <ItemGroup>

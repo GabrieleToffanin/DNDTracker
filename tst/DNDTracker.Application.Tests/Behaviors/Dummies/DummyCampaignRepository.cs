@@ -6,9 +6,9 @@ public class DummyCampaignRepository : ICampaignRepository
 {
     public Dictionary<string, Campaign> Campaigns { get; } = new();
     
-    public Task<Campaign?> GetCampaignAsync(string campaignName, CancellationToken cancellationToken)
+    public async Task<Campaign?> GetCampaignAsync(string campaignName, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return Campaigns.Values.FirstOrDefault(c => c.CampaignName == campaignName);
     }
 
     public async Task CreateCampaignAsync(Campaign campaign, CancellationToken cancellationToken)
