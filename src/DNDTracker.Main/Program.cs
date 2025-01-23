@@ -1,6 +1,8 @@
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
+using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Infrastructure.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -8,7 +10,6 @@ namespace DNDTracker.Main;
 
 public partial class Program
 {
-
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +19,10 @@ public partial class Program
             options.UseNpgsql(builder.Configuration["ConnectionStrings:DNDTrackerPostgres"]);
         });
 
-        builder.Services.AddControllers();
+        AssemblyPart inboundRestAdapterPart = new AssemblyPart(typeof(CampaignController).Assembly);
+        
+        builder.Services.AddControllers()
+            .PartManager.ApplicationParts.Add(inboundRestAdapterPart);
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
         builder.Services.AddInfrastructure();

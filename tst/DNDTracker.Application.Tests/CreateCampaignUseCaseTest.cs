@@ -1,6 +1,7 @@
 using DNDTracker.Application.Tests.Behaviors.Dummies;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain.Campaigns;
+using DNDTracker.Domain.Exceptions;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using Xunit;
@@ -38,6 +39,21 @@ public sealed class CreateCampaignUseCaseTest
                 true);
 
         AssertCampaignEquals(createdCampaign, expectedCampaign);
+    }
+    
+    [Fact]
+    public async Task GivenNotValidRequest_WhenHandle_ThenCampaignIsNotCreated()
+    {
+        DateTime createDate = DateTime.Now;
+        CreateCampaignCommand command = new(
+            "Test Campaigns",
+            "Test Campaigns Description",
+            "testurl", 
+            createDate);
+        
+        var createAction = async () => await _handler.Handle(command, CancellationToken.None);
+
+        await createAction.Should().ThrowAsync<InvalidCampaignDataException>();
     }
     
     private void AssertCampaignEquals(Campaign createdCampaign, Campaign expectedCampaign)

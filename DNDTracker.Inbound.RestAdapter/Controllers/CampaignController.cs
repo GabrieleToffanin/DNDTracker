@@ -1,6 +1,7 @@
 using DNDTracker.Application.Responses;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
+using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +21,6 @@ public class CampaignController(
         GetCampaignQuery query,
         CancellationToken cancellationToken)
     {
-        // Search for the specific campaign based on received guid
         GetCampaignByName getByName = new(query.CampaignName);
         
         CampaignDto campaign = await mediator.Send(getByName, cancellationToken);
@@ -31,11 +31,19 @@ public class CampaignController(
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(void))]
     public async Task<IActionResult> Create(
-        [FromBody]CreateCampaignCommand command,
+        [FromBody]CreateCampaignRequest command,
         CancellationToken cancellationToken)
     {
+        var mappedRequest = new CreateCampaignCommand(
+            command.CampaignName,
+            command.CampaignDescription,
+            command.CampaignImage,
+            DateTime.Now);
+        
         // send the command to the mediator to handle
-        await mediator.Send(command, cancellationToken);
+        await mediator.Send(
+            mappedRequest,
+            cancellationToken);
 
         // if successful, return status code 201 (Created) with campaign data
         return CreatedAtAction(nameof(Get), new { campaignName = command.CampaignName }, null);
