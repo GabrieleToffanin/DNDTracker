@@ -1,6 +1,6 @@
+using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.Responses;
-using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
-using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
+using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Queries;
 using MediatR;
@@ -28,17 +28,16 @@ public class CampaignController(
         return Ok(campaign);
     }
 
-    [HttpPost]
+    [HttpPost("{campaignName}/heroes")]
     [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(void))]
-    public async Task<IActionResult> Create(
-        [FromBody]CreateCampaignRequest command,
+    public async Task<IActionResult> AddHero(
+        string campaignName,
+        [FromBody]AddHeroToCampaignRequest command,
         CancellationToken cancellationToken)
     {
-        var mappedRequest = new CreateCampaignCommand(
-            command.CampaignName,
-            command.CampaignDescription,
-            command.CampaignImage,
-            DateTime.Now);
+        var mappedRequest = new AddHeroToCampaignCommand(
+            campaignName,
+            command.Hero);
         
         // send the command to the mediator to handle
         await mediator.Send(
@@ -46,7 +45,7 @@ public class CampaignController(
             cancellationToken);
 
         // if successful, return status code 201 (Created) with campaign data
-        return CreatedAtAction(nameof(Get), new { campaignName = command.CampaignName }, null);
+        return CreatedAtAction(nameof(AddHero), new { campaignName }, null);
     }
     
 }

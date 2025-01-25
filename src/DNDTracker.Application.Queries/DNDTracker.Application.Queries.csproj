@@ -7,12 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+      <Folder Include="UseCases\" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DNDTracker.Application.Queries\DNDTracker.Application.Queries.csproj" />
       <ProjectReference Include="..\DNDTracker.Application\DNDTracker.Application.csproj" />
+      <ProjectReference Include="..\DNDTracker.SharedKernel\DNDTracker.SharedKernel.csproj" />
     </ItemGroup>
 
 </Project>

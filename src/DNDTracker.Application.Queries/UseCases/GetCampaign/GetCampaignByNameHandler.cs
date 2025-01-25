@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using DNDTracker.Application.Exceptions;
+using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.Responses;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.SharedKernel.Queries;
