@@ -3,6 +3,7 @@ using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Heroes;
+using DNDTracker.Vocabulary.Enums;
 using Force.DeepCloner;
 using Xunit;
 
@@ -23,7 +24,7 @@ public class AddHeroToCampaignUseCaseTests
     }
     
     [Fact]
-    public async Task GivenValidRequestHavingHeroes_WhenHandle_ThenCampaignIsCreated()
+    public async Task GivenValidRequestHavingHeroes_WhenHandle_ThenHeroIsAddedToCampaign()
     {
         // Given
         var hero = CreateHero();
@@ -61,13 +62,13 @@ public class AddHeroToCampaignUseCaseTests
     {
         Hero hero = Hero.Create(
             "Ludwin",
-            "Paladin",
-            "Half-Elf",
-            "Good",
+            HeroClass.Paladin,
+            Race.HalfElf,
+            Alignment.Good,
             1,
             0,
             10,
-            4);
+            DiceType.D4);
         return hero;
     }
 }

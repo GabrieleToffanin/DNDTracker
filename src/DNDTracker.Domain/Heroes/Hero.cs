@@ -2,6 +2,7 @@ using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Exceptions;
 using DNDTracker.Domain.Heroes.DomainEvents;
 using DNDTracker.SharedKernel.Primitives;
+using DNDTracker.Vocabulary.Enums;
 using DNDTracker.Vocabulary.ValueObjects;
 
 namespace DNDTracker.Domain.Heroes;
@@ -10,26 +11,26 @@ public sealed class Hero : AggregateRoot<HeroId>
 {
     public HeroId Id { get; init; }
     public string Name { get; init; }
-    public string Class { get; init; }
-    public string Race { get; init; }
-    public string Alignment { get; init; }
+    public HeroClass Class { get; init; }
+    public Race Race { get; init; }
+    public Alignment Alignment { get; init; }
     public int Level { get; init; }
     public int Experience { get; init; }
     public int HitPoints { get; init; }
-    public int HitDice { get; init; }
+    public DiceType HitDice { get; init; }
     public HashSet<Spell> Spells { get; } = [];
     public Campaign Campaign { get; init; }
     
     private Hero(
         HeroId id,
         string name,
-        string @class,
-        string race,
-        string alignment,
+        HeroClass @class,
+        Race race,
+        Alignment alignment,
         int level,
         int experience,
         int hitPoints,
-        int hitDice) : base(id)
+        DiceType hitDice) : base(id)
     { 
         this.Id = id;
         this.Name = name;
@@ -44,13 +45,13 @@ public sealed class Hero : AggregateRoot<HeroId>
     
     public static Hero Create(
         string name,
-        string @class,
-        string race,
-        string alignment,
+        HeroClass @class,
+        Race race,
+        Alignment alignment,
         int level,
         int experience,
         int hitPoints,
-        int hitDice)
+        DiceType hitDice)
     {
         HeroId id = HeroId.Create();
         

@@ -1,0 +1,17 @@
+namespace DNDTracker.Vocabulary.Enums;
+
+public enum HeroClass
+{
+    Barbarian,
+    Bard,
+    Cleric,
+    Druid,
+    Fighter,
+    Monk,
+    Paladin,
+    Ranger,
+    Rogue,
+    Sorcerer,
+    Warlock,
+    Wizard
+}
