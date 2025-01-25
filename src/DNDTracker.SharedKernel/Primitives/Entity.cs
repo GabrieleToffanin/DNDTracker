@@ -1,4 +1,4 @@
-namespace DNDTracker.Domain.Primitives;
+namespace DNDTracker.SharedKernel.Primitives;
 
 public abstract class Entity
 {

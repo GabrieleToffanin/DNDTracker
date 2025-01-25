@@ -1,4 +1,5 @@
-using DNDTracker.Domain.Primitives;
+
+using DNDTracker.SharedKernel.Primitives;
 using DNDTracker.Vocabulary.ValueObjects;
 
 namespace DNDTracker.Domain.Heroes.DomainEvents;

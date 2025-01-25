@@ -1,5 +1,5 @@
 using DNDTracker.Domain;
-using DNDTracker.Domain.Primitives;
+using DNDTracker.SharedKernel.Primitives;
 using Microsoft.EntityFrameworkCore;
 
 namespace DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
@@ -39,6 +39,7 @@ public class DNDTrackerPostgresDbContext : DbContext
     public override async Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = new CancellationToken())
     {
+        // This is a sort of outbox pattern. ( Easy )
         await PublishDomainEventsAsync(cancellationToken);
 
         return await base.SaveChangesAsync(cancellationToken);

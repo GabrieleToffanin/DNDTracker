@@ -1,7 +1,6 @@
 using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.Inbound.RestAdapter.Controllers;
-using DNDTracker.Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -25,7 +24,6 @@ public partial class Program
             .PartManager.ApplicationParts.Add(inboundRestAdapterPart);
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
-        builder.Services.AddInfrastructure();
 
         var app = builder.Build();
 

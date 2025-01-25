@@ -1,3 +1,3 @@
-namespace DNDTracker.Domain.Primitives;
+namespace DNDTracker.SharedKernel.Primitives;
 
 public record DomainEvent(Guid Id, DateTime OccuredOn);
