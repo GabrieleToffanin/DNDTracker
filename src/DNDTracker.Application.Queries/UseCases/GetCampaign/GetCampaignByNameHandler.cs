@@ -1,11 +1,10 @@
 using System.Runtime.CompilerServices;
-using DNDTracker.Application.Exceptions;
-using DNDTracker.Application.Queries.UseCases.GetCampaign;
-using DNDTracker.Application.Responses;
 using DNDTracker.Domain.Campaigns;
+using DNDTracker.SharedKernel;
 using DNDTracker.SharedKernel.Queries;
+using DNDTracker.Vocabulary.Exceptions;
 
-namespace DNDTracker.Application.UseCases.Campaigns.GetCampaign;
+namespace DNDTracker.Application.Queries.UseCases.GetCampaign;
 
 public class GetCampaignByNameHandler(
     ICampaignRepository campaignRepository) : IQueryHandler<GetCampaignByName, CampaignDto>

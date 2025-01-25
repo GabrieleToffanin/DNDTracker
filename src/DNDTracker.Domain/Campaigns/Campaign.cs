@@ -1,8 +1,8 @@
 using System.Runtime.CompilerServices;
 using DNDTracker.Domain.Campaigns.DomainEvents;
-using DNDTracker.Domain.Exceptions;
 using DNDTracker.Domain.Heroes;
 using DNDTracker.SharedKernel.Primitives;
+using DNDTracker.Vocabulary.Exceptions;
 
 namespace DNDTracker.Domain.Campaigns;
 

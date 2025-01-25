@@ -1,6 +1,6 @@
-using DNDTracker.Application.Exceptions;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.SharedKernel.Commands;
+using DNDTracker.Vocabulary.Exceptions;
 
 namespace DNDTracker.Application.UseCases.Campaigns.AddHero;
 

@@ -1,4 +1,4 @@
-namespace DNDTracker.Domain.Exceptions;
+namespace DNDTracker.Vocabulary.Exceptions;
 
 public class InvalidCampaignDataException : Exception
 {

@@ -1,8 +1,8 @@
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
-using DNDTracker.Application.Responses;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Queries;
+using DNDTracker.SharedKernel;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-namespace DNDTracker.Application.Exceptions;
+namespace DNDTracker.Vocabulary.Exceptions;
 
 public class CampaignNotFoundException : Exception
 {

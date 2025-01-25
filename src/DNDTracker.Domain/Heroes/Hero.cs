@@ -1,8 +1,8 @@
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Domain.Exceptions;
 using DNDTracker.Domain.Heroes.DomainEvents;
 using DNDTracker.SharedKernel.Primitives;
 using DNDTracker.Vocabulary.Enums;
+using DNDTracker.Vocabulary.Exceptions;
 using DNDTracker.Vocabulary.ValueObjects;
 
 namespace DNDTracker.Domain.Heroes;

@@ -1,4 +1,4 @@
-using DNDTracker.Application.UseCases.Campaigns.GetCampaign;
+using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.Inbound.RestAdapter.Controllers;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;

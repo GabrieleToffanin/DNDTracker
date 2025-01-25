@@ -1,7 +1,7 @@
 using DNDTracker.Application.Tests.Behaviors.Dummies;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Domain.Exceptions;
+using DNDTracker.Vocabulary.Exceptions;
 using FluentAssertions;
 using FluentAssertions.Equivalency;
 using Xunit;

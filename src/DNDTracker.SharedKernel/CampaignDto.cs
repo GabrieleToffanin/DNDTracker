@@ -1,4 +1,4 @@
-namespace DNDTracker.Application.Responses;
+namespace DNDTracker.SharedKernel;
 
 public record CampaignDto(
     string CampaignName, 
