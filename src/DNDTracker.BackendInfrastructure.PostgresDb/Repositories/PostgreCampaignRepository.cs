@@ -18,4 +18,9 @@ public class PostgreCampaignRepository(
         await context.Set<Campaign>().AddAsync(campaign, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    public Task UpdateAsync(CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

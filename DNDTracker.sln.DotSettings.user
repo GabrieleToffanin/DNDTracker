@@ -30,6 +30,11 @@
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=11652240_002Dece4_002D4eb0_002Daa60_002Dc550674343d2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;
 &lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=de40d87e_002De9b8_002D4074_002D864d_002D7e96900c5031/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="GivenValidRequestHavingHeroes_WhenHandle_ThenCampaignIsCreated" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;xUnit::6F4A62B6-AD11-47FA-8CCC-58C325F398B4::net9.0::DNDTracker.Application.Tests.AddHeroToCampaignUseCaseTests.GivenValidRequestHavingHeroes_WhenHandle_ThenCampaignIsCreated&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
 	
 	
 	

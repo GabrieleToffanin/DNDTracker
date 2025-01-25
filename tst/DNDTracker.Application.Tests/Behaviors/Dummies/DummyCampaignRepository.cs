@@ -1,4 +1,5 @@
 using DNDTracker.Domain.Campaigns;
+using FluentAssertions;
 
 namespace DNDTracker.Application.Tests.Behaviors.Dummies;
 
@@ -15,6 +16,24 @@ public class DummyCampaignRepository : ICampaignRepository
     {
         Insert(campaign);
     }
+
+    public async Task UpdateAsync(CancellationToken cancellationToken)
+    {
+        //Values will be updated by ref in this case
+    }
+
+    internal void Insert(Campaign campaign) => Campaigns[campaign.CampaignName] = campaign;
     
-    private void Insert(Campaign campaign) => Campaigns[campaign.Id.ToString()] = campaign;
+    internal void AssertCampaignEquals(Campaign expectedCampaign)
+    {
+        var existingCampaign = Campaigns[expectedCampaign.CampaignName];
+        existingCampaign.CampaignName.Should().Be(expectedCampaign.CampaignName);
+        existingCampaign.CampaignDescription.Should().Be(expectedCampaign.CampaignDescription);
+        existingCampaign.CampaignImage.Should().Be(expectedCampaign.CampaignImage);
+        existingCampaign.IsActive.Should().Be(expectedCampaign.IsActive);
+        existingCampaign.CreatedDate.Should().Be(expectedCampaign.CreatedDate);
+        existingCampaign.UpdatedDate.Should().Be(expectedCampaign.UpdatedDate);
+        existingCampaign.DeletedDate.Should().Be(expectedCampaign.DeletedDate);
+        existingCampaign.Heroes.Should().BeEquivalentTo(expectedCampaign.Heroes);
+    }
 }

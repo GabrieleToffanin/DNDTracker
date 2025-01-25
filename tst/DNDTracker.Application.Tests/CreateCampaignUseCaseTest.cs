@@ -27,18 +27,16 @@ public sealed class CreateCampaignUseCaseTest
             "Test Campaigns Description",
             "testurl.jpg", 
             createDate);
+        var expectedCampaign = Campaign.Create(
+            command.CampaignName,
+            command.CampaignDescription,
+            command.CampaignImage,
+            createDate,
+            true);
         
         await _handler.Handle(command, CancellationToken.None);
 
-        var createdCampaign = _campaignRepository.Campaigns.Values.First();
-        var expectedCampaign = Campaign.Create(
-                command.CampaignName,
-                command.CampaignDescription,
-                command.CampaignImage,
-                createDate,
-                true);
-
-        AssertCampaignEquals(createdCampaign, expectedCampaign);
+        _campaignRepository.AssertCampaignEquals(expectedCampaign);
     }
     
     [Fact]
@@ -55,41 +53,6 @@ public sealed class CreateCampaignUseCaseTest
 
         await createAction.Should().ThrowAsync<InvalidCampaignDataException>();
     }
-
-    [Fact]
-    public async Task GivenValidRequestHavingHeroes_WhenHandle_ThenCampaignIsCreated()
-    {
-        DateTime createDate = DateTime.Now;
-        CreateCampaignCommand command = new(
-            "Test Campaigns",
-            "Test Campaigns Description",
-            "testurl.jpg", 
-            createDate);
-        
-        await _handler.Handle(command, CancellationToken.None);
-
-        var createdCampaign = _campaignRepository.Campaigns.Values.First();
-        var expectedCampaign = Campaign.Create(
-            command.CampaignName,
-            command.CampaignDescription,
-            command.CampaignImage,
-            createDate,
-            true);
-        
-        expectedCampaign.AddHero();
-
-        AssertCampaignEquals(createdCampaign, expectedCampaign);
-    }
     
-    private void AssertCampaignEquals(Campaign createdCampaign, Campaign expectedCampaign)
-    {
-        createdCampaign.CampaignName.Should().Be(expectedCampaign.CampaignName);
-        createdCampaign.CampaignDescription.Should().Be(expectedCampaign.CampaignDescription);
-        createdCampaign.CampaignImage.Should().Be(expectedCampaign.CampaignImage);
-        createdCampaign.IsActive.Should().Be(expectedCampaign.IsActive);
-        createdCampaign.CreatedDate.Should().Be(expectedCampaign.CreatedDate);
-        createdCampaign.UpdatedDate.Should().Be(expectedCampaign.UpdatedDate);
-        createdCampaign.DeletedDate.Should().Be(expectedCampaign.DeletedDate);
-        createdCampaign.Heroes.Should().BeEquivalentTo(expectedCampaign.Heroes);
-    }
+    
 }
