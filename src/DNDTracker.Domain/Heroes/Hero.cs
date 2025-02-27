@@ -99,7 +99,7 @@ public sealed class Hero : AggregateRoot<HeroId>
     /// </summary>
     /// <param name="spell">The spell to evaluate for availability.</param>
     /// <returns>True if the spell's level is less than or equal to the hero's level; otherwise, false.</returns>
-    private bool IsSpellAvailable(Spell spell)
+    public bool IsSpellAvailable(Spell spell)
     {
         return spell.Level <= this.Level;
     }

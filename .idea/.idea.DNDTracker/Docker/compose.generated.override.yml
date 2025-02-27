@@ -1,21 +1,21 @@
 # This is a generated file. Not intended for manual editing.
 services:
-  dndtracker:
+  dndtracker.api:
     build:
       context: "/Users/gabrieletoffanin/Developer/rider/DNDTracker"
-      dockerfile: "DNDTracker.Presentation/Dockerfile"
+      dockerfile: "src/DNDTracker.Main/Dockerfile"
       target: "base"
     command: []
     entrypoint:
     - "dotnet"
-    - "/app/bin/Debug/net9.0/DNDTracker.Presentation.dll"
+    - "/app/bin/Debug/net9.0/DNDTracker.Main.dll"
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       DOTNET_USE_POLLING_FILE_WATCHER: "true"
-    image: "dndtracker:dev"
+    image: "dndtracker.main:dev"
     ports: []
     volumes:
-    - "/Users/gabrieletoffanin/Developer/rider/DNDTracker/DNDTracker.Presentation:/app:rw"
+    - "/Users/gabrieletoffanin/Developer/rider/DNDTracker/src/DNDTracker.Main:/app:rw"
     - "/Users/gabrieletoffanin/Developer/rider/DNDTracker:/src:rw"
     - "/Users/gabrieletoffanin/.nuget/packages:/home/app/.nuget/packages"
     working_dir: "/app"

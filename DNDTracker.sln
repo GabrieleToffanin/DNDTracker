@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Inbound.RestAdap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Application.Queries", "src\DNDTracker.Application.Queries\DNDTracker.Application.Queries.csproj", "{448DD530-5852-4994-8638-9034FC4EC79E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbound.InMemoryAdapter", "DNDTracker.Outbound.InMemoryAdapter\DNDTracker.Outbound.InMemoryAdapter.csproj", "{FB0EA987-A902-4763-AEE1-70FD7FCE4B35}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,10 @@ Global
 		{448DD530-5852-4994-8638-9034FC4EC79E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{448DD530-5852-4994-8638-9034FC4EC79E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{448DD530-5852-4994-8638-9034FC4EC79E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB0EA987-A902-4763-AEE1-70FD7FCE4B35}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB0EA987-A902-4763-AEE1-70FD7FCE4B35}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB0EA987-A902-4763-AEE1-70FD7FCE4B35}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB0EA987-A902-4763-AEE1-70FD7FCE4B35}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F18AE4E9-26FD-4C56-8C8E-4F4913186571} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
@@ -94,5 +100,6 @@ Global
 		{AF44CFFF-45C1-441B-836F-5BADADC87B2B} = {167D502E-F875-410B-A68D-06E8A444511D}
 		{4D75B70E-DDDC-461C-AFC1-218E7F49EAAC} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 		{448DD530-5852-4994-8638-9034FC4EC79E} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
+		{FB0EA987-A902-4763-AEE1-70FD7FCE4B35} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 	EndGlobalSection
 EndGlobal

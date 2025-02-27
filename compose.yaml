@@ -3,7 +3,7 @@
     image: dndtracker.main
     build:
       context: .
-      dockerfile: DNDTracker.Main/Dockerfile
+      dockerfile: src/DNDTracker.Main/Dockerfile
     ports:
       - "5169:8080"
       - "8081:8081"
