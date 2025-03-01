@@ -22,9 +22,9 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         CampaignDescription = campaignDescription;
         CampaignImage = campaignImage;
         IsActive = isActive;
-        CreatedDate = createdDate;
-        UpdatedDate = updatedDate;
-        DeletedDate = deletedDate;
+        CreatedDate = DateTime.SpecifyKind(createdDate, DateTimeKind.Utc);
+        UpdatedDate = DateTime.SpecifyKind(updatedDate, DateTimeKind.Utc);
+        DeletedDate = deletedDate is not null ? DateTime.SpecifyKind(deletedDate.Value, DateTimeKind.Utc) : null;
     }
 
     public string CampaignName { get; private set; }

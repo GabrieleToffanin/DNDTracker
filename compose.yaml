@@ -12,6 +12,9 @@
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Scalar__Enabled=true
     depends_on:
       - postgres
       - rabbitmq

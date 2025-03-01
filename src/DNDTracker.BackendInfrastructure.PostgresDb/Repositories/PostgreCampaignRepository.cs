@@ -1,4 +1,5 @@
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
+using DNDTracker.BackendInfrastructure.PostgresDb.Models;
 using DNDTracker.Domain.Campaigns;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,8 @@ public class PostgreCampaignRepository(
 
     public async Task CreateCampaignAsync(Campaign campaign, CancellationToken cancellationToken)
     {
-        await context.Set<Campaign>().AddAsync(campaign, cancellationToken);
+        await context.Set<Campaign>()
+            .AddAsync(campaign, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
     }
 

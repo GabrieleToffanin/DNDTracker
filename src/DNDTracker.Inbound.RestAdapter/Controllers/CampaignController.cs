@@ -49,6 +49,8 @@ public class CampaignController(
         return CreatedAtAction(nameof(AddHero), new { campaignName }, null);
     }
     
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(void))]
     public async Task<IActionResult> CreateCampaign(
         [FromBody]CreateCampaignRequest command,
         CancellationToken cancellationToken)

@@ -37,6 +37,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Inbound.RestAdap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.InMemory.Adapter", "DNDTracker.InMemory.Adapter\DNDTracker.InMemory.Adapter.csproj", "{B8630F49-3A31-4A00-9CF5-D545B456172E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelmConfig", "HelmConfig", "{FFD78C1A-31B8-454B-BECD-726EF4966B42}"
+	ProjectSection(SolutionItems) = preProject
+		dndtracker\.helmignore = dndtracker\.helmignore
+		dndtracker\templates\_helpers.tpl = dndtracker\templates\_helpers.tpl
+		dndtracker\Chart.yaml = dndtracker\Chart.yaml
+		dndtracker\templates\deployment.yaml = dndtracker\templates\deployment.yaml
+		dndtracker\templates\hpa.yaml = dndtracker\templates\hpa.yaml
+		dndtracker\templates\ingress.yaml = dndtracker\templates\ingress.yaml
+		dndtracker\templates\NOTES.txt = dndtracker\templates\NOTES.txt
+		dndtracker\templates\service.yaml = dndtracker\templates\service.yaml
+		dndtracker\templates\serviceaccount.yaml = dndtracker\templates\serviceaccount.yaml
+		dndtracker\templates\tests\test-connection.yaml = dndtracker\templates\tests\test-connection.yaml
+		dndtracker\values.yaml = dndtracker\values.yaml
+		dndtracker\templates\configmap.yaml = dndtracker\templates\configmap.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,5 +131,6 @@ Global
 		{FB0EA987-A902-4763-AEE1-70FD7FCE4B35} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 		{C265FA5E-BB00-41E3-9B05-653347824B26} = {167D502E-F875-410B-A68D-06E8A444511D}
 		{B8630F49-3A31-4A00-9CF5-D545B456172E} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
+		{FFD78C1A-31B8-454B-BECD-726EF4966B42} = {5E24F2BB-5918-4A17-BE09-9B4F53A34741}
 	EndGlobalSection
 EndGlobal
