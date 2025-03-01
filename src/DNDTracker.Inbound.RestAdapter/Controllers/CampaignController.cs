@@ -1,5 +1,6 @@
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
+using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Queries;
 using DNDTracker.SharedKernel;
@@ -48,4 +49,23 @@ public class CampaignController(
         return CreatedAtAction(nameof(AddHero), new { campaignName }, null);
     }
     
+    public async Task<IActionResult> CreateCampaign(
+        [FromBody]CreateCampaignRequest command,
+        CancellationToken cancellationToken)
+    {
+        var mappedRequest = new CreateCampaignCommand(
+            command.CampaignName,
+            command.CampaignDescription,
+            command.CampaignImage,
+            command.CreatedDate,
+            command.IsActive);
+        
+        // send the command to the mediator to handle
+        await mediator.Send(
+            mappedRequest,
+            cancellationToken);
+
+        // if successful, return status code 201 (Created) with campaign data
+        return CreatedAtAction(nameof(CreateCampaign), new { command.CampaignName }, null);
+    }
 }

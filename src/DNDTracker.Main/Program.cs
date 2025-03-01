@@ -19,7 +19,7 @@ public partial class Program
 
         builder.Services.AddDbContext<DNDTrackerPostgresDbContext>(options =>
         {
-            options.UseNpgsql(builder.Configuration["ConnectionStrings:DNDTrackerPostgres"]);
+            options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"]);
         });
 
         AssemblyPart inboundRestAdapterPart = new AssemblyPart(typeof(CampaignController).Assembly);

@@ -27,6 +27,7 @@ public sealed class CreateCampaignUseCaseTest
             "Test Campaigns Description",
             "testurl.jpg", 
             createDate);
+        
         var expectedCampaign = Campaign.Create(
             command.CampaignName,
             command.CampaignDescription,
