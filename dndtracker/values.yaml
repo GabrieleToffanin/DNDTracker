@@ -17,7 +17,7 @@ global:
       postgresPassword: "postgres"
 
 image:
-  repository: dndtracker
+  repository: gabrieletoffanin/dndtracker
   pullPolicy: IfNotPresent
   tag: "latest"
 
