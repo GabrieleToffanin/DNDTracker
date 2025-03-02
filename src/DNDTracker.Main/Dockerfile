@@ -6,12 +6,11 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-# Fix project file path - adjust according to your actual project structure
-COPY ["src/DNDTracker.Main/DNDTracker.Main.csproj", "src/DNDTracker.Main/"]
-# Add other project references as needed
-RUN dotnet restore "src/DNDTracker.Main/DNDTracker.Main.csproj"
+# Adjust paths based on your build context
+COPY ["DNDTracker.Main/DNDTracker.Main.csproj", "DNDTracker.Main/"]
+RUN dotnet restore "DNDTracker.Main/DNDTracker.Main.csproj"
 COPY . .
-WORKDIR "/src/src/DNDTracker.Main"
+WORKDIR "/src/DNDTracker.Main"
 RUN dotnet build "DNDTracker.Main.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish

@@ -36,22 +36,26 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelmConfig", "HelmConfig", "{FFD78C1A-31B8-454B-BECD-726EF4966B42}"
 	ProjectSection(SolutionItems) = preProject
 		dndtracker\.helmignore = dndtracker\.helmignore
-		dndtracker\templates\_helpers.tpl = dndtracker\templates\_helpers.tpl
 		dndtracker\Chart.yaml = dndtracker\Chart.yaml
-		dndtracker\templates\deployment.yaml = dndtracker\templates\deployment.yaml
-		dndtracker\templates\hpa.yaml = dndtracker\templates\hpa.yaml
-		dndtracker\templates\ingress.yaml = dndtracker\templates\ingress.yaml
-		dndtracker\templates\NOTES.txt = dndtracker\templates\NOTES.txt
-		dndtracker\templates\service.yaml = dndtracker\templates\service.yaml
-		dndtracker\templates\serviceaccount.yaml = dndtracker\templates\serviceaccount.yaml
 		dndtracker\templates\tests\test-connection.yaml = dndtracker\templates\tests\test-connection.yaml
 		dndtracker\values.yaml = dndtracker\values.yaml
-		dndtracker\templates\configmap.yaml = dndtracker\templates\configmap.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.InMemory.Adapter", "src\DNDTracker.InMemory.Adapter\DNDTracker.InMemory.Adapter.csproj", "{351968C4-5500-460F-98B0-81BD509AB867}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbound.InMemoryAdapter", "src\DNDTracker.Outbound.InMemoryAdapter\DNDTracker.Outbound.InMemoryAdapter.csproj", "{3685D076-4BFE-442B-9CBB-BD10587790E7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{49FDC492-9F0B-4216-BEAA-37556EEDE11B}"
+	ProjectSection(SolutionItems) = preProject
+		dndtracker\templates\_helpers.tpl = dndtracker\templates\_helpers.tpl
+		dndtracker\templates\NOTES.txt = dndtracker\templates\NOTES.txt
+		dndtracker\templates\configmap.yaml = dndtracker\templates\configmap.yaml
+		dndtracker\templates\deployment.yaml = dndtracker\templates\deployment.yaml
+		dndtracker\templates\hpa.yaml = dndtracker\templates\hpa.yaml
+		dndtracker\templates\ingress.yaml = dndtracker\templates\ingress.yaml
+		dndtracker\templates\service.yaml = dndtracker\templates\service.yaml
+		dndtracker\templates\serviceaccount.yaml = dndtracker\templates\serviceaccount.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,5 +136,6 @@ Global
 		{FFD78C1A-31B8-454B-BECD-726EF4966B42} = {5E24F2BB-5918-4A17-BE09-9B4F53A34741}
 		{351968C4-5500-460F-98B0-81BD509AB867} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 		{3685D076-4BFE-442B-9CBB-BD10587790E7} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
+		{49FDC492-9F0B-4216-BEAA-37556EEDE11B} = {FFD78C1A-31B8-454B-BECD-726EF4966B42}
 	EndGlobalSection
 EndGlobal
