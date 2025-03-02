@@ -16,7 +16,8 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         bool isActive,
         DateTime createdDate,
         DateTime updatedDate,
-        DateTime? deletedDate) : base(id)
+        DateTime? deletedDate,
+        List<Hero> heroes) : base(id)
     {
         CampaignName = campaignName;
         CampaignDescription = campaignDescription;
@@ -25,6 +26,7 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         CreatedDate = DateTime.SpecifyKind(createdDate, DateTimeKind.Utc);
         UpdatedDate = DateTime.SpecifyKind(updatedDate, DateTimeKind.Utc);
         DeletedDate = deletedDate is not null ? DateTime.SpecifyKind(deletedDate.Value, DateTimeKind.Utc) : null;
+        Heroes = heroes;
     }
 
     public string CampaignName { get; private set; }
@@ -40,35 +42,39 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     /// <summary>
     /// Creates a new campaign entity with the specified details.
     /// </summary>
+    /// <param name="id">CampaignId</param>
     /// <param name="campaignName">The name of the campaign.</param>
     /// <param name="campaignDescription">A description of the campaign.</param>
     /// <param name="campaignImage">The URL or path to the campaign's image.</param>
     /// <param name="createdDate">The date the campaign was created.</param>
     /// <param name="isActive">Indicates whether the campaign is currently active.</param>
+    /// <param name="heroes">Heroes to be added to the Campaign</param>
     /// <returns>A new instance of the <see cref="Campaign"/> class initialized with the provided details.</returns>
     public static Campaign Create(
+        Guid? id, 
         string campaignName,
         string campaignDescription,
         string campaignImage,
         DateTime createdDate,
-        bool isActive)
+        bool isActive,
+        List<Hero> heroes)
     {
         ThrowIfInvalidName(campaignName);
         ThrowIfInvalidDescription(campaignDescription);
         ThrowIfInvalidImage(campaignImage);
             
-        var id = CampaignId.Create();
+        var currentId = id is not null ? CampaignId.Create(id.Value) : CampaignId.Create();
 
         return new Campaign(
-            id,
+            currentId,
             campaignName,
             campaignDescription,
             campaignImage,
             isActive,
             createdDate,
             createdDate,
-            null
-        );
+            null,
+            heroes);
     }
 
     /// <summary>
@@ -122,5 +128,30 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     {
         string extension = Path.GetExtension(campaignImage).ToLower();
         return extension == ".jpg" || extension == ".jpeg" || extension == ".png";
+    }
+
+    public static Campaign Create(
+        string requestCampaignName,
+        string requestCampaignDescription,
+        string requestCampaignImage,
+        DateTime requestCreatedDate,
+        bool requestIsActive)
+    {
+        ThrowIfInvalidName(requestCampaignName);
+        ThrowIfInvalidDescription(requestCampaignDescription);
+        ThrowIfInvalidImage(requestCampaignImage);
+            
+        var currentId = CampaignId.Create();
+
+        return new Campaign(
+            currentId,
+            requestCampaignName,
+            requestCampaignDescription,
+            requestCampaignImage,
+            requestIsActive,
+            requestCreatedDate,
+            requestCreatedDate,
+            null,
+            []);
     }
 }

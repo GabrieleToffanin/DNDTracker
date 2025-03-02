@@ -1,17 +1,13 @@
-using DNDTracker.Domain.Campaigns;
+using DNDTracker.Vocabulary.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres.Configuration;
 
-public class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
+public class CampaignConfiguration : IEntityTypeConfiguration<CampaignModel>
 {
-    public void Configure(EntityTypeBuilder<Campaign> builder)
+    public void Configure(EntityTypeBuilder<CampaignModel> builder)
     {
-        builder.HasKey(c => c.Id);
-        builder.Property(c => c.Id)
-            .HasConversion(
-                v => v.Id.ToString(),
-                r => CampaignId.ParseFromString(r));
+        builder.HasKey(c => c.Id);;
     }
 }

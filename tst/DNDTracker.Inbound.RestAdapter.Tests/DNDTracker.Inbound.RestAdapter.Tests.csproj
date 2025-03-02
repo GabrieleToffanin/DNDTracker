@@ -20,9 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\DNDTracker.InMemory.Adapter\DNDTracker.InMemory.Adapter.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.Inbound.RestAdapter\DNDTracker.Inbound.RestAdapter.csproj" />
-      <ProjectReference Include="..\..\src\DNDTracker.InMemory.Adapter\DNDTracker.InMemory.Adapter.csproj" />
+      <ProjectReference Include="..\..\src\DNDTracker.Inbound.InMemoryAdapter\DNDTracker.Inbound.InMemoryAdapter.csproj" />
     </ItemGroup>
 
 </Project>

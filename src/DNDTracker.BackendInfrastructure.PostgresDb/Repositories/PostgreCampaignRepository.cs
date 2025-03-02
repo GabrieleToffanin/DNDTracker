@@ -1,6 +1,7 @@
 using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
-using DNDTracker.BackendInfrastructure.PostgresDb.Models;
+using DNDTracker.DataAccessObject.Mapping.CampaignMap;
 using DNDTracker.Domain.Campaigns;
+using DNDTracker.Vocabulary.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DNDTracker.BackendInfrastructure.PostgresDb.Repositories;
@@ -10,14 +11,18 @@ public class PostgreCampaignRepository(
 {
     public async Task<Campaign?> GetCampaignAsync(string campaignName, CancellationToken cancellationToken)
     {
-        return await context.Set<Campaign>()
+        var campaign = await context.Set<CampaignModel>()
             .FirstOrDefaultAsync(c => c.CampaignName == campaignName, cancellationToken);
+        
+        return campaign?.MapToDomain();
     }
 
     public async Task CreateCampaignAsync(Campaign campaign, CancellationToken cancellationToken)
     {
-        await context.Set<Campaign>()
-            .AddAsync(campaign, cancellationToken);
+        var campaignModel = campaign.MapToModel();
+        
+        await context.Set<CampaignModel>()
+            .AddAsync(campaignModel, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
     }
 

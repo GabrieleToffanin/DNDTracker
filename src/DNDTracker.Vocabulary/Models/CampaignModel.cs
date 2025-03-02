@@ -1,4 +1,4 @@
-namespace DNDTracker.BackendInfrastructure.PostgresDb.Models;
+namespace DNDTracker.Vocabulary.Models;
 
 public class CampaignModel
 {
@@ -10,4 +10,5 @@ public class CampaignModel
     public DateTime CreatedDate { get; set; }
     public DateTime UpdatedDate { get; set; }
     public DateTime? DeletedDate { get; set; }
+    public List<HeroModel> Heroes { get; private set; } = [];
 }

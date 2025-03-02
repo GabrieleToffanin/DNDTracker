@@ -1,7 +1,8 @@
 namespace DNDTracker.SharedKernel.Primitives;
 
-public abstract class AggregateRoot<TIdentifier>(TIdentifier id) 
-    : Entity, IEquatable<AggregateRoot<TIdentifier>> where TIdentifier : notnull
+public abstract class AggregateRoot<TIdentifier>(TIdentifier id)
+    : Entity, IEquatable<AggregateRoot<TIdentifier>>
+    where TIdentifier : notnull
 {
     public TIdentifier Id { get; } = id;
 

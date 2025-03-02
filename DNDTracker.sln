@@ -41,7 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelmConfig", "HelmConfig", 
 		dndtracker\values.yaml = dndtracker\values.yaml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.InMemory.Adapter", "src\DNDTracker.InMemory.Adapter\DNDTracker.InMemory.Adapter.csproj", "{351968C4-5500-460F-98B0-81BD509AB867}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Inbound.InMemoryAdapter", "src\DNDTracker.Inbound.InMemoryAdapter\DNDTracker.Inbound.InMemoryAdapter.csproj", "{351968C4-5500-460F-98B0-81BD509AB867}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbound.InMemoryAdapter", "src\DNDTracker.Outbound.InMemoryAdapter\DNDTracker.Outbound.InMemoryAdapter.csproj", "{3685D076-4BFE-442B-9CBB-BD10587790E7}"
 EndProject
@@ -56,6 +56,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 		dndtracker\templates\service.yaml = dndtracker\templates\service.yaml
 		dndtracker\templates\serviceaccount.yaml = dndtracker\templates\serviceaccount.yaml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.DataAccessObject.Mapping", "DNDTracker.DataAccessObject.Mapping\DNDTracker.DataAccessObject.Mapping.csproj", "{C591D81F-81D8-4F91-A388-E442360CED37}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +121,10 @@ Global
 		{3685D076-4BFE-442B-9CBB-BD10587790E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3685D076-4BFE-442B-9CBB-BD10587790E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3685D076-4BFE-442B-9CBB-BD10587790E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C591D81F-81D8-4F91-A388-E442360CED37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C591D81F-81D8-4F91-A388-E442360CED37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C591D81F-81D8-4F91-A388-E442360CED37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C591D81F-81D8-4F91-A388-E442360CED37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F18AE4E9-26FD-4C56-8C8E-4F4913186571} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
@@ -137,5 +143,6 @@ Global
 		{351968C4-5500-460F-98B0-81BD509AB867} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 		{3685D076-4BFE-442B-9CBB-BD10587790E7} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 		{49FDC492-9F0B-4216-BEAA-37556EEDE11B} = {FFD78C1A-31B8-454B-BECD-726EF4966B42}
+		{C591D81F-81D8-4F91-A388-E442360CED37} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 	EndGlobalSection
 EndGlobal

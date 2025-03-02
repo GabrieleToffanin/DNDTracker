@@ -44,6 +44,7 @@ public sealed class Hero : AggregateRoot<HeroId>
     }
     
     public static Hero Create(
+        Guid id,
         string name,
         HeroClass @class,
         Race race,
@@ -53,10 +54,34 @@ public sealed class Hero : AggregateRoot<HeroId>
         int hitPoints,
         DiceType hitDice)
     {
-        HeroId id = HeroId.Create();
+        HeroId currentId = HeroId.Create(id);
         
         return new Hero(
-            id,
+            currentId,
+            name,
+            @class,
+            race,
+            alignment,
+            level,
+            experience,
+            hitPoints,
+            hitDice);
+    }
+    
+    public static Hero Create(
+        string name,
+        HeroClass @class,
+        Race race,
+        Alignment alignment,
+        int level,
+        int experience,
+        int hitPoints,
+        DiceType hitDice)
+    {
+        HeroId currentId = HeroId.Create();
+        
+        return new Hero(
+            currentId,
             name,
             @class,
             race,

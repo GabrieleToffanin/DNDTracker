@@ -40,6 +40,8 @@ public class DNDTrackerPostgresDbContext : DbContext
         CancellationToken cancellationToken = new CancellationToken())
     {
         // This is a sort of outbox pattern. ( Easy )
+        await base.SaveChangesAsync(cancellationToken);
+        
         await PublishDomainEventsAsync(cancellationToken);
 
         return await base.SaveChangesAsync(cancellationToken);
@@ -62,3 +64,11 @@ public class DNDTrackerPostgresDbContext : DbContext
             await _eventPublisher.PublishAsync(domainEvent, cancellationToken);
     }
 }
+
+// Campaign
+// -- Evento ho aggiunto un eroe
+
+// Save
+// -- Prendi tutti gli eventi di dominio dentro le Entity
+// -- Salvo gli eventi in una lista temp
+// -- Pulisci gli eventi di dominio dentro le Entity
