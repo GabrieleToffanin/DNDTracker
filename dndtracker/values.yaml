@@ -1,0 +1,73 @@
+# values.yam
+# Add this to your values.yaml
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+replicaCount: 1
+
+global:
+  postgresql:
+    auth:
+      postgresPassword: "postgres"
+
+image:
+  repository: dndtracker
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: NodePort
+  port: 8080
+  scalarPort: 8081
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+environment:
+  ASPNETCORE_ENVIRONMENT: Development
+  ASPNETCORE_URLS: "http://+:8080"
+  ConnectionStrings__DefaultConnection: "Host=dndtracker-postgresql;Port=5432;Database=dndtracker;Username=postgres;Password=postgres"
+
+persistence:
+  enabled: true
+  size: 1Gi
+
+postgresql:
+  enabled: true
+  image:
+    tag: "16.1.0"  # Specify PostgreSQL 16
+  auth:
+    postgresPassword: postgres
+    database: dndtracker
+  persistence:
+    size: 1Gi
+    
+ingress:
+  enabled: false
+  className: ""
+  annotations: { }
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: [ ]
+  
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80

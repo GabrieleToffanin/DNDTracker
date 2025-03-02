@@ -1,0 +1,13 @@
+apiVersion: v2
+name: dndtracker
+description: Helm chart for DNDTracker application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+# Chart.yaml
+dependencies:
+  - name: postgresql
+    version: "~12.5.0"  # This chart version contains PostgreSQL 16
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled

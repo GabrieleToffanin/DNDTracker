@@ -1,0 +1,20 @@
+# templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dndtracker.fullname" . }}
+  labels:
+    {{- include "dndtracker.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.scalarPort }}
+      targetPort: scalar
+      protocol: TCP
+      name: scalar
+  selector:
+    {{- include "dndtracker.selectorLabels" . | nindent 4 }}
