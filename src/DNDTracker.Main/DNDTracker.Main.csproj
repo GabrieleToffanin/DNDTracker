@@ -24,7 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\DNDTracker.Outbound.InMemoryAdapter\DNDTracker.Outbound.InMemoryAdapter.csproj" />
       <ProjectReference Include="..\DNDTracker.Application\DNDTracker.Application.csproj" />
       <ProjectReference Include="..\DNDTracker.BackendInfrastructure.PostgresDb\DNDTracker.BackendInfrastructure.PostgresDb.csproj" />
       <ProjectReference Include="..\DNDTracker.Inbound.RestAdapter\DNDTracker.Inbound.RestAdapter.csproj" />
