@@ -55,5 +55,21 @@ public sealed class CreateCampaignUseCaseTest
         await createAction.Should().ThrowAsync<InvalidCampaignDataException>();
     }
     
-    
+    [Fact]
+    public async Task GivenEmptyName_WhenHandle_ThenThrowsException()
+    {
+        // Arrange
+        DateTime createDate = DateTime.Now;
+        CreateCampaignCommand command = new(
+            "",
+            "Test Description",
+            "testurl.jpg",
+            createDate);
+
+        // Act
+        var createAction = async () => await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await createAction.Should().ThrowAsync<InvalidCampaignDataException>();
+    }
 }
