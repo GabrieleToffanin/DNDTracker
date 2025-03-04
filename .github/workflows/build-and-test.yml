@@ -7,6 +7,11 @@ on:
   push:
     branches: [ "main" ]
 
+permissions:
+      contents: read
+      security-events: write
+      pull-requests: read
+
 jobs:
   BuildAndTest:
     runs-on: ubuntu-latest

@@ -8,12 +8,12 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
       <PackageReference Include="xunit.extensibility.core" Version="2.9.2" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\DNDTracker.DataAccessObject.Mapping\DNDTracker.DataAccessObject.Mapping.csproj" />
+      <ProjectReference Include="..\DNDTracker.DataAccessObject.Mapping\DNDTracker.DataAccessObject.Mapping.csproj" />
       <ProjectReference Include="..\DNDTracker.Domain\DNDTracker.Domain.csproj" />
     </ItemGroup>
 
