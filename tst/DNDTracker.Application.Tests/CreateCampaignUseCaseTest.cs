@@ -69,7 +69,6 @@ public sealed class CreateCampaignUseCaseTest
         // Act
         var createAction = async () => await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
         await createAction.Should().ThrowAsync<InvalidCampaignDataException>();
     }
 }
