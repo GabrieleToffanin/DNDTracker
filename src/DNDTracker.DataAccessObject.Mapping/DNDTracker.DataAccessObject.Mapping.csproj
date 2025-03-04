@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
-      <ProjectReference Include="..\src\DNDTracker.Vocabulary\DNDTracker.Vocabulary.csproj" />
+      <ProjectReference Include="..\DNDTracker.Domain\DNDTracker.Domain.csproj" />
+      <ProjectReference Include="..\DNDTracker.Vocabulary\DNDTracker.Vocabulary.csproj" />
     </ItemGroup>
 
 </Project>
