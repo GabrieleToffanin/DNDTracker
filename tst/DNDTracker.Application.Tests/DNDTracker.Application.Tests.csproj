@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+      <PackageReference Include="coverlet.collector" Version="6.0.4"/>
       <PackageReference Include="DeepCloner" Version="0.10.4" />
       <PackageReference Include="FluentAssertions" Version="8.0.0-alpha.1" />
       <PackageReference Include="FsCheck.Xunit" Version="3.1.0" />
