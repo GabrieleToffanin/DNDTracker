@@ -2,7 +2,7 @@ using DNDTracker.Domain;
 using DNDTracker.SharedKernel.Primitives;
 using Microsoft.EntityFrameworkCore;
 
-namespace DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
+namespace DNDTracker.Outbounx.PostgresDb.Database.Postgres;
 
 public class DNDTrackerPostgresDbContext : DbContext
 {

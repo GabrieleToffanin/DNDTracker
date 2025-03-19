@@ -1,10 +1,10 @@
-using DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres;
 using DNDTracker.DataAccessObject.Mapping.CampaignMap;
 using DNDTracker.Domain.Campaigns;
+using DNDTracker.Outbounx.PostgresDb.Database.Postgres;
 using DNDTracker.Vocabulary.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DNDTracker.BackendInfrastructure.PostgresDb.Repositories;
+namespace DNDTracker.Outbounx.PostgresDb.Repositories;
 
 public class PostgreCampaignRepository(
     DNDTrackerPostgresDbContext context) : ICampaignRepository

@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Vocabulary", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Application.Tests", "tst\DNDTracker.Application.Tests\DNDTracker.Application.Tests.csproj", "{6F4A62B6-AD11-47FA-8CCC-58C325F398B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.BackendInfrastructure.PostgresDb", "src\DNDTracker.BackendInfrastructure.PostgresDb\DNDTracker.BackendInfrastructure.PostgresDb.csproj", "{41669DD7-617C-47B8-B5B7-C6B3CEEDA21D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbounx.PostgresDb", "src\DNDTracker.Outbounx.PostgresDb\DNDTracker.Outbounx.PostgresDb.csproj", "{41669DD7-617C-47B8-B5B7-C6B3CEEDA21D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.BackendInfrastructure.PostgresDb.Tests", "tst\DNDTracker.BackendInfrastructure.PostgresDb.Tests\DNDTracker.BackendInfrastructure.PostgresDb.Tests.csproj", "{CE0B37ED-8581-4EDF-AFCB-811158EE13D6}"
 EndProject
@@ -58,6 +58,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.DataAccessObject.Mapping", "src\DNDTracker.DataAccessObject.Mapping\DNDTracker.DataAccessObject.Mapping.csproj", "{735B3E51-ACF1-4956-9F3F-77CAD081C1C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Main.IntegrationTests", "tst\DNDTracker.Main.IntegrationTests\DNDTracker.Main.IntegrationTests.csproj", "{8CAAA34F-9D7C-4586-A91D-D564E5F48A22}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F003585F-F267-48F9-B9DF-17EE604251A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.SDK", "tools\DNDTracker.SDK\DNDTracker.SDK.csproj", "{919C027B-F200-4881-9D31-BF8DCB2C2705}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +131,14 @@ Global
 		{735B3E51-ACF1-4956-9F3F-77CAD081C1C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{735B3E51-ACF1-4956-9F3F-77CAD081C1C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{735B3E51-ACF1-4956-9F3F-77CAD081C1C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CAAA34F-9D7C-4586-A91D-D564E5F48A22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CAAA34F-9D7C-4586-A91D-D564E5F48A22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CAAA34F-9D7C-4586-A91D-D564E5F48A22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CAAA34F-9D7C-4586-A91D-D564E5F48A22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{919C027B-F200-4881-9D31-BF8DCB2C2705}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{919C027B-F200-4881-9D31-BF8DCB2C2705}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{919C027B-F200-4881-9D31-BF8DCB2C2705}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{919C027B-F200-4881-9D31-BF8DCB2C2705}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F18AE4E9-26FD-4C56-8C8E-4F4913186571} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
@@ -144,5 +158,7 @@ Global
 		{3685D076-4BFE-442B-9CBB-BD10587790E7} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
 		{49FDC492-9F0B-4216-BEAA-37556EEDE11B} = {FFD78C1A-31B8-454B-BECD-726EF4966B42}
 		{735B3E51-ACF1-4956-9F3F-77CAD081C1C1} = {3F84A1AD-F2A4-4816-BF23-6CD12B5F0709}
+		{8CAAA34F-9D7C-4586-A91D-D564E5F48A22} = {167D502E-F875-410B-A68D-06E8A444511D}
+		{919C027B-F200-4881-9D31-BF8DCB2C2705} = {F003585F-F267-48F9-B9DF-17EE604251A2}
 	EndGlobalSection
 EndGlobal

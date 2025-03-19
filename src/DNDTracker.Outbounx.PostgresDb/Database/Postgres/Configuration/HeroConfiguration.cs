@@ -2,7 +2,7 @@ using DNDTracker.Vocabulary.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace DNDTracker.BackendInfrastructure.PostgresDb.Database.Postgres.Configuration;
+namespace DNDTracker.Outbounx.PostgresDb.Database.Postgres.Configuration;
 
 public class HeroConfiguration : IEntityTypeConfiguration<HeroModel>
 {

@@ -15,7 +15,7 @@ namespace DNDTracker.Inbound.RestAdapter.Controllers;
 public class CampaignController(
     IMediator mediator) : ControllerBase
 {
-    [HttpGet("{campaignName}")]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CampaignDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(

@@ -16,5 +16,5 @@ services:
     volumes:
     - "/Users/gabrieletoffanin/Developer/rider/DNDTracker/src/DNDTracker.Main:/app:rw"
     - "/Users/gabrieletoffanin/Developer/rider/DNDTracker:/src:rw"
-    - "/Users/gabrieletoffanin/.nuget/packages:/home/app/.nuget/packages"
+    - "/Users/gabrieletoffanin/.nuget/packages:/root/.nuget/packages"
     working_dir: "/app"
