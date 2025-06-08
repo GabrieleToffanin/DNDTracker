@@ -1,5 +1,6 @@
 @page "/create-campaign"
 @using DNDTracker.BlazorUI.Services
+@using DNDTracker.BlazorUI.Models
 @inject CampaignService CampaignService
 @inject NavigationManager Navigation
 
@@ -196,22 +197,5 @@
         {
             isCreating = false;
         }
-    }
-
-    public class CreateCampaignModel
-    {
-        [Required(ErrorMessage = "Campaign name is required")]
-        [StringLength(100, ErrorMessage = "Campaign name must be less than 100 characters")]
-        public string? CampaignName { get; set; }
-
-        [Required(ErrorMessage = "Campaign description is required")]
-        [StringLength(1000, ErrorMessage = "Description must be less than 1000 characters")]
-        public string? CampaignDescription { get; set; }
-
-        [Required(ErrorMessage = "Campaign image URL is required")]
-        [Url(ErrorMessage = "Please enter a valid URL")]
-        public string? CampaignImage { get; set; }
-
-        public bool IsActive { get; set; } = true;
     }
 }

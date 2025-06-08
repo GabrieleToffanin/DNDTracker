@@ -1,8 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using DNDTracker.SharedKernel;
-using DNDTracker.Domain.Heroes;
-using DNDTracker.Vocabulary.Enums;
+using DNDTracker.BlazorUI.Models;
 
 namespace DNDTracker.BlazorUI.Services;
 
@@ -52,22 +50,3 @@ public class CampaignService
         return response.IsSuccessStatusCode;
     }
 }
-
-public record CreateCampaignRequest(
-    string CampaignName,
-    string CampaignDescription,
-    string CampaignImage,
-    DateTime CreatedDate,
-    bool IsActive = true);
-
-public record AddHeroRequest(HeroRequest Hero);
-
-public record HeroRequest(
-    string Name,
-    HeroClass Class,
-    Race Race,
-    Alignment Alignment,
-    int Level,
-    int Experience,
-    int HitPoints,
-    DiceType HitDice);
