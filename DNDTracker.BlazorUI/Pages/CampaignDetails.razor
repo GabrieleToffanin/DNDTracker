@@ -1,0 +1,386 @@
+@page "/campaign/{CampaignName}"
+@using DNDTracker.BlazorUI.Services
+@using DNDTracker.Vocabulary.Enums
+@inject CampaignService CampaignService
+
+<PageTitle>@(campaign?.CampaignName ?? "Campaign") - DNDTracker</PageTitle>
+
+<div class="content-wrapper">
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner"></div>
+            <p>Loading campaign details...</p>
+        </div>
+    }
+    else if (campaign != null)
+    {
+        <div class="campaign-header fade-in">
+            <div class="card">
+                <div class="campaign-banner">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1><i class="fas fa-scroll"></i> @campaign.CampaignName</h1>
+                            <p class="lead">@campaign.CampaignDescription</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button @onclick="ShowAddHeroModal" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Add Hero
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="heroes-section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-users"></i> Party Members</h2>
+                    <p class="text-muted">Manage your adventuring party</p>
+                </div>
+                <div class="card-body">
+                    @if (heroes.Any())
+                    {
+                        <div class="hero-grid">
+                            @foreach (var hero in heroes)
+                            {
+                                <div class="hero-card fade-in">
+                                    <div class="hero-name">@hero.Name</div>
+                                    <div class="hero-class">@hero.Class</div>
+                                    <div class="hero-stats">
+                                        <div class="hero-stat">
+                                            <span class="hero-stat-label">Race:</span>
+                                            <span class="hero-stat-value">@hero.Race</span>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <span class="hero-stat-label">Level:</span>
+                                            <span class="hero-stat-value">@hero.Level</span>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <span class="hero-stat-label">Experience:</span>
+                                            <span class="hero-stat-value">@hero.Experience</span>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <span class="hero-stat-label">Hit Points:</span>
+                                            <span class="hero-stat-value">@hero.HitPoints</span>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <span class="hero-stat-label">Alignment:</span>
+                                            <span class="hero-stat-value">@hero.Alignment</span>
+                                        </div>
+                                        <div class="hero-stat">
+                                            <span class="hero-stat-label">Hit Dice:</span>
+                                            <span class="hero-stat-value">@hero.HitDice</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state text-center">
+                            <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                            <h3>No Heroes Yet</h3>
+                            <p class="text-muted">Start building your party by adding your first hero!</p>
+                            <button @onclick="ShowAddHeroModal" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Add First Hero
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="card">
+            <div class="alert alert-danger">
+                <h4><i class="fas fa-exclamation-triangle"></i> Campaign Not Found</h4>
+                <p>@errorMessage</p>
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Return Home
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Add Hero Modal -->
+@if (showAddHeroModal)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> Add New Hero</h5>
+                    <button type="button" class="btn-close" @onclick="HideAddHeroModal"></button>
+                </div>
+                <EditForm Model="@heroModel" OnValidSubmit="@AddHero">
+                    <div class="modal-body">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Hero Name</label>
+                                    <InputText class="form-control" @bind-Value="heroModel.Name" placeholder="Enter hero name..." />
+                                    <ValidationMessage For="@(() => heroModel.Name)" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Class</label>
+                                    <InputSelect class="form-control form-select" @bind-Value="heroModel.Class">
+                                        <option value="">Select a class...</option>
+                                        @foreach (HeroClass heroClass in Enum.GetValues<HeroClass>())
+                                        {
+                                            <option value="@heroClass">@heroClass</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => heroModel.Class)" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Race</label>
+                                    <InputSelect class="form-control form-select" @bind-Value="heroModel.Race">
+                                        <option value="">Select a race...</option>
+                                        @foreach (Race race in Enum.GetValues<Race>())
+                                        {
+                                            <option value="@race">@race</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => heroModel.Race)" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Alignment</label>
+                                    <InputSelect class="form-control form-select" @bind-Value="heroModel.Alignment">
+                                        <option value="">Select alignment...</option>
+                                        @foreach (Alignment alignment in Enum.GetValues<Alignment>())
+                                        {
+                                            <option value="@alignment">@alignment</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => heroModel.Alignment)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Level</label>
+                                    <InputNumber class="form-control" @bind-Value="heroModel.Level" min="1" max="20" />
+                                    <ValidationMessage For="@(() => heroModel.Level)" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Experience Points</label>
+                                    <InputNumber class="form-control" @bind-Value="heroModel.Experience" min="0" />
+                                    <ValidationMessage For="@(() => heroModel.Experience)" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Hit Points</label>
+                                    <InputNumber class="form-control" @bind-Value="heroModel.HitPoints" min="1" />
+                                    <ValidationMessage For="@(() => heroModel.HitPoints)" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Hit Dice</label>
+                                    <InputSelect class="form-control form-select" @bind-Value="heroModel.HitDice">
+                                        <option value="">Select hit dice...</option>
+                                        @foreach (DiceType dice in Enum.GetValues<DiceType>())
+                                        {
+                                            <option value="@dice">@dice</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => heroModel.HitDice)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(addHeroError))
+                        {
+                            <div class="alert alert-danger mt-3">
+                                <i class="fas fa-exclamation-triangle"></i> @addHeroError
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="HideAddHeroModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isAddingHero">
+                            @if (isAddingHero)
+                            {
+                                <i class="fas fa-spinner fa-spin"></i> <text>Adding Hero...</text>
+                            }
+                            else
+                            {
+                                <i class="fas fa-save"></i> <text>Add Hero</text>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+<style>
+    .campaign-banner {
+        padding: 2rem;
+        background: linear-gradient(135deg, var(--secondary-bg), var(--accent-bg));
+        border-radius: 12px;
+    }
+
+    .modal {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-close {
+        background: var(--text-muted);
+        opacity: 0.8;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    .empty-state {
+        padding: 3rem;
+    }
+</style>
+
+@code {
+    [Parameter] public string? CampaignName { get; set; }
+    
+    private CampaignDto? campaign;
+    private List<HeroRequest> heroes = new();
+    private bool isLoading = true;
+    private string errorMessage = "";
+    private bool showAddHeroModal = false;
+    private bool isAddingHero = false;
+    private string addHeroError = "";
+    private AddHeroModel heroModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(CampaignName))
+        {
+            await LoadCampaign();
+        }
+    }
+
+    private async Task LoadCampaign()
+    {
+        try
+        {
+            campaign = await CampaignService.GetCampaignAsync(CampaignName!);
+            if (campaign == null)
+            {
+                errorMessage = "Campaign not found. Please check the campaign name.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading campaign: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowAddHeroModal()
+    {
+        showAddHeroModal = true;
+        heroModel = new AddHeroModel();
+        addHeroError = "";
+    }
+
+    private void HideAddHeroModal()
+    {
+        showAddHeroModal = false;
+    }
+
+    private async Task AddHero()
+    {
+        isAddingHero = true;
+        addHeroError = "";
+
+        try
+        {
+            var heroRequest = new HeroRequest(
+                heroModel.Name!,
+                heroModel.Class!.Value,
+                heroModel.Race!.Value,
+                heroModel.Alignment!.Value,
+                heroModel.Level,
+                heroModel.Experience,
+                heroModel.HitPoints,
+                heroModel.HitDice!.Value
+            );
+
+            var success = await CampaignService.AddHeroToCampaignAsync(CampaignName!, heroRequest);
+            
+            if (success)
+            {
+                heroes.Add(heroRequest);
+                HideAddHeroModal();
+            }
+            else
+            {
+                addHeroError = "Failed to add hero. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            addHeroError = $"Error adding hero: {ex.Message}";
+        }
+        finally
+        {
+            isAddingHero = false;
+        }
+    }
+
+    public class AddHeroModel
+    {
+        [Required(ErrorMessage = "Hero name is required")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "Please select a class")]
+        public HeroClass? Class { get; set; }
+
+        [Required(ErrorMessage = "Please select a race")]
+        public Race? Race { get; set; }
+
+        [Required(ErrorMessage = "Please select an alignment")]
+        public Alignment? Alignment { get; set; }
+
+        [Range(1, 20, ErrorMessage = "Level must be between 1 and 20")]
+        public int Level { get; set; } = 1;
+
+        [Range(0, int.MaxValue, ErrorMessage = "Experience must be non-negative")]
+        public int Experience { get; set; } = 0;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Hit points must be at least 1")]
+        public int HitPoints { get; set; } = 8;
+
+        [Required(ErrorMessage = "Please select hit dice")]
+        public DiceType? HitDice { get; set; }
+    }
+}

@@ -41,6 +41,20 @@
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+  dndtracker.blazorui:
+    image: dndtracker.blazorui
+    build:
+      context: .
+      dockerfile: DNDTracker.BlazorUI/Dockerfile
+    ports:
+      - "5170:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - dndtracker.api
+
 volumes:
   postgres-data:
   rabbitmq-data:
+

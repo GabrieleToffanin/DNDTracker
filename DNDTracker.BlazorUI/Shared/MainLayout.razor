@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+<div class="main-container">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-dice-d20"></i> DNDTracker
+            </a>
+            <div class="navbar-nav">
+                <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                    <i class="fas fa-home"></i> Home
+                </NavLink>
+                <NavLink class="nav-link" href="/campaigns">
+                    <i class="fas fa-scroll"></i> Campaigns
+                </NavLink>
+                <NavLink class="nav-link" href="/create-campaign">
+                    <i class="fas fa-plus"></i> New Campaign
+                </NavLink>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        @Body
+    </main>
+</div>

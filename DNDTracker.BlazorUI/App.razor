@@ -1,0 +1,21 @@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <LayoutView Layout="@typeof(MainLayout)">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </LayoutView>
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <div class="content-wrapper">
+                <div class="card text-center">
+                    <h1><i class="fas fa-dragon"></i> Page Not Found</h1>
+                    <p>The page you're looking for doesn't exist in this realm.</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Return to Campaign Hall
+                    </a>
+                </div>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

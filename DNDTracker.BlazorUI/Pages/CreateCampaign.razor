@@ -1,0 +1,217 @@
+@page "/create-campaign"
+@using DNDTracker.BlazorUI.Services
+@inject CampaignService CampaignService
+@inject NavigationManager Navigation
+
+<PageTitle>Create Campaign - DNDTracker</PageTitle>
+
+<div class="content-wrapper">
+    <div class="card fade-in">
+        <div class="card-header">
+            <h1><i class="fas fa-plus-circle"></i> Create New Campaign</h1>
+            <p class="text-muted">Start your next adventure by creating a new D&D campaign</p>
+        </div>
+
+        <div class="card-body">
+            <EditForm Model="@campaignModel" OnValidSubmit="@CreateCampaignAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger" />
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label class="form-label" for="campaignName">
+                                <i class="fas fa-scroll"></i> Campaign Name
+                            </label>
+                            <InputText id="campaignName" class="form-control" @bind-Value="campaignModel.CampaignName" 
+                                       placeholder="Enter the name of your campaign..." />
+                            <ValidationMessage For="@(() => campaignModel.CampaignName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="campaignDescription">
+                                <i class="fas fa-book"></i> Campaign Description
+                            </label>
+                            <InputTextArea id="campaignDescription" class="form-control" @bind-Value="campaignModel.CampaignDescription" 
+                                           rows="4" placeholder="Describe your campaign world, setting, and adventure..." />
+                            <ValidationMessage For="@(() => campaignModel.CampaignDescription)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="campaignImage">
+                                <i class="fas fa-image"></i> Campaign Image URL
+                            </label>
+                            <InputText id="campaignImage" class="form-control" @bind-Value="campaignModel.CampaignImage" 
+                                       placeholder="https://example.com/campaign-image.jpg" />
+                            <ValidationMessage For="@(() => campaignModel.CampaignImage)" />
+                            <small class="form-text text-muted">Supported formats: .jpg, .jpeg, .png</small>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <InputCheckbox id="isActive" class="form-check-input" @bind-Value="campaignModel.IsActive" />
+                            <label class="form-check-label" for="isActive">
+                                <i class="fas fa-play"></i> Campaign is Active
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="campaign-preview card">
+                            <div class="card-header">
+                                <h4><i class="fas fa-eye"></i> Preview</h4>
+                            </div>
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(campaignModel.CampaignImage))
+                                {
+                                    <img src="@campaignModel.CampaignImage" alt="Campaign Image" class="campaign-image mb-3"
+                                         style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;" 
+                                         onerror="this.style.display='none'" />
+                                }
+                                else
+                                {
+                                    <div class="placeholder-image mb-3" style="width: 100%; height: 150px; background: var(--accent-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                    </div>
+                                }
+                                
+                                <h5>@(string.IsNullOrEmpty(campaignModel.CampaignName) ? "Campaign Name" : campaignModel.CampaignName)</h5>
+                                <p class="text-muted">@(string.IsNullOrEmpty(campaignModel.CampaignDescription) ? "Campaign description will appear here..." : campaignModel.CampaignDescription)</p>
+                                
+                                <div class="status-badge">
+                                    @if (campaignModel.IsActive)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-play"></i> Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary"><i class="fas fa-pause"></i> Inactive</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions mt-4">
+                    <button type="submit" class="btn btn-primary" disabled="@isCreating">
+                        @if (isCreating)
+                        {
+                            <i class="fas fa-spinner fa-spin"></i> <text>Creating Campaign...</text>
+                        }
+                        else
+                        {
+                            <i class="fas fa-save"></i> <text>Create Campaign</text>
+                        }
+                    </button>
+                    
+                    <a href="/" class="btn btn-secondary ms-2">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </EditForm>
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div class="alert alert-success mt-3">
+                    <i class="fas fa-check-circle"></i> @successMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-exclamation-triangle"></i> @errorMessage
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .campaign-preview {
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
+    
+    .bg-success {
+        background: var(--primary-green) !important;
+    }
+    
+    .bg-secondary {
+        background: var(--text-muted) !important;
+    }
+    
+    .form-actions {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.5rem;
+    }
+</style>
+
+@code {
+    private CreateCampaignModel campaignModel = new();
+    private bool isCreating = false;
+    private string successMessage = "";
+    private string errorMessage = "";
+
+    private async Task CreateCampaignAsync()
+    {
+        isCreating = true;
+        successMessage = "";
+        errorMessage = "";
+
+        try
+        {
+            var request = new CreateCampaignRequest(
+                campaignModel.CampaignName!,
+                campaignModel.CampaignDescription!,
+                campaignModel.CampaignImage!,
+                DateTime.UtcNow,
+                campaignModel.IsActive
+            );
+
+            var success = await CampaignService.CreateCampaignAsync(request);
+            
+            if (success)
+            {
+                successMessage = "Campaign created successfully!";
+                await Task.Delay(2000); // Show success message briefly
+                Navigation.NavigateTo($"/campaign/{campaignModel.CampaignName}");
+            }
+            else
+            {
+                errorMessage = "Failed to create campaign. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating campaign: {ex.Message}";
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    public class CreateCampaignModel
+    {
+        [Required(ErrorMessage = "Campaign name is required")]
+        [StringLength(100, ErrorMessage = "Campaign name must be less than 100 characters")]
+        public string? CampaignName { get; set; }
+
+        [Required(ErrorMessage = "Campaign description is required")]
+        [StringLength(1000, ErrorMessage = "Description must be less than 1000 characters")]
+        public string? CampaignDescription { get; set; }
+
+        [Required(ErrorMessage = "Campaign image URL is required")]
+        [Url(ErrorMessage = "Please enter a valid URL")]
+        public string? CampaignImage { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
+}

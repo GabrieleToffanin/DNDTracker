@@ -1,0 +1,156 @@
+@page "/"
+@using DNDTracker.BlazorUI.Services
+@inject CampaignService CampaignService
+
+<PageTitle>DNDTracker - Campaign Manager</PageTitle>
+
+<div class="content-wrapper">
+    <div class="hero-section fade-in">
+        <div class="card">
+            <div class="text-center">
+                <h1><i class="fas fa-dice-d20"></i> Welcome to DNDTracker</h1>
+                <p class="lead">Manage your Dungeons & Dragons campaigns with style and precision</p>
+                <div class="mt-4">
+                    <a href="/create-campaign" class="btn btn-primary me-3">
+                        <i class="fas fa-plus"></i> Create New Campaign
+                    </a>
+                    <a href="/campaigns" class="btn btn-secondary">
+                        <i class="fas fa-scroll"></i> View All Campaigns
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-section">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-success mb-3"></i>
+                        <h3>Manage Heroes</h3>
+                        <p>Add and track your party members with detailed character information including class, race, level, and stats.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-map fa-3x text-success mb-3"></i>
+                        <h3>Campaign Organization</h3>
+                        <p>Keep your campaigns organized with descriptions, images, and comprehensive character rosters.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-magic fa-3x text-success mb-3"></i>
+                        <h3>Character Progression</h3>
+                        <p>Track character growth, experience points, and magical abilities as your heroes evolve.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-clock"></i> Quick Actions</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Get Campaign</h4>
+                        <div class="form-group">
+                            <input @bind="searchCampaignName" @onkeypress="@(async (e) => { if (e.Key == "Enter") await SearchCampaign(); })" 
+                                   class="form-control" placeholder="Enter campaign name..." />
+                        </div>
+                        <button @onclick="SearchCampaign" class="btn btn-primary" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <i class="fas fa-spinner fa-spin"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-search"></i>
+                            }
+                            Search Campaign
+                        </button>
+                        
+                        @if (searchResult != null)
+                        {
+                            <div class="alert alert-success mt-3">
+                                <h5>@searchResult.CampaignName</h5>
+                                <p>@searchResult.CampaignDescription</p>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger mt-3">
+                                <i class="fas fa-exclamation-triangle"></i> @errorMessage
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Getting Started</h4>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i> 
+                                <a href="/create-campaign" class="text-decoration-none">Create your first campaign</a>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i> 
+                                Add heroes to your party
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i> 
+                                Track character progression
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-arrow-right text-success"></i> 
+                                Manage multiple campaigns
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchCampaignName = "";
+    private CampaignDto? searchResult = null;
+    private string errorMessage = "";
+    private bool isLoading = false;
+
+    private async Task SearchCampaign()
+    {
+        if (string.IsNullOrWhiteSpace(searchCampaignName))
+            return;
+
+        isLoading = true;
+        errorMessage = "";
+        searchResult = null;
+
+        try
+        {
+            searchResult = await CampaignService.GetCampaignAsync(searchCampaignName);
+            if (searchResult == null)
+            {
+                errorMessage = "Campaign not found. Check the campaign name and try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error searching for campaign: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
