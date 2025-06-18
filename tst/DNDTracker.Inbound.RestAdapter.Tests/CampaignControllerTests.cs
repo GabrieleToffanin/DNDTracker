@@ -35,7 +35,7 @@ public class CampaignControllerTests
         };
 
         // Act
-        var result = await controller.Get(query, CancellationToken.None);
+        var result = await controller.Get(query.CampaignName, CancellationToken.None);
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;

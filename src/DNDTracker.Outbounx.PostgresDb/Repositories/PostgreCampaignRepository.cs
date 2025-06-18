@@ -17,6 +17,14 @@ public class PostgreCampaignRepository(
         return campaign?.MapToDomain();
     }
 
+    public async Task<IEnumerable<Campaign>> GetAllCampaignsAsync(CancellationToken cancellationToken)
+    {
+        var campaigns = await context.Set<CampaignModel>()
+            .ToListAsync(cancellationToken);
+        
+        return campaigns.Select(c => c.MapToDomain());
+    }
+
     public async Task CreateCampaignAsync(Campaign campaign, CancellationToken cancellationToken)
     {
         var campaignModel = campaign.MapToModel();

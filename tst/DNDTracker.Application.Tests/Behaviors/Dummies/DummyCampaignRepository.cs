@@ -12,6 +12,11 @@ public class DummyCampaignRepository : ICampaignRepository
         return Campaigns.Values.FirstOrDefault(c => c.CampaignName == campaignName);
     }
 
+    public async Task<IEnumerable<Campaign>> GetAllCampaignsAsync(CancellationToken cancellationToken)
+    {
+        return Campaigns.Values;
+    }
+
     public async Task CreateCampaignAsync(Campaign campaign, CancellationToken cancellationToken)
     {
         Insert(campaign);

@@ -2,7 +2,6 @@ using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Inbound.RestAdapter.Commands;
-using DNDTracker.Inbound.RestAdapter.Queries;
 using DNDTracker.SharedKernel;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -16,13 +15,24 @@ public class CampaignController(
     IMediator mediator) : ControllerBase
 {
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CampaignDto>))]
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    {
+        GetAllCampaigns getAllCampaigns = new();
+        
+        IEnumerable<CampaignDto> campaigns = await mediator.Send(getAllCampaigns, cancellationToken);
+        
+        return Ok(campaigns);
+    }
+
+    [HttpGet("{campaignName}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CampaignDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get(
-        GetCampaignQuery query,
+        string campaignName,
         CancellationToken cancellationToken)
     {
-        GetCampaignByName getByName = new(query.CampaignName);
+        GetCampaignByName getByName = new(campaignName);
         
         CampaignDto campaign = await mediator.Send(getByName, cancellationToken);
         
