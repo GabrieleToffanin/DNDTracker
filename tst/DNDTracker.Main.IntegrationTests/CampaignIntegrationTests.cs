@@ -38,10 +38,12 @@ public class CampaignIntegrationTests(MainIntegrationTestsFixture fixture)
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         
         var content = await getResponse.Content.ReadAsStringAsync();
-        var result = JsonConvert.DeserializeObject<GetCampaignResponse>(content);
+        var result = JsonConvert.DeserializeObject<GetCampaignResponse[]>(content);
         
-        result.Should().NotBeNull();
-        result?.CampaignName.Should().Be(campaign.CampaignName);
-        result?.CampaignDescription.Should().Be(campaign.CampaignDescription);
+        var fetchedCampaign = result?.First();
+        
+        fetchedCampaign.Should().NotBeNull();
+        fetchedCampaign?.CampaignName.Should().Be(campaign.CampaignName);
+        fetchedCampaign?.CampaignDescription.Should().Be(campaign.CampaignDescription);
     }
 }
