@@ -6,6 +6,7 @@ using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Outbound.InMemoryAdapter.Messaging;
+using DNDTracker.Main.Middleware;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -51,6 +52,11 @@ public class Program
         builder.Services.AddMediatR(ConfigureMediatR);
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
         builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
+        
+        builder.Services.Configure<BackpressureOptions>(
+            builder.Configuration.GetSection("Backpressure"));
+        builder.Services.AddSingleton<BackpressureOptions>(provider =>
+            provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<BackpressureOptions>>().Value);
         
         // Configure OpenTelemetry
         builder.Services.AddOpenTelemetry()
@@ -150,6 +156,7 @@ public class Program
             app.UseHttpsRedirection();
         }
         
+        app.UseMiddleware<BackpressureMiddleware>();
         app.UseAuthorization();
         app.MapControllers();
 
