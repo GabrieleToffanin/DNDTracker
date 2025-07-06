@@ -45,7 +45,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6.15.0
         with:
-          context: ./src
+          context: .
           file: ./src/DNDTracker.Main/Dockerfile
           push: true
           tags: gabrieletoffanin/dndtracker:latest
