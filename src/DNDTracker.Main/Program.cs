@@ -29,6 +29,10 @@ public class Program
             loggingBuilder.AddDebug();
             loggingBuilder.AddFilter("Microsoft.AspNetCore", LogLevel.Debug);
             loggingBuilder.AddFilter("Npgsql", LogLevel.Information);
+            // Add OpenTelemetry logging
+            loggingBuilder.AddFilter("OpenTelemetry", LogLevel.Debug);
+            loggingBuilder.AddFilter("OpenTelemetry.Exporter.OpenTelemetryProtocol", LogLevel.Debug);
+            loggingBuilder.AddFilter("OpenTelemetry.Exporter.Console", LogLevel.Debug);
         });
 
         builder.Services.AddDbContext<DNDTrackerPostgresDbContext>(options =>
@@ -110,12 +114,21 @@ public class Program
             })
             .WithLogging(logging =>
             {
-                logging.AddOtlpExporter(options =>
-                {
-                    options.Endpoint = new Uri("http://otel-collector:4317");
-                    options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-                    options.TimeoutMilliseconds = 30000;
-                });
+                logging
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("dndtracker-api", "1.0.0")
+                        .AddAttributes(new Dictionary<string, object>
+                        {
+                            ["deployment.environment"] = builder.Environment.EnvironmentName,
+                            ["service.instance.id"] = Environment.MachineName,
+                            ["service.version"] = "1.0.0"
+                        }))
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri("http://otel-collector:4317");
+                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                        options.TimeoutMilliseconds = 30000;
+                    });
             });
 
         var app = builder.Build();

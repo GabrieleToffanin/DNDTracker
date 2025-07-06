@@ -337,6 +337,8 @@ services:
       - "4318:4318"   # OTLP HTTP receiver
       - "8888:8888"   # Prometheus metrics
       - "8889:8889"   # Prometheus exporter metrics
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     depends_on:
       es01:
         condition: service_healthy

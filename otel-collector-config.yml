@@ -12,92 +12,66 @@ processors:
     send_batch_size: 1024
     send_batch_max_size: 2048
   
+  memory_limiter:
+    limit_mib: 512
+    spike_limit_mib: 128
+    check_interval: 5s
+
   resource:
     attributes:
       - key: service.name
-        value: "dndtracker-api"
+        from_attribute: service.name
         action: upsert
       - key: service.version
-        value: "1.0.0"
+        from_attribute: service.version
         action: upsert
       - key: deployment.environment
-        value: "development"
+        from_attribute: deployment.environment
         action: upsert
 
 exporters:
-  # Console exporter for debugging
-  logging:
-    loglevel: debug
-  
-  # Elasticsearch exporter for traces
   elasticsearch:
-    endpoints: ["https://es01:9200"]
-    user: elastic
-    password: changeme
+    endpoints:
+      - "https://es01:9200"
+    user: "elastic"
+    password: "${ELASTIC_PASSWORD}"
     tls:
-      ca_file: /etc/ssl/certs/ca/ca.crt
+      ca_file: "/etc/ssl/certs/ca/ca.crt"
       insecure_skip_verify: false
-    mapping:
-      mode: ecs
-    index: "otel-traces-{2006.01.02}"
-    timeout: 30s
-    retry_on_failure:
-      enabled: true
-      initial_interval: 5s
-      max_interval: 30s
-      max_elapsed_time: 300s
+    logs_index: "logs-otel-default"
+    traces_index: "traces-otel-default"
     
-  # Elasticsearch exporter for metrics
-  elasticsearch/metrics:
-    endpoints: ["https://es01:9200"]
-    user: elastic
-    password: changeme
-    tls:
-      ca_file: /etc/ssl/certs/ca/ca.crt
-      insecure_skip_verify: false
-    mapping:
-      mode: ecs
-    index: "otel-metrics-{2006.01.02}"
-    timeout: 30s
-    retry_on_failure:
-      enabled: true
-      initial_interval: 5s
-      max_interval: 30s
-      max_elapsed_time: 300s
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      environment: "development"
 
-  # Elasticsearch exporter for logs
-  elasticsearch/logs:
-    endpoints: ["https://es01:9200"]
-    user: elastic
-    password: changeme
-    tls:
-      ca_file: /etc/ssl/certs/ca/ca.crt
-      insecure_skip_verify: false
-    mapping:
-      mode: ecs
-    index: "otel-logs-{2006.01.02}"
-    timeout: 30s
-    retry_on_failure:
-      enabled: true
-      initial_interval: 5s
-      max_interval: 30s
-      max_elapsed_time: 300s
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [resource, batch]
-      exporters: [logging, elasticsearch]
+      processors: [memory_limiter, resource, batch]
+      exporters: [elasticsearch, logging]
     
     metrics:
       receivers: [otlp]
-      processors: [resource, batch]
-      exporters: [logging, elasticsearch/metrics]
+      processors: [memory_limiter, resource, batch]
+      exporters: [prometheus, logging]
     
     logs:
       receivers: [otlp]
-      processors: [resource, batch]
-      exporters: [logging, elasticsearch/logs]
-
+      processors: [memory_limiter, resource, batch]
+      exporters: [elasticsearch, logging]
+  
   extensions: []
+  
+  telemetry:
+    logs:
+      level: "info"
+    metrics:
+      address: 0.0.0.0:8888
