@@ -9,6 +9,11 @@ using DNDTracker.Outbound.InMemoryAdapter.Messaging;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Metrics;
 
 namespace DNDTracker.Main;
 
@@ -23,11 +28,14 @@ public class Program
             loggingBuilder.AddConsole();
             loggingBuilder.AddDebug();
             loggingBuilder.AddFilter("Microsoft.AspNetCore", LogLevel.Debug);
+            loggingBuilder.AddFilter("Npgsql", LogLevel.Information);
         });
 
         builder.Services.AddDbContext<DNDTrackerPostgresDbContext>(options =>
         {
             options.UseNpgsql(builder.Configuration["ConnectionStrings:DefaultConnection"]);
+            options.EnableSensitiveDataLogging(builder.Environment.IsDevelopment());
+            options.EnableDetailedErrors(builder.Environment.IsDevelopment());
         });
 
         AssemblyPart inboundRestAdapterPart = 
@@ -40,6 +48,76 @@ public class Program
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
         builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
         
+        // Configure OpenTelemetry
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("dndtracker-api", "1.0.0")
+                        .AddAttributes(new Dictionary<string, object>
+                        {
+                            ["deployment.environment"] = builder.Environment.EnvironmentName,
+                            ["service.instance.id"] = Environment.MachineName,
+                            ["service.version"] = "1.0.0"
+                        }))
+                    .AddAspNetCoreInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.Filter = httpContext =>
+                        {
+                            // Skip health check endpoints
+                            return !httpContext.Request.Path.Value?.Contains("/health") == true;
+                        };
+                    })
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation(options =>
+                    {
+                        options.SetDbStatementForText = true;
+                        options.SetDbStatementForStoredProcedure = true;
+                        options.EnrichWithIDbCommand = (activity, command) =>
+                        {
+                            activity.SetTag("db.statement", command.CommandText);
+                            activity.SetTag("db.connection_string", command.Connection?.ConnectionString);
+                        };
+                    })
+                    .AddSource("DNDTracker.*")  // Custom application traces
+                    .AddSource("RabbitMQ.*")    // RabbitMQ traces (preparazione per futuro uso)
+                    .AddConsoleExporter()
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri("http://otel-collector:4317");
+                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                        options.TimeoutMilliseconds = 30000;
+                    });
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("dndtracker-api", "1.0.0"))
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddMeter("DNDTracker.*")    // Custom application metrics
+                    .AddMeter("RabbitMQ.*")      // RabbitMQ metrics (preparazione per futuro uso)
+                    .AddConsoleExporter()
+                    .AddOtlpExporter(options =>
+                    {
+                        options.Endpoint = new Uri("http://otel-collector:4317");
+                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                        options.TimeoutMilliseconds = 30000;
+                    });
+            })
+            .WithLogging(logging =>
+            {
+                logging.AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri("http://otel-collector:4317");
+                    options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                    options.TimeoutMilliseconds = 30000;
+                });
+            });
+
         var app = builder.Build();
         
         ApplyMigrationsToPostgres(app);
@@ -59,7 +137,11 @@ public class Program
             app.UseHttpsRedirection();
         }
         
+        app.UseAuthorization();
         app.MapControllers();
+
+        // Add health check endpoint
+        app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
         app.Run();
     }

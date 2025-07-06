@@ -1,0 +1,103 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+  
+  resource:
+    attributes:
+      - key: service.name
+        value: "dndtracker-api"
+        action: upsert
+      - key: service.version
+        value: "1.0.0"
+        action: upsert
+      - key: deployment.environment
+        value: "development"
+        action: upsert
+
+exporters:
+  # Console exporter for debugging
+  logging:
+    loglevel: debug
+  
+  # Elasticsearch exporter for traces
+  elasticsearch:
+    endpoints: ["https://es01:9200"]
+    user: elastic
+    password: changeme
+    tls:
+      ca_file: /etc/ssl/certs/ca/ca.crt
+      insecure_skip_verify: false
+    mapping:
+      mode: ecs
+    index: "otel-traces-{2006.01.02}"
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+    
+  # Elasticsearch exporter for metrics
+  elasticsearch/metrics:
+    endpoints: ["https://es01:9200"]
+    user: elastic
+    password: changeme
+    tls:
+      ca_file: /etc/ssl/certs/ca/ca.crt
+      insecure_skip_verify: false
+    mapping:
+      mode: ecs
+    index: "otel-metrics-{2006.01.02}"
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+  # Elasticsearch exporter for logs
+  elasticsearch/logs:
+    endpoints: ["https://es01:9200"]
+    user: elastic
+    password: changeme
+    tls:
+      ca_file: /etc/ssl/certs/ca/ca.crt
+      insecure_skip_verify: false
+    mapping:
+      mode: ecs
+    index: "otel-logs-{2006.01.02}"
+    timeout: 30s
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [logging, elasticsearch]
+    
+    metrics:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [logging, elasticsearch/metrics]
+    
+    logs:
+      receivers: [otlp]
+      processors: [resource, batch]
+      exporters: [logging, elasticsearch/logs]
+
+  extensions: []
