@@ -5,8 +5,9 @@ using DNDTracker.Outbounx.PostgresDb.Repositories;
 using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Inbound.RestAdapter.Controllers;
-using DNDTracker.Outbound.InMemoryAdapter.Messaging;
+using DNDTracker.Outbound.InMemoryAdapter;
 using DNDTracker.Main.Middleware;
+using DNDTracker.Outbound.InMemoryAdapter.Messaging;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -20,7 +21,7 @@ namespace DNDTracker.Main;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         
@@ -48,10 +49,13 @@ public class Program
         
         builder.Services.AddControllers()
             .PartManager.ApplicationParts.Add(inboundRestAdapterPart);
+        
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
-        builder.Services.AddSingleton<IEventPublisher, EventPublisher>();
+        builder.Services.Configure<RabbitMqConfiguration>(
+            builder.Configuration.GetSection("RabbitMQ"));
+        builder.Services.AddRabbitMqMessaging(builder.Configuration);
         
         builder.Services.Configure<BackpressureOptions>(
             builder.Configuration.GetSection("Backpressure"));
@@ -59,6 +63,40 @@ public class Program
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<BackpressureOptions>>().Value);
         
         // Configure OpenTelemetry
+        ConfigureOpenTelemetry(builder);
+
+        var app = builder.Build();
+        
+        ApplyMigrationsToPostgres(app);
+        await app.Services.InitializeRabbitMqTopologyAsync();
+
+        app.MapOpenApi();
+        app.MapScalarApiReference(options =>
+        {
+            options
+                .WithTheme(ScalarTheme.Mars)
+                .WithTitle("DNDTracker API")
+                .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+        });
+
+        // Only redirect to HTTPS in non-Docker environments
+        if (!string.Equals(builder.Configuration["ASPNETCORE_ENVIRONMENT"], "Docker"))
+        {
+            app.UseHttpsRedirection();
+        }
+        
+        app.UseMiddleware<BackpressureMiddleware>();
+        app.UseAuthorization();
+        app.MapControllers();
+
+        // Add health check endpoint
+        app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
+        app.Run();
+    }
+
+    private static void ConfigureOpenTelemetry(WebApplicationBuilder builder)
+    {
         builder.Services.AddOpenTelemetry()
             .WithTracing(tracing =>
             {
@@ -136,34 +174,6 @@ public class Program
                         options.TimeoutMilliseconds = 30000;
                     });
             });
-
-        var app = builder.Build();
-        
-        ApplyMigrationsToPostgres(app);
-
-        app.MapOpenApi();
-        app.MapScalarApiReference(options =>
-        {
-            options
-                .WithTheme(ScalarTheme.Mars)
-                .WithTitle("DNDTracker API")
-                .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
-        });
-
-        // Only redirect to HTTPS in non-Docker environments
-        if (!string.Equals(builder.Configuration["ASPNETCORE_ENVIRONMENT"], "Docker"))
-        {
-            app.UseHttpsRedirection();
-        }
-        
-        app.UseMiddleware<BackpressureMiddleware>();
-        app.UseAuthorization();
-        app.MapControllers();
-
-        // Add health check endpoint
-        app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
-
-        app.Run();
     }
 
     private static void ApplyMigrationsToPostgres(WebApplication app)

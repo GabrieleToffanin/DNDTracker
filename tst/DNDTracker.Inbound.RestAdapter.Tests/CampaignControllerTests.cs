@@ -5,6 +5,7 @@ using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain.Heroes;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Controllers;
+using DNDTracker.Inbound.RestAdapter.Dtos;
 using DNDTracker.Inbound.RestAdapter.Queries;
 using DNDTracker.InMemory.Adapter;
 using DNDTracker.SharedKernel;
@@ -49,7 +50,7 @@ public class CampaignControllerTests
         // Arrange
         var mediator = new DummyMediator();
         var campaignName = "Test Campaign";
-        var heroRequest = Hero.Create(
+        var heroRequest = new HeroDto(
             "Aragorn",
             HeroClass.Fighter, 
             Race.Human, 

@@ -22,7 +22,7 @@ public class DummyCampaignRepository : ICampaignRepository
         Insert(campaign);
     }
 
-    public async Task UpdateAsync(CancellationToken cancellationToken)
+    public async Task UpdateAsync(Campaign campaign, CancellationToken cancellationToken)
     {
         //Values will be updated by ref in this case
     }

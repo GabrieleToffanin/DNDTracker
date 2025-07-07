@@ -1,4 +1,5 @@
 using DNDTracker.DataAccessObject.Mapping.CampaignMap;
+using DNDTracker.DataAccessObject.Mapping.HeroMap;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Outbounx.PostgresDb.Database.Postgres;
 using DNDTracker.Vocabulary.Models;
@@ -34,8 +35,28 @@ public class PostgreCampaignRepository(
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    public Task UpdateAsync(CancellationToken cancellationToken)
+    public async Task UpdateAsync(
+        Campaign campaign,
+        CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var trackedModel = context.ChangeTracker.Entries<CampaignModel>()
+            .First(model => model.Entity.Id == campaign.Id.Id).Entity;
+        
+        UpdateTrackedModel(trackedModel, campaign);
+        
+        await context.SaveChangesAsync(cancellationToken);
+    }
+    
+    private void UpdateTrackedModel(
+        CampaignModel trackedModel,
+        Campaign campaign)
+    {
+        trackedModel.CampaignName = campaign.CampaignName;
+        trackedModel.CampaignDescription = campaign.CampaignDescription;
+        trackedModel.CampaignImage = campaign.CampaignImage;
+        trackedModel.IsActive = campaign.IsActive;
+        trackedModel.Heroes.Clear();
+        
+        trackedModel.Heroes.AddRange(campaign.Heroes.Select(h => h.MapToModel()));
     }
 }

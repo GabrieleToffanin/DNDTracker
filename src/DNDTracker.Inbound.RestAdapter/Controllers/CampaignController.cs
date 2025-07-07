@@ -1,7 +1,9 @@
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
+using DNDTracker.Domain.Heroes;
 using DNDTracker.Inbound.RestAdapter.Commands;
+using DNDTracker.Inbound.RestAdapter.Dtos;
 using DNDTracker.SharedKernel;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -46,9 +48,11 @@ public class CampaignController(
         [FromBody]AddHeroToCampaignRequest command,
         CancellationToken cancellationToken)
     {
+        var hero = ToDomain(command.Hero);
+        
         var mappedRequest = new AddHeroToCampaignCommand(
             campaignName,
-            command.Hero);
+            hero);
         
         // send the command to the mediator to handle
         await mediator.Send(
@@ -79,5 +83,18 @@ public class CampaignController(
 
         // if successful, return status code 201 (Created) with campaign data
         return CreatedAtAction(nameof(CreateCampaign), new { command.CampaignName }, null);
+    }
+    
+    public Hero ToDomain(HeroDto dto)
+    {
+        return Hero.Create(
+            dto.Name,
+            dto.Class,
+            dto.Race,
+            dto.Alignment,
+            dto.Level,
+            dto.Experience,
+            dto.HitPoints,
+            dto.HitDice);
     }
 }

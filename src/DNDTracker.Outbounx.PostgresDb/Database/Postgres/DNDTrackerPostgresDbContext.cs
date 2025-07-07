@@ -35,34 +35,6 @@ public class DNDTrackerPostgresDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DNDTrackerPostgresDbContext).Assembly);
     }
-
-    public override async Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = new CancellationToken())
-    {
-        // This is a sort of outbox pattern. ( Easy )
-        await base.SaveChangesAsync(cancellationToken);
-        
-        await PublishDomainEventsAsync(cancellationToken);
-
-        return await base.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task PublishDomainEventsAsync(CancellationToken cancellationToken)
-    {
-        var domainEntities = this.ChangeTracker
-            .Entries<Entity>()
-            .Where(entry => entry.Entity.DomainEvents is { Count: > 0 }).ToList();
-            
-        var domainEvents = domainEntities
-            .SelectMany(x => x.Entity.DomainEvents)
-            .ToList();
-
-        domainEntities.ToList()
-            .ForEach(entity => entity.Entity.ClearDomainEvents());
-
-        foreach (var domainEvent in domainEvents)
-            await _eventPublisher.PublishAsync(domainEvent, cancellationToken);
-    }
 }
 
 // Campaign

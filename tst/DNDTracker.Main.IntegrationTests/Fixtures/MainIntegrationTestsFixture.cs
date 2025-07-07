@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 using Xunit;
 
 namespace DNDTracker.Main.IntegrationTests.Fixtures;
@@ -9,6 +10,7 @@ namespace DNDTracker.Main.IntegrationTests.Fixtures;
 public class MainIntegrationTestsFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgreSqlContainer;
+    private readonly RabbitMqContainer _rabbitMqContainer;
     private WebApplicationFactory<Program> _factory;
 
     public MainIntegrationTestsFixture()
@@ -20,11 +22,20 @@ public class MainIntegrationTestsFixture : IAsyncLifetime
             .WithPassword("postgres")
             .WithPortBinding(5432, true)
             .Build();
+
+        _rabbitMqContainer = new RabbitMqBuilder()
+            .WithImage("rabbitmq:3-management")
+            .WithUsername("guest")
+            .WithPassword("guest")
+            .WithPortBinding(5672, true)
+            .WithPortBinding(15672, true)
+            .Build();
     }
 
     public async Task InitializeAsync()
     {
         await _postgreSqlContainer.StartAsync();
+        await _rabbitMqContainer.StartAsync();
         
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -42,7 +53,9 @@ public class MainIntegrationTestsFixture : IAsyncLifetime
                     // Add the overridden connection string with highest priority
                     config.AddInMemoryCollection(new Dictionary<string, string>
                     {
-                        { "ConnectionStrings:DefaultConnection", connectionString }
+                        { "ConnectionStrings:DefaultConnection", connectionString },
+                        { "RabbitMQ:Host", _rabbitMqContainer.Hostname },
+                        { "RabbitMQ:Port", _rabbitMqContainer.GetMappedPublicPort(5672).ToString() },
                     }!);
                 });
             });
@@ -56,6 +69,7 @@ public class MainIntegrationTestsFixture : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _postgreSqlContainer.DisposeAsync();
+        await _rabbitMqContainer.DisposeAsync();
         await _factory.DisposeAsync();
     }
 }

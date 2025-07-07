@@ -2,6 +2,7 @@ using DNDTracker.Application.Tests.Behaviors.Dummies;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain.Campaigns;
+using DNDTracker.Domain.Campaigns.DomainEvents;
 using DNDTracker.Domain.Heroes;
 using DNDTracker.Vocabulary.Enums;
 using Force.DeepCloner;
@@ -12,13 +13,15 @@ namespace DNDTracker.Application.Tests;
 public class AddHeroToCampaignUseCaseTests
 {
     private readonly DummyCampaignRepository _campaignRepository;
+    private readonly DummyEventPublisher _eventPublisher;
     private readonly AddHeroToCampaignCommandHandler _handler;
     private readonly Campaign _expectedCampaign;
 
     public AddHeroToCampaignUseCaseTests()
     {
+        _eventPublisher = new DummyEventPublisher();
         _campaignRepository = new DummyCampaignRepository();
-        _handler = new AddHeroToCampaignCommandHandler(_campaignRepository);
+        _handler = new AddHeroToCampaignCommandHandler(_eventPublisher, _campaignRepository);
         _expectedCampaign = SetupExpectedCampaign(DateTime.Now);
         _campaignRepository.Insert(_expectedCampaign.DeepClone());
     }
@@ -36,6 +39,7 @@ public class AddHeroToCampaignUseCaseTests
         //Then
         _campaignRepository.AssertCampaignEquals(_expectedCampaign
             .WithHeroes(hero));
+        _eventPublisher.AssertEventPublished<HeroAddedDomainEvent>();
     }
 
     private static Campaign SetupExpectedCampaign(DateTime createDate)
