@@ -8,8 +8,7 @@ namespace DNDTracker.Outbound.InMemoryAdapter;
 public static class DependencyInjectionExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(
-        this IServiceCollection services,
-        ConfigurationManager configuration)
+        this IServiceCollection services)
     {
         services.AddSingleton<IEventPublisher, EventPublisher>();
         services.AddSingleton<IRabbitMqTopologyInitializer, RabbitMqTopologyInitializer>();

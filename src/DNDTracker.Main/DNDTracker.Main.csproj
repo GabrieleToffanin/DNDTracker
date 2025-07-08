@@ -39,7 +39,7 @@
       <ProjectReference Include="..\DNDTracker.Application\DNDTracker.Application.csproj" />
       <ProjectReference Include="..\DNDTracker.Outbounx.PostgresDb\DNDTracker.Outbounx.PostgresDb.csproj" />
       <ProjectReference Include="..\DNDTracker.Inbound.RestAdapter\DNDTracker.Inbound.RestAdapter.csproj" />
-      <ProjectReference Include="..\DNDTracker.Outbound.InMemoryAdapter\DNDTracker.Outbound.InMemoryAdapter.csproj" />
+      <ProjectReference Include="..\DNDTracker.Outbound.RabbitMq\DNDTracker.Outbound.RabbitMq.csproj" />
     </ItemGroup>
 
 </Project>

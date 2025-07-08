@@ -40,7 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HelmConfig", "HelmConfig", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Inbound.InMemoryAdapter", "src\DNDTracker.Inbound.InMemoryAdapter\DNDTracker.Inbound.InMemoryAdapter.csproj", "{351968C4-5500-460F-98B0-81BD509AB867}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbound.InMemoryAdapter", "src\DNDTracker.Outbound.InMemoryAdapter\DNDTracker.Outbound.InMemoryAdapter.csproj", "{3685D076-4BFE-442B-9CBB-BD10587790E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbound.RabbitMq", "src\DNDTracker.Outbound.RabbitMq\DNDTracker.Outbound.RabbitMq.csproj", "{3685D076-4BFE-442B-9CBB-BD10587790E7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{49FDC492-9F0B-4216-BEAA-37556EEDE11B}"
 	ProjectSection(SolutionItems) = preProject

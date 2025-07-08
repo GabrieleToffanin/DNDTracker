@@ -55,7 +55,7 @@ public class Program
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
         builder.Services.Configure<RabbitMqConfiguration>(
             builder.Configuration.GetSection("RabbitMQ"));
-        builder.Services.AddRabbitMqMessaging(builder.Configuration);
+        builder.Services.AddRabbitMqMessaging();
         
         builder.Services.Configure<BackpressureOptions>(
             builder.Configuration.GetSection("Backpressure"));
