@@ -15,7 +15,7 @@ COPY ["src/DNDTracker.SharedKernel/DNDTracker.SharedKernel.csproj", "src/DNDTrac
 COPY ["src/DNDTracker.Vocabulary/DNDTracker.Vocabulary.csproj", "src/DNDTracker.Vocabulary/"]
 COPY ["src/DNDTracker.Inbound.RestAdapter/DNDTracker.Inbound.RestAdapter.csproj", "src/DNDTracker.Inbound.RestAdapter/"]
 COPY ["src/DNDTracker.Outbounx.PostgresDb/DNDTracker.Outbounx.PostgresDb.csproj", "src/DNDTracker.Outbounx.PostgresDb/"]
-COPY ["src/DNDTracker.Outbound.InMemoryAdapter/DNDTracker.Outbound.InMemoryAdapter.csproj", "src/DNDTracker.Outbound.InMemoryAdapter/"]
+COPY ["src/DNDTracker.Outbound.InMemoryAdapter/DNDTracker.Outbound.RabbitMq.csproj", "src/DNDTracker.Outbound.RabbitMq/"]
 COPY ["src/DNDTracker.DataAccessObject.Mapping/DNDTracker.DataAccessObject.Mapping.csproj", "src/DNDTracker.DataAccessObject.Mapping/"]
 RUN dotnet restore "src/DNDTracker.Main/DNDTracker.Main.csproj"
 COPY . .
