@@ -1,8 +1,9 @@
 using DNDTracker.Domain;
+using DNDTracker.Outbound.RabbitMq.Configuration;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
-namespace DNDTracker.Outbound.InMemoryAdapter.Messaging;
+namespace DNDTracker.Outbound.RabbitMq.Messaging;
 
 internal class EventPublisher(
     IOptions<RabbitMqConfiguration> rabbitConfiguration) : IEventPublisher

@@ -1,9 +1,8 @@
 using DNDTracker.Domain;
-using DNDTracker.Outbound.InMemoryAdapter.Messaging;
-using Microsoft.Extensions.Configuration;
+using DNDTracker.Outbound.RabbitMq.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DNDTracker.Outbound.InMemoryAdapter;
+namespace DNDTracker.Outbound.RabbitMq;
 
 public static class DependencyInjectionExtensions
 {
