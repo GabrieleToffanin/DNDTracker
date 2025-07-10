@@ -9,7 +9,6 @@ namespace DNDTracker.Domain.Heroes;
 
 public sealed class Hero : AggregateRoot<HeroId>
 {
-    public HeroId Id { get; init; }
     public string Name { get; init; }
     public HeroClass Class { get; init; }
     public Race Race { get; init; }
@@ -32,7 +31,6 @@ public sealed class Hero : AggregateRoot<HeroId>
         int hitPoints,
         DiceType hitDice) : base(id)
     { 
-        this.Id = id;
         this.Name = name;
         this.Class = @class;
         this.Race = race;
@@ -44,7 +42,7 @@ public sealed class Hero : AggregateRoot<HeroId>
     }
     
     public static Hero Create(
-        Guid id,
+        Guid? id,
         string name,
         HeroClass @class,
         Race race,
@@ -54,7 +52,7 @@ public sealed class Hero : AggregateRoot<HeroId>
         int hitPoints,
         DiceType hitDice)
     {
-        HeroId currentId = HeroId.Create(id);
+        var currentId = id is not null ? HeroId.Create(id.Value) : HeroId.Create();
         
         return new Hero(
             currentId,
@@ -78,7 +76,7 @@ public sealed class Hero : AggregateRoot<HeroId>
         int hitPoints,
         DiceType hitDice)
     {
-        HeroId currentId = HeroId.Create();
+        var currentId = HeroId.Create();
         
         return new Hero(
             currentId,
