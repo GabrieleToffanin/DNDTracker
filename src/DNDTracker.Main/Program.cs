@@ -5,6 +5,7 @@ using DNDTracker.Outbounx.PostgresDb.Repositories;
 using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Inbound.RestAdapter.Controllers;
+using DNDTracker.Inbound.AmqpAdapter;
 using DNDTracker.Main.Middleware;
 using DNDTracker.Outbound.RabbitMq;
 using DNDTracker.Outbound.RabbitMq.Configuration;
@@ -12,11 +13,6 @@ using DNDTracker.Outbound.RabbitMq.Messaging;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
-using OpenTelemetry;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using OpenTelemetry.Metrics;
 
 namespace DNDTracker.Main;
 
@@ -32,10 +28,6 @@ public class Program
             loggingBuilder.AddDebug();
             loggingBuilder.AddFilter("Microsoft.AspNetCore", LogLevel.Debug);
             loggingBuilder.AddFilter("Npgsql", LogLevel.Information);
-            // Add OpenTelemetry logging
-            loggingBuilder.AddFilter("OpenTelemetry", LogLevel.Debug);
-            loggingBuilder.AddFilter("OpenTelemetry.Exporter.OpenTelemetryProtocol", LogLevel.Debug);
-            loggingBuilder.AddFilter("OpenTelemetry.Exporter.Console", LogLevel.Debug);
         });
 
         builder.Services.AddDbContext<DNDTrackerPostgresDbContext>(options =>
@@ -57,14 +49,12 @@ public class Program
         builder.Services.Configure<RabbitMqConfiguration>(
             builder.Configuration.GetSection("RabbitMQ"));
         builder.Services.AddRabbitMqMessaging();
+        builder.Services.AddAmqpAdapter();
         
         builder.Services.Configure<BackpressureOptions>(
             builder.Configuration.GetSection("Backpressure"));
         builder.Services.AddSingleton<BackpressureOptions>(provider =>
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<BackpressureOptions>>().Value);
-        
-        // Configure OpenTelemetry
-        ConfigureOpenTelemetry(builder);
 
         var app = builder.Build();
         
@@ -75,8 +65,8 @@ public class Program
         app.MapScalarApiReference(options =>
         {
             options
-                .WithTheme(ScalarTheme.Mars)
                 .WithTitle("DNDTracker API")
+                .WithTheme(ScalarTheme.Mars)
                 .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
         });
 
@@ -94,87 +84,6 @@ public class Program
         app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
         app.Run();
-    }
-
-    private static void ConfigureOpenTelemetry(WebApplicationBuilder builder)
-    {
-        builder.Services.AddOpenTelemetry()
-            .WithTracing(tracing =>
-            {
-                tracing
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("dndtracker-api", "1.0.0")
-                        .AddAttributes(new Dictionary<string, object>
-                        {
-                            ["deployment.environment"] = builder.Environment.EnvironmentName,
-                            ["service.instance.id"] = Environment.MachineName,
-                            ["service.version"] = "1.0.0"
-                        }))
-                    .AddAspNetCoreInstrumentation(options =>
-                    {
-                        options.RecordException = true;
-                        options.Filter = httpContext =>
-                        {
-                            // Skip health check endpoints
-                            return !httpContext.Request.Path.Value?.Contains("/health") == true;
-                        };
-                    })
-                    .AddHttpClientInstrumentation()
-                    .AddEntityFrameworkCoreInstrumentation(options =>
-                    {
-                        options.SetDbStatementForText = true;
-                        options.SetDbStatementForStoredProcedure = true;
-                        options.EnrichWithIDbCommand = (activity, command) =>
-                        {
-                            activity.SetTag("db.statement", command.CommandText);
-                            activity.SetTag("db.connection_string", command.Connection?.ConnectionString);
-                        };
-                    })
-                    .AddSource("DNDTracker.*")  // Custom application traces
-                    .AddSource("RabbitMQ.*")    // RabbitMQ traces (preparazione per futuro uso)
-                    .AddConsoleExporter()
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://otel-collector:4317");
-                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-                        options.TimeoutMilliseconds = 30000;
-                    });
-            })
-            .WithMetrics(metrics =>
-            {
-                metrics
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("dndtracker-api", "1.0.0"))
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddMeter("DNDTracker.*")    // Custom application metrics
-                    .AddMeter("RabbitMQ.*")      // RabbitMQ metrics (preparazione per futuro uso)
-                    .AddConsoleExporter()
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://otel-collector:4317");
-                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-                        options.TimeoutMilliseconds = 30000;
-                    });
-            })
-            .WithLogging(logging =>
-            {
-                logging
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
-                        .AddService("dndtracker-api", "1.0.0")
-                        .AddAttributes(new Dictionary<string, object>
-                        {
-                            ["deployment.environment"] = builder.Environment.EnvironmentName,
-                            ["service.instance.id"] = Environment.MachineName,
-                            ["service.version"] = "1.0.0"
-                        }))
-                    .AddOtlpExporter(options =>
-                    {
-                        options.Endpoint = new Uri("http://otel-collector:4317");
-                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-                        options.TimeoutMilliseconds = 30000;
-                    });
-            });
     }
 
     private static void ApplyMigrationsToPostgres(WebApplication app)
@@ -200,7 +109,7 @@ public class Program
         }
     }
 
-    private static void WaitForDbConnection(DNDTrackerPostgresDbContext context, int retryCount = 5)
+    private static void WaitForDbConnection(DNDTrackerPostgresDbContext context, int retryCount = 30, int delayMs = 1000)
     {
         int currentRetry = 0;
         while (currentRetry < retryCount)
@@ -208,15 +117,21 @@ public class Program
             try
             {
                 if (context.Database.CanConnect())
+                {
+                    Console.WriteLine("✅ Database connection established");
                     return;
+                }
             }
             catch (Exception ex)
             {
                 currentRetry++;
                 if (currentRetry >= retryCount)
+                {
                     throw;
+                }
             
-                Console.WriteLine($"Database connection attempt {currentRetry} failed: {ex.Message}");
+                Console.WriteLine($"⏳ Database connection attempt {currentRetry}/{retryCount} failed: {ex.Message}");
+                Thread.Sleep(delayMs);
             }
         }
     }

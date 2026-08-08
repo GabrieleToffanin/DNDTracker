@@ -1,32 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MediatR" Version="13.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
-        <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.5.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
+        <PackageReference Include="MediatR" Version="14.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+        <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.18" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        
-        <!-- OpenTelemetry Packages -->
-        <PackageReference Include="OpenTelemetry" Version="1.12.0" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.12" />
-        <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.10.0-beta.1" />
-        <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
-        <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,6 +29,7 @@
       <ProjectReference Include="..\DNDTracker.Outbounx.PostgresDb\DNDTracker.Outbounx.PostgresDb.csproj" />
       <ProjectReference Include="..\DNDTracker.Inbound.RestAdapter\DNDTracker.Inbound.RestAdapter.csproj" />
       <ProjectReference Include="..\DNDTracker.Outbound.RabbitMq\DNDTracker.Outbound.RabbitMq.csproj" />
+      <ProjectReference Include="..\DNDTracker.Inbound.AmqpAdapter\DNDTracker.Inbound.AmqpAdapter.csproj" />
     </ItemGroup>
 
 </Project>
