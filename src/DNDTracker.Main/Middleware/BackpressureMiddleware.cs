@@ -73,7 +73,7 @@ public class BackpressureMiddleware
         
         _logger.LogWarning(
             "Request rejected due to backpressure. Client: {ClientId}, Tokens remaining: {TokensRemaining}, Refill in: {RefillTime}ms",
-            GetClientIdentifier(context),
+            GetClientIdentifier(context).Replace("\r", "").Replace("\n", ""),
             tokensRemaining,
             refillTime.TotalMilliseconds);
 
