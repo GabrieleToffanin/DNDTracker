@@ -8,3 +8,4 @@ riderModule.iml
 *.tgz
 *.DS_Store
 CLAUDE.md
+.vs/

@@ -1,18 +1,20 @@
+using System.Diagnostics;
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
-using DNDTracker.Outbounx.PostgresDb.Database.Postgres;
-using DNDTracker.Outbounx.PostgresDb.Repositories;
 using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Inbound.AmqpAdapter;
+using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Main.Middleware;
 using DNDTracker.Outbound.RabbitMq;
 using DNDTracker.Outbound.RabbitMq.Configuration;
-using DNDTracker.Outbound.RabbitMq.Messaging;
+using DNDTracker.Outbounx.PostgresDb.Database.Postgres;
+using DNDTracker.Outbounx.PostgresDb.Repositories;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Scalar.AspNetCore;
+using Serilog;
 
 namespace DNDTracker.Main;
 
@@ -20,14 +22,21 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
-        
-        builder.Services.AddLogging(loggingBuilder =>
+        Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+        Activity.ForceDefaultIdFormat = true;
+
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+        builder.Logging.ClearProviders();
+        builder.Host.UseSerilog((context, loggerConfiguration) =>
         {
-            loggingBuilder.AddConsole();
-            loggingBuilder.AddDebug();
-            loggingBuilder.AddFilter("Microsoft.AspNetCore", LogLevel.Debug);
-            loggingBuilder.AddFilter("Npgsql", LogLevel.Information);
+            loggerConfiguration
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+                .MinimumLevel.Override("Npgsql", Serilog.Events.LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console();
         });
 
         builder.Services.AddDbContext<DNDTrackerPostgresDbContext>(options =>
@@ -37,12 +46,11 @@ public class Program
             options.EnableDetailedErrors(builder.Environment.IsDevelopment());
         });
 
-        AssemblyPart inboundRestAdapterPart = 
-            new AssemblyPart(typeof(CampaignController).Assembly);
-        
+        AssemblyPart inboundRestAdapterPart = new(typeof(CampaignController).Assembly);
+
         builder.Services.AddControllers()
             .PartManager.ApplicationParts.Add(inboundRestAdapterPart);
-        
+
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
@@ -50,14 +58,14 @@ public class Program
             builder.Configuration.GetSection("RabbitMQ"));
         builder.Services.AddRabbitMqMessaging();
         builder.Services.AddAmqpAdapter();
-        
+
         builder.Services.Configure<BackpressureOptions>(
             builder.Configuration.GetSection("Backpressure"));
         builder.Services.AddSingleton<BackpressureOptions>(provider =>
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<BackpressureOptions>>().Value);
 
-        var app = builder.Build();
-        
+        WebApplication app = builder.Build();
+
         ApplyMigrationsToPostgres(app);
         await app.Services.InitializeRabbitMqTopologyAsync();
 
@@ -70,17 +78,15 @@ public class Program
                 .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
         });
 
-        // Only redirect to HTTPS in non-Docker environments
         if (!string.Equals(builder.Configuration["ASPNETCORE_ENVIRONMENT"], "Docker"))
         {
             app.UseHttpsRedirection();
         }
-        
+
+        app.UseMiddleware<DatadogLogCorrelationMiddleware>();
         app.UseMiddleware<BackpressureMiddleware>();
         app.UseAuthorization();
         app.MapControllers();
-
-        // Add health check endpoint
         app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
         app.Run();
@@ -88,24 +94,20 @@ public class Program
 
     private static void ApplyMigrationsToPostgres(WebApplication app)
     {
-        // Apply migrations during startup
-        using (var scope = app.Services.CreateScope())
+        using IServiceScope scope = app.Services.CreateScope();
+        IServiceProvider services = scope.ServiceProvider;
+
+        try
         {
-            var services = scope.ServiceProvider;
-            try
-            {
-                var dbContext = services.GetRequiredService<DNDTrackerPostgresDbContext>();
-                // Wait for PostgreSQL to be ready
-                WaitForDbConnection(dbContext);
-                // Apply migrations
-                dbContext.Database.Migrate();
-                app.Logger.LogInformation("Database migrations applied successfully");
-            }
-            catch (Exception ex)
-            {
-                var logger = services.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "An error occurred while migrating the database");
-            }
+            DNDTrackerPostgresDbContext dbContext = services.GetRequiredService<DNDTrackerPostgresDbContext>();
+            WaitForDbConnection(dbContext);
+            dbContext.Database.Migrate();
+            app.Logger.LogInformation("Database migrations applied successfully");
+        }
+        catch (Exception ex)
+        {
+            ILogger<Program> logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while migrating the database");
         }
     }
 
@@ -129,14 +131,14 @@ public class Program
                 {
                     throw;
                 }
-            
+
                 Console.WriteLine($"⏳ Database connection attempt {currentRetry}/{retryCount} failed: {ex.Message}");
                 Thread.Sleep(delayMs);
             }
         }
     }
-    
-    static void ConfigureMediatR(MediatRServiceConfiguration configuration)
+
+    private static void ConfigureMediatR(MediatRServiceConfiguration configuration)
     {
         configuration.RegisterServicesFromAssembly(typeof(GetCampaignByNameHandler).Assembly);
         configuration.RegisterServicesFromAssembly(typeof(CreateCampaignCommandHandler).Assembly);

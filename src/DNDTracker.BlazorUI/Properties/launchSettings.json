@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DNDTracker.BlazorUI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61611;http://localhost:61612"
+    }
+  }
+}

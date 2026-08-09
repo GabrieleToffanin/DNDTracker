@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -9,13 +9,16 @@
 
     <ItemGroup>
         <PackageReference Include="MediatR" Version="14.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
         <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.16.18" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Datadog.Trace" Version="3.14.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,6 +33,10 @@
       <ProjectReference Include="..\DNDTracker.Inbound.RestAdapter\DNDTracker.Inbound.RestAdapter.csproj" />
       <ProjectReference Include="..\DNDTracker.Outbound.RabbitMq\DNDTracker.Outbound.RabbitMq.csproj" />
       <ProjectReference Include="..\DNDTracker.Inbound.AmqpAdapter\DNDTracker.Inbound.AmqpAdapter.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Logging\" />
     </ItemGroup>
 
 </Project>

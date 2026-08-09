@@ -7,9 +7,8 @@ public static class DependencyInjectionExtensions
 {
     public static IServiceCollection AddAmqpAdapter(this IServiceCollection services)
     {
-        services.AddSingleton<HeroAddedEventConsumer>();
-        services.AddHostedService<HeroAddedEventHostedService>();
-        
+        services.AddHostedService<HeroAddedEventConsumer>();
+
         return services;
     }
 }

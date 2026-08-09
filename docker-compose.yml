@@ -24,6 +24,13 @@ services:
       - com.datadoghq.tags.env=development
       - com.datadoghq.tags.service=dndtracker-api
       - com.datadoghq.tags.version=1.0.0
+      - com.datadoghq.ad.logs=[{"source":"csharp","service":"dndtracker-api"}]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "{{.Name}}"
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=dndtracker;Username=postgres;Password=postgres
       - RabbitMQ__Host=rabbitmq
@@ -39,9 +46,11 @@ services:
       - DD_VERSION=1.0.0
       - DD_GIT_REPOSITORY_URL=github.com/gabrieletoffanin/dndtracker
       - DD_AGENT_HOST=datadog-agent
-      - DD_AGENT_PORT=8126
+      - DD_TRACE_AGENT_PORT=8126
       - DD_TRACE_ENABLED=true
+      - DD_TRACE_OTEL_ENABLED=true
       - DD_LOGS_INJECTION=true
+      - DD_LOGS_ENABLED=true
       - DD_DATA_STREAMS_ENABLED=true
       - DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED=true
       - DD_APPSEC_ENABLED=true
@@ -55,6 +64,7 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+      - datadog-agent
     networks:
       - default
 
@@ -98,5 +108,16 @@ services:
     environment:
       - DD_API_KEY=a40197fd792b2dd09993b36b3ef816f6
       - DD_SITE=datadoghq.eu
+      - DD_ENV=development
+      - DD_HOSTNAME=dndtracker-docker
+      # Abilita la raccolta log e la raccolta automatica dei log di tutti i container
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_CONTAINER_EXCLUDE=name:datadog-agent
+      # Abilita APM e accetta traffico da altri container della rete
+      - DD_APM_ENABLED=true
+      - DD_APM_NON_LOCAL_TRAFFIC=true
+      # Abilita raccolta metriche/eventi Docker
+      - DD_PROCESS_AGENT_ENABLED=true
     networks:
       - default

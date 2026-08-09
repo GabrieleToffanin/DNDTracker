@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using DNDTracker.Domain;
 using DNDTracker.Outbound.RabbitMq.Configuration;
 using Microsoft.Extensions.Options;
@@ -13,19 +14,40 @@ internal class EventPublisher(
     CancellationToken cancellationToken = default)
     where T : notnull
     {
-        var channel = await GetConnection();
-        
-        var body = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(message);
-        var messageType = message.GetType().Name;
-        
-        var queueName = rabbitConfiguration.Value.Topology.Queues[messageType].Name;
-        
-        var exchange = GetExchangeForMessageType(queueName);
-        var routingKey = GetRoutingKeyForMessageType(queueName);
+        IChannel channel = await GetConnection();
+
+        byte[] body = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(message);
+        string messageType = message.GetType().Name;
+
+        string queueName = rabbitConfiguration.Value.Topology.Queues[messageType].Name;
+
+        string exchange = GetExchangeForMessageType(queueName);
+        string routingKey = GetRoutingKeyForMessageType(queueName);
+
+        using var activity = RabbitMqTelemetry.ActivitySource.StartActivity(
+            $"{exchange} publish",
+            ActivityKind.Producer);
+
+        RabbitMqTelemetry.TagDatadogCorrelation(activity);
+        activity?.SetTag("messaging.system", "rabbitmq");
+        activity?.SetTag("messaging.destination", exchange);
+        activity?.SetTag("messaging.destination_kind", "exchange");
+        activity?.SetTag("messaging.rabbitmq.routing_key", routingKey);
+        activity?.SetTag("messaging.message_type", messageType);
+
+        Dictionary<string, object?> headers = new();
+        RabbitMqTelemetry.InjectTraceContext(activity, headers);
+
+        BasicProperties basicProperties = new()
+        {
+            Headers = headers
+        };
 
         await channel.BasicPublishAsync(
             exchange: exchange,
             routingKey: routingKey,
+            mandatory: false,
+            basicProperties: basicProperties,
             body: body,
             cancellationToken: cancellationToken);
     }
@@ -49,7 +71,7 @@ internal class EventPublisher(
 
     private async Task<IChannel> GetConnection()
     {
-        var factory = new ConnectionFactory
+        ConnectionFactory factory = new()
         {
             HostName = rabbitConfiguration.Value.Host,
             Port = rabbitConfiguration.Value.Port,
@@ -61,7 +83,7 @@ internal class EventPublisher(
             AutomaticRecoveryEnabled = true
         };
 
-        var connection = await factory.CreateConnectionAsync();
+        IConnection connection = await factory.CreateConnectionAsync();
         return await connection.CreateChannelAsync();
     }
 }
