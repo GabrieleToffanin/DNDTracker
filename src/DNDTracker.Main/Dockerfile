@@ -15,7 +15,7 @@ COPY ["src/DNDTracker.SharedKernel/DNDTracker.SharedKernel.csproj", "src/DNDTrac
 COPY ["src/DNDTracker.Vocabulary/DNDTracker.Vocabulary.csproj", "src/DNDTracker.Vocabulary/"]
 COPY ["src/DNDTracker.Inbound.RestAdapter/DNDTracker.Inbound.RestAdapter.csproj", "src/DNDTracker.Inbound.RestAdapter/"]
 COPY ["src/DNDTracker.Inbound.AmqpAdapter/DNDTracker.Inbound.AmqpAdapter.csproj", "src/DNDTracker.Inbound.AmqpAdapter/"]
-COPY ["src/DNDTracker.Outbounx.PostgresDb/DNDTracker.Outbounx.PostgresDb.csproj", "src/DNDTracker.Outbounx.PostgresDb/"]
+COPY ["src/DNDTracker.Outbound.PostgresDb/DNDTracker.Outbound.PostgresDb.csproj", "src/DNDTracker.Outbound.PostgresDb/"]
 COPY ["src/DNDTracker.Outbound.RabbitMq/DNDTracker.Outbound.RabbitMq.csproj", "src/DNDTracker.Outbound.RabbitMq/"]
 COPY ["src/DNDTracker.DataAccessObject.Mapping/DNDTracker.DataAccessObject.Mapping.csproj", "src/DNDTracker.DataAccessObject.Mapping/"]
 RUN dotnet restore "src/DNDTracker.Main/DNDTracker.Main.csproj"
@@ -31,23 +31,20 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Install PostgreSQL client, curl and other dependencies for Datadog tracer
-RUN apt-get update && apt-get install -y postgresql-client curl netcat-openbsd && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies and the New Relic .NET agent.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl netcat-openbsd postgresql-client tar \
+    && mkdir -p /usr/local \
+    && curl -fsSL https://download.newrelic.com/dot_net_agent/latest_release/newrelic-dotnet-agent_amd64.tar.gz \
+        | tar -xz -C /usr/local \
+    && rm -rf /var/lib/apt/lists/*
 
-# Please select the corresponding download for your Linux containers https://github.com/DataDog/dd-trace-dotnet/releases/latest
-# Download and install the Tracer
-RUN mkdir -p /opt/datadog \
-    && mkdir -p /var/log/datadog \
-    && TRACER_VERSION=$(curl -s https://api.github.com/repos/DataDog/dd-trace-dotnet/releases/latest | grep tag_name | cut -d '"' -f 4 | cut -c2-) \
-    && curl -LO https://github.com/DataDog/dd-trace-dotnet/releases/download/v${TRACER_VERSION}/datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb \
-    && dpkg -i ./datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb \
-    && rm ./datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb
-
-# Enable the tracer
+# Enable New Relic auto-instrumentation. The license key is injected by Docker Compose.
 ENV CORECLR_ENABLE_PROFILING=1
-ENV CORECLR_PROFILER={846F5F1C-F9AE-4B07-969E-05C26BC060D8}
-ENV CORECLR_PROFILER_PATH=/opt/datadog/Datadog.Trace.ClrProfiler.Native.so
-ENV DD_DOTNET_TRACER_HOME=/opt/datadog
+ENV CORECLR_PROFILER={36032161-FFC0-4B61-B559-F6C5D41BAE5A}
+ENV CORECLR_NEWRELIC_HOME=/usr/local/newrelic-dotnet-agent
+ENV CORECLR_PROFILER_PATH=/usr/local/newrelic-dotnet-agent/libNewRelicProfiler.so
+ENV NEW_RELIC_APP_NAME=DndTracker
 
 # Create entrypoint script
 RUN echo '#!/bin/bash' > /app/entrypoint.sh && \

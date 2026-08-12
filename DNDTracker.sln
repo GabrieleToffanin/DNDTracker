@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Vocabulary", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Application.Tests", "tst\DNDTracker.Application.Tests\DNDTracker.Application.Tests.csproj", "{6F4A62B6-AD11-47FA-8CCC-58C325F398B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbounx.PostgresDb", "src\DNDTracker.Outbounx.PostgresDb\DNDTracker.Outbounx.PostgresDb.csproj", "{41669DD7-617C-47B8-B5B7-C6B3CEEDA21D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.Outbound.PostgresDb", "src\DNDTracker.Outbound.PostgresDb\DNDTracker.Outbound.PostgresDb.csproj", "{41669DD7-617C-47B8-B5B7-C6B3CEEDA21D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNDTracker.BackendInfrastructure.PostgresDb.Tests", "tst\DNDTracker.BackendInfrastructure.PostgresDb.Tests\DNDTracker.BackendInfrastructure.PostgresDb.Tests.csproj", "{CE0B37ED-8581-4EDF-AFCB-811158EE13D6}"
 EndProject

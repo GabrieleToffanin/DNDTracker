@@ -9,12 +9,15 @@ namespace DNDTracker.Outbound.RabbitMq.Messaging;
 internal class EventPublisher(
     IOptions<RabbitMqConfiguration> rabbitConfiguration) : IEventPublisher
 {
-    public async ValueTask PublishAsync<T>(
+    public ValueTask PublishAsync<T>(
     T message,
     CancellationToken cancellationToken = default)
     where T : notnull
     {
-        IChannel channel = await GetConnection();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using IConnection connection = CreateConnection();
+        using IModel channel = connection.CreateModel();
 
         byte[] body = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(message);
         string messageType = message.GetType().Name;
@@ -28,7 +31,6 @@ internal class EventPublisher(
             $"{exchange} publish",
             ActivityKind.Producer);
 
-        RabbitMqTelemetry.TagDatadogCorrelation(activity);
         activity?.SetTag("messaging.system", "rabbitmq");
         activity?.SetTag("messaging.destination", exchange);
         activity?.SetTag("messaging.destination_kind", "exchange");
@@ -38,18 +40,17 @@ internal class EventPublisher(
         Dictionary<string, object?> headers = new();
         RabbitMqTelemetry.InjectTraceContext(activity, headers);
 
-        BasicProperties basicProperties = new()
-        {
-            Headers = headers
-        };
+        IBasicProperties basicProperties = channel.CreateBasicProperties();
+        basicProperties.Headers = headers;
 
-        await channel.BasicPublishAsync(
+        channel.BasicPublish(
             exchange: exchange,
             routingKey: routingKey,
             mandatory: false,
             basicProperties: basicProperties,
-            body: body,
-            cancellationToken: cancellationToken);
+            body: body);
+
+        return ValueTask.CompletedTask;
     }
 
 
@@ -69,7 +70,7 @@ internal class EventPublisher(
         return binding?.RoutingKey ?? messageType;
     }
 
-    private async Task<IChannel> GetConnection()
+    private IConnection CreateConnection()
     {
         ConnectionFactory factory = new()
         {
@@ -83,9 +84,6 @@ internal class EventPublisher(
             AutomaticRecoveryEnabled = true
         };
 
-        IConnection connection = await factory.CreateConnectionAsync();
-        return await connection.CreateChannelAsync();
+        return factory.CreateConnection();
     }
 }
-
-

@@ -15,24 +15,24 @@ public class HeroAddedEventConsumer(
     IOptions<RabbitMqConfiguration> rabbitConfiguration,
     ILogger<HeroAddedEventConsumer> logger) : BackgroundService, IAsyncDisposable
 {
-    private IChannel? _channel;
+    private IModel? _channel;
     private IConnection? _connection;
-    private AsyncEventingBasicConsumer? _consumer;
+    private EventingBasicConsumer? _consumer;
     private const string QueueName = "dndtracking.campaign.hero-added";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            _connection = await CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
+            _connection = CreateConnection();
+            _channel = _connection.CreateModel();
 
-            _consumer = new AsyncEventingBasicConsumer(_channel);
-            _consumer.ReceivedAsync += async (_, ea) =>
+            _consumer = new EventingBasicConsumer(_channel);
+            _consumer.Received += (_, ea) =>
             {
                 try
                 {
-                    await ProcessMessageAsync(ea, stoppingToken);
+                    ProcessMessage(ea);
                 }
                 catch (Exception ex)
                 {
@@ -40,7 +40,7 @@ public class HeroAddedEventConsumer(
                 }
             };
 
-            await _channel.BasicConsumeAsync(QueueName, autoAck: false, consumer: _consumer, cancellationToken: stoppingToken);
+            _channel.BasicConsume(QueueName, autoAck: false, consumer: _consumer);
             logger.LogInformation("✅ HeroAddedEventConsumer started - listening on {QueueName}", QueueName);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
@@ -51,7 +51,7 @@ public class HeroAddedEventConsumer(
         }
     }
 
-    private async Task<IConnection> CreateConnectionAsync()
+    private IConnection CreateConnection()
     {
         ConnectionFactory factory = new()
         {
@@ -65,10 +65,10 @@ public class HeroAddedEventConsumer(
             AutomaticRecoveryEnabled = true
         };
 
-        return await factory.CreateConnectionAsync();
+        return factory.CreateConnection();
     }
 
-    private async Task ProcessMessageAsync(BasicDeliverEventArgs ea, CancellationToken cancellationToken)
+    private void ProcessMessage(BasicDeliverEventArgs ea)
     {
         var (traceParent, traceState) = RabbitMqTelemetry.ExtractTraceContext(ea.BasicProperties?.Headers);
         ActivityContext.TryParse(traceParent, traceState, out var parentContext);
@@ -78,7 +78,6 @@ public class HeroAddedEventConsumer(
             ActivityKind.Consumer,
             parentContext);
 
-        RabbitMqTelemetry.TagDatadogCorrelation(activity);
         activity?.SetTag("messaging.system", "rabbitmq");
         activity?.SetTag("messaging.destination", QueueName);
         activity?.SetTag("messaging.operation", "process");
@@ -90,7 +89,7 @@ public class HeroAddedEventConsumer(
         {
             logger.LogWarning("Failed to deserialize HeroAddedDomainEvent");
             activity?.SetStatus(ActivityStatusCode.Error, "Deserialization failed");
-            await _channel!.BasicAckAsync(ea.DeliveryTag, false, cancellationToken);
+            _channel!.BasicAck(ea.DeliveryTag, false);
             return;
         }
 
@@ -100,7 +99,7 @@ public class HeroAddedEventConsumer(
             "🦸 Received hero-added event: Id={EventId}, OccuredOn={OccuredOn}",
             message.Id, message.OccuredOn);
 
-        await _channel!.BasicAckAsync(ea.DeliveryTag, false, cancellationToken);
+        _channel!.BasicAck(ea.DeliveryTag, false);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
@@ -111,15 +110,15 @@ public class HeroAddedEventConsumer(
 
         if (_channel != null)
         {
-            await _channel.CloseAsync();
-            await _channel.DisposeAsync();
+            _channel.Close();
+            _channel.Dispose();
             _channel = null;
         }
 
         if (_connection != null)
         {
-            await _connection.CloseAsync();
-            await _connection.DisposeAsync();
+            _connection.Close();
+            _connection.Dispose();
             _connection = null;
         }
     }

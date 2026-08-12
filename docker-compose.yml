@@ -3,7 +3,7 @@ version: "3.8"
 volumes:
   postgres-data:
   rabbitmq-data:
-  datadogdata:
+  rabbitmq-logs:
 
 networks:
   default:
@@ -20,11 +20,6 @@ services:
     ports:
       - "5169:8080"
       - "8081:8081"
-    labels:
-      - com.datadoghq.tags.env=development
-      - com.datadoghq.tags.service=dndtracker-api
-      - com.datadoghq.tags.version=1.0.0
-      - com.datadoghq.ad.logs=[{"source":"csharp","service":"dndtracker-api"}]
     logging:
       driver: json-file
       options:
@@ -39,37 +34,23 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - Scalar__Enabled=true
-      - DD_API_KEY=a40197fd792b2dd09993b36b3ef816f6
-      - DD_SITE=datadoghq.eu
-      - DD_ENV=development
-      - DD_SERVICE=dndtracker-api
-      - DD_VERSION=1.0.0
-      - DD_GIT_REPOSITORY_URL=github.com/gabrieletoffanin/dndtracker
-      - DD_AGENT_HOST=datadog-agent
-      - DD_TRACE_AGENT_PORT=8126
-      - DD_TRACE_ENABLED=true
-      - DD_TRACE_OTEL_ENABLED=true
-      - DD_LOGS_INJECTION=true
-      - DD_LOGS_ENABLED=true
-      - DD_DATA_STREAMS_ENABLED=true
-      - DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED=true
-      - DD_APPSEC_ENABLED=true
-      - DD_IAST_ENABLED=true
-      - DD_APPSEC_SCA_ENABLED=true
-      - DD_TRACE_SAMPLE_RATE=1
-      - CORECLR_ENABLE_PROFILING=1
-      - CORECLR_PROFILER={846F5F1C-F9AE-4B07-969E-05C26BC060D8}
-      - CORECLR_PROFILER_PATH=/opt/datadog/Datadog.Trace.ClrProfiler.Native.so
-      - DD_DOTNET_TRACER_HOME=/opt/datadog
+      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata nell'ambiente locale}
+      - NEW_RELIC_APP_NAME=DndTracker
+      - NEW_RELIC_REGION=eu
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
     depends_on:
-      - postgres
-      - rabbitmq
-      - datadog-agent
+      postgres-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_started
     networks:
       - default
 
   postgres:
-    image: postgres:16
+    image: dndtracker.postgres
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     ports:
       - "5432:5432"
     environment:
@@ -78,6 +59,28 @@ services:
       - POSTGRES_DB=dndtracker
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=postgres --dbname=dndtracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - default
+
+  postgres-init:
+    image: postgres:16
+    environment:
+      PGPASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - psql
+      - --host=postgres
+      - --username=postgres
+      - --dbname=dndtracker
+      - --command=CREATE EXTENSION IF NOT EXISTS pg_stat_statements; CREATE EXTENSION IF NOT EXISTS pg_wait_sampling; CREATE EXTENSION IF NOT EXISTS pg_stat_monitor;
+    restart: "no"
     networks:
       - default
 
@@ -89,35 +92,43 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_LOGS=/var/log/rabbitmq/rabbitmq.log
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-logs:/var/log/rabbitmq
     networks:
       - default
 
-  # Datadog Agent
-  datadog-agent:
-    image: datadog/agent:latest
-    container_name: datadog-agent
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /proc/:/host/proc/:ro
-      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
-      - datadogdata:/opt/datadog-agent/run
-    ports:
-      - "127.0.0.1:8126:8126/tcp"
+  newrelic-infra:
+    image: dndtracker.newrelic-infra
+    container_name: newrelic-infra
+    build:
+      context: ./newrelic-infra
+      dockerfile: newrelic-infra.dockerfile
     environment:
-      - DD_API_KEY=a40197fd792b2dd09993b36b3ef816f6
-      - DD_SITE=datadoghq.eu
-      - DD_ENV=development
-      - DD_HOSTNAME=dndtracker-docker
-      # Abilita la raccolta log e la raccolta automatica dei log di tutti i container
-      - DD_LOGS_ENABLED=true
-      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
-      - DD_CONTAINER_EXCLUDE=name:datadog-agent
-      # Abilita APM e accetta traffico da altri container della rete
-      - DD_APM_ENABLED=true
-      - DD_APM_NON_LOCAL_TRAFFIC=true
-      # Abilita raccolta metriche/eventi Docker
-      - DD_PROCESS_AGENT_ENABLED=true
-    networks:
-      - default
+      NRIA_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata}
+      NRIA_ENDPOINT: https://infra-api.eu.newrelic.com
+      NRIA_DISPLAY_NAME: dndtracker-docker
+      NRIA_LOG_FORWARDING_ENABLED: "true"
+      RABBITMQ_MANAGEMENT_HOST: host.docker.internal
+      RABBITMQ_MANAGEMENT_PORT: "15672"
+      RABBITMQ_MANAGEMENT_USERNAME: guest
+      RABBITMQ_MANAGEMENT_PASSWORD: guest
+      POSTGRES_MONITORING_HOST: host.docker.internal
+      POSTGRES_MONITORING_PORT: "5432"
+      POSTGRES_MONITORING_DATABASE: dndtracker
+      POSTGRES_MONITORING_USERNAME: postgres
+      POSTGRES_MONITORING_PASSWORD: postgres
+    cap_add:
+      - SYS_PTRACE
+    network_mode: host
+    privileged: true
+    pid: host
+    volumes:
+      - /:/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - rabbitmq-logs:/var/log/rabbitmq:ro
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped

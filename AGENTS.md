@@ -14,7 +14,7 @@ DNDTracker is a **Clean Architecture + Domain-Driven Design (DDD) + CQRS** appli
 | **Application** | CQRS command handlers, business logic orchestration | `src/DNDTracker.Application/UseCases/` |
 | **Application.Queries** | Query handlers, DTOs, read-side logic (separate project) | `src/DNDTracker.Application.Queries/UseCases/` |
 | **Inbound Adapters** | REST controllers, AMQP/RabbitMQ consumers | `src/DNDTracker.Inbound.RestAdapter/`, `src/DNDTracker.Inbound.AmqpAdapter/` |
-| **Outbound Adapters** | PostgreSQL repositories, RabbitMQ publishers, in-memory implementations | `src/DNDTracker.Outbounx.PostgresDb/`, `src/DNDTracker.Outbound.RabbitMq/` |
+| **Outbound Adapters** | PostgreSQL repositories, RabbitMQ publishers, in-memory implementations | `src/DNDTracker.Outbound.PostgresDb/`, `src/DNDTracker.Outbound.RabbitMq/` |
 | **SharedKernel** | Base classes (`AggregateRoot<T>`, `Entity`, `DomainEvent`), MediatR interfaces | `src/DNDTracker.SharedKernel/` |
 
 ## 🔧 Critical Development Patterns
@@ -85,7 +85,7 @@ dotnet build DNDTracker.sln
 # Run with Docker Compose (includes API, PostgreSQL, RabbitMQ, ELK stack, OpenTelemetry)
 docker-compose up --build
 
-# Database migrations (from src/DNDTracker.Outbounx.PostgresDb directory)
+# Database migrations (from src/DNDTracker.Outbound.PostgresDb directory)
 dotnet ef migrations add <MigrationName> --context DNDTrackerPostgresDbContext
 dotnet ef database update --context DNDTrackerPostgresDbContext
 
@@ -124,7 +124,7 @@ Entry point: `src/DNDTracker.Main/Program.cs` (87 lines)
 1. **Define aggregate:** Create entity in `src/DNDTracker.Domain/{Entity}/`
 2. **Add command:** Create handler in `src/DNDTracker.Application/UseCases/{Feature}/`
 3. **Add query:** Create handler in `src/DNDTracker.Application.Queries/UseCases/{Feature}/`
-4. **Add repository:** Implement in `src/DNDTracker.Outbounx.PostgresDb/`
+4. **Add repository:** Implement in `src/DNDTracker.Outbound.PostgresDb/`
 5. **Add REST endpoint:** Add method to controller in `src/DNDTracker.Inbound.RestAdapter/Controllers/`
 6. **Add tests:** Test handler, repository, and controller in `tst/`
 
@@ -148,4 +148,3 @@ Entry point: `src/DNDTracker.Main/Program.cs` (87 lines)
 - `src/DNDTracker.Main/Program.cs` - Full DI setup
 - `docker-compose.yml` - All services configuration
 - `dndtracker/values.yaml` - Kubernetes Helm values
-

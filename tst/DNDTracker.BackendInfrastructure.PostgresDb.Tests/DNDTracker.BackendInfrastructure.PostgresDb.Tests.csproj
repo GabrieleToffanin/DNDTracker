@@ -13,7 +13,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
         <PackageReference Include="Testcontainers.PostgreSql" Version="4.13.0" />
         <PackageReference Include="xunit" Version="2.9.3" />
@@ -29,7 +29,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\DNDTracker.Main\DNDTracker.Main.csproj" />
-      <ProjectReference Include="..\..\src\DNDTracker.Outbounx.PostgresDb\DNDTracker.Outbounx.PostgresDb.csproj" />
+      <ProjectReference Include="..\..\src\DNDTracker.Outbound.PostgresDb\DNDTracker.Outbound.PostgresDb.csproj" />
       <ProjectReference Include="..\..\src\DNDTracker.Domain\DNDTracker.Domain.csproj" />
       <ProjectReference Include="..\DNDTracker.Domain.Tests\DNDTracker.Domain.Tests.csproj" />
     </ItemGroup>

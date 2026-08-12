@@ -20,7 +20,7 @@ DNDTracker implements Clean Architecture with Hexagonal Architecture patterns:
   - `DNDTracker.Inbound.RestAdapter`: REST API controllers
   - `DNDTracker.Inbound.InMemoryAdapter`: In-memory mediator for testing
 - **Outbound Adapters**:
-  - `DNDTracker.Outbounx.PostgresDb`: PostgreSQL repository implementations
+  - `DNDTracker.Outbound.PostgresDb`: PostgreSQL repository implementations
   - `DNDTracker.Outbound.InMemoryAdapter`: In-memory implementations for messaging
 
 ### Main Application
@@ -165,7 +165,7 @@ dotnet test tst/DNDTracker.BackendInfrastructure.PostgresDb.Tests
 ## 🗄️ Database Operations
 
 ```bash
-# Add new migration (from src/DNDTracker.Outbounx.PostgresDb directory)
+# Add new migration (from src/DNDTracker.Outbound.PostgresDb directory)
 dotnet ef migrations add <MigrationName> --context DNDTrackerPostgresDbContext
 
 # Update database

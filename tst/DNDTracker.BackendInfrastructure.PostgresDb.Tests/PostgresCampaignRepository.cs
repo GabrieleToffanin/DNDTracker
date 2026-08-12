@@ -1,6 +1,6 @@
 using System.ComponentModel;
-using DNDTracker.Outbounx.PostgresDb.Database.Postgres;
-using DNDTracker.Outbounx.PostgresDb.Repositories;
+using DNDTracker.Outbound.PostgresDb.Database.Postgres;
+using DNDTracker.Outbound.PostgresDb.Repositories;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Tests.Behaviors;
 using JetBrains.Annotations;

@@ -1,0 +1,21 @@
+integrations:
+  - name: nri-postgresql
+    env:
+      USERNAME: "{{POSTGRES_MONITORING_USERNAME}}"
+      PASSWORD: "{{POSTGRES_MONITORING_PASSWORD}}"
+      HOSTNAME: "{{POSTGRES_MONITORING_HOST}}"
+      DATABASE: "{{POSTGRES_MONITORING_DATABASE}}"
+      PORT: "{{POSTGRES_MONITORING_PORT}}"
+      COLLECTION_LIST: '["dndtracker"]'
+      COLLECT_DB_LOCK_METRICS: "false"
+      COLLECT_BLOAT_METRICS: "false"
+      ENABLE_SSL: "false"
+      ENABLE_QUERY_MONITORING: "true"
+      IS_RDS: "false"
+      TRUST_SERVER_CERTIFICATE: "false"
+      TIMEOUT: "10"
+    interval: 15s
+    labels:
+      environment: development
+      service: dndtracker
+    inventory_source: config/postgresql

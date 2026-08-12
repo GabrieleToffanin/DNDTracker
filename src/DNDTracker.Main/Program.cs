@@ -8,8 +8,8 @@ using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Main.Middleware;
 using DNDTracker.Outbound.RabbitMq;
 using DNDTracker.Outbound.RabbitMq.Configuration;
-using DNDTracker.Outbounx.PostgresDb.Database.Postgres;
-using DNDTracker.Outbounx.PostgresDb.Repositories;
+using DNDTracker.Outbound.PostgresDb.Database.Postgres;
+using DNDTracker.Outbound.PostgresDb.Repositories;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -83,7 +83,6 @@ public class Program
             app.UseHttpsRedirection();
         }
 
-        app.UseMiddleware<DatadogLogCorrelationMiddleware>();
         app.UseMiddleware<BackpressureMiddleware>();
         app.UseAuthorization();
         app.MapControllers();
