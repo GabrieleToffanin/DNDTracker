@@ -39,9 +39,10 @@ RUN apt-get update && apt-get install -y postgresql-client curl netcat-openbsd &
 RUN mkdir -p /opt/datadog \
     && mkdir -p /var/log/datadog \
     && TRACER_VERSION=$(curl -s https://api.github.com/repos/DataDog/dd-trace-dotnet/releases/latest | grep tag_name | cut -d '"' -f 4 | cut -c2-) \
-    && curl -LO https://github.com/DataDog/dd-trace-dotnet/releases/download/v${TRACER_VERSION}/datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb \
-    && dpkg -i ./datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb \
-    && rm ./datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -LO https://github.com/DataDog/dd-trace-dotnet/releases/download/v${TRACER_VERSION}/datadog-dotnet-apm_${TRACER_VERSION}_${ARCH}.deb \
+    && dpkg -i ./datadog-dotnet-apm_${TRACER_VERSION}_${ARCH}.deb \
+    && rm ./datadog-dotnet-apm_${TRACER_VERSION}_${ARCH}.deb
 
 # Enable the tracer
 ENV CORECLR_ENABLE_PROFILING=1
