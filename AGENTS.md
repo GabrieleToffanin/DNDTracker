@@ -18,7 +18,7 @@ Prefer minimal, coherent changes over broad refactors.
 
 ## 2. Fast project orientation
 
-Repository root: `/home/runner/work/DNDTracker/DNDTracker`
+Repository root: `.`
 
 ### Important directories
 
