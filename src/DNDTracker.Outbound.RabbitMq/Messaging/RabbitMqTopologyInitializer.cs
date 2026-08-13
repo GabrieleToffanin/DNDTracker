@@ -14,86 +14,81 @@ internal class RabbitMqTopologyInitializer(
     IOptions<RabbitMqConfiguration> rabbitConfiguration,
     ILogger<RabbitMqTopologyInitializer> logger) : IRabbitMqTopologyInitializer
 {
-    public Task InitializeAsync(CancellationToken cancellationToken = default)
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        using IConnection connection = CreateConnection();
-        using IModel channel = connection.CreateModel();
-        
+        await using IConnection connection = await CreateConnectionAsync(cancellationToken);
+        await using IChannel channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+
         try
         {
-            DeclareExchanges(channel, cancellationToken);
-            DeclareQueues(channel, cancellationToken);
-            CreateBindings(channel, cancellationToken);
-            
+            await DeclareExchangesAsync(channel, cancellationToken);
+            await DeclareQueuesAsync(channel, cancellationToken);
+            await CreateBindingsAsync(channel, cancellationToken);
+
             logger.LogInformation("RabbitMQ topology initialized successfully");
         }
         finally
         {
-            channel.Close();
+            await channel.CloseAsync(cancellationToken);
         }
-
-        return Task.CompletedTask;
     }
 
-    private void DeclareExchanges(IModel channel, CancellationToken cancellationToken)
+    private async Task DeclareExchangesAsync(IChannel channel, CancellationToken cancellationToken)
     {
-        var exchanges = rabbitConfiguration.Value.Topology.Exchanges;
-        
-        foreach (var (key, exchange) in exchanges)
+        foreach (var (_, exchange) in rabbitConfiguration.Value.Topology.Exchanges)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            channel.ExchangeDeclare(
+            await channel.ExchangeDeclareAsync(
                 exchange: exchange.Name,
                 type: exchange.Type,
                 durable: exchange.Durable,
                 autoDelete: exchange.AutoDelete,
-                arguments: exchange.Arguments);
-                
-            logger.LogDebug("Declared exchange: {ExchangeName} of type {ExchangeType}", 
+                arguments: exchange.Arguments,
+                cancellationToken: cancellationToken);
+
+            logger.LogDebug("Declared exchange: {ExchangeName} of type {ExchangeType}",
                 exchange.Name, exchange.Type);
         }
     }
 
-    private void DeclareQueues(IModel channel, CancellationToken cancellationToken)
+    private async Task DeclareQueuesAsync(IChannel channel, CancellationToken cancellationToken)
     {
-        var queues = rabbitConfiguration.Value.Topology.Queues;
-        
-        foreach (var (key, queue) in queues)
+        foreach (var (_, queue) in rabbitConfiguration.Value.Topology.Queues)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            channel.QueueDeclare(
+            await channel.QueueDeclareAsync(
                 queue: queue.Name,
                 durable: queue.Durable,
                 exclusive: queue.Exclusive,
                 autoDelete: queue.AutoDelete,
-                arguments: queue.Arguments);
-                
+                arguments: queue.Arguments,
+                cancellationToken: cancellationToken);
+
             logger.LogDebug("Declared queue: {QueueName}", queue.Name);
         }
     }
 
-    private void CreateBindings(IModel channel, CancellationToken cancellationToken)
+    private async Task CreateBindingsAsync(IChannel channel, CancellationToken cancellationToken)
     {
-        var bindings = rabbitConfiguration.Value.Topology.Bindings;
-        
-        foreach (var binding in bindings)
+        foreach (var binding in rabbitConfiguration.Value.Topology.Bindings)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            channel.QueueBind(
+            await channel.QueueBindAsync(
                 queue: binding.Queue,
                 exchange: binding.Exchange,
                 routingKey: binding.RoutingKey,
-                arguments: binding.Arguments);
-                
-            logger.LogDebug("Created binding: {Queue} -> {Exchange} with routing key {RoutingKey}", 
+                arguments: binding.Arguments,
+                cancellationToken: cancellationToken);
+
+            logger.LogDebug("Created binding: {Queue} -> {Exchange} with routing key {RoutingKey}",
                 binding.Queue, binding.Exchange, binding.RoutingKey);
         }
     }
 
-    private IConnection CreateConnection()
+    private Task<IConnection> CreateConnectionAsync(CancellationToken cancellationToken)
     {
         var factory = new ConnectionFactory
         {
@@ -107,6 +102,6 @@ internal class RabbitMqTopologyInitializer(
             AutomaticRecoveryEnabled = true
         };
 
-        return factory.CreateConnection();
+        return factory.CreateConnectionAsync(cancellationToken);
     }
 }
