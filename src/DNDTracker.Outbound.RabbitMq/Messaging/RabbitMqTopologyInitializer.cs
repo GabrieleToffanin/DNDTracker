@@ -29,7 +29,7 @@ internal class RabbitMqTopologyInitializer(
         }
         finally
         {
-            await channel.CloseAsync(cancellationToken);
+            await channel.CloseAsync(CancellationToken.None);
         }
     }
 
