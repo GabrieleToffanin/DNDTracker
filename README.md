@@ -2,529 +2,249 @@
 
 # DNDTracker
 
-A Campaign Tracker for Dungeons & Dragons built with C# and .NET 9.0, following Clean Architecture patterns with Domain-Driven Design (DDD) principles.
+DNDTracker is a .NET 10 backend for managing Dungeons & Dragons campaigns, heroes, and asynchronous domain events. The codebase follows Clean Architecture, DDD, CQRS, and hexagonal architecture.
 
-## 🏗️ Architecture Overview
+## What is in the repository
 
-DNDTracker implements Clean Architecture with Hexagonal Architecture patterns:
+- **Domain model** for campaigns and heroes
+- **Command side** for write use cases
+- **Query side** for read use cases
+- **REST API** exposed through ASP.NET Core controllers
+- **RabbitMQ integration** for domain-event publishing and consumption
+- **PostgreSQL persistence** with EF Core migrations
+- **Observability stack** with OpenTelemetry, Serilog, Prometheus, Grafana, Jaeger, and Loki
+- **Helm chart** for Kubernetes deployment
 
-### Core Layers
-- **Domain** (`DNDTracker.Domain`): Contains entities, domain events, and repository interfaces
-- **Application** (`DNDTracker.Application`): Contains command handlers for business operations
-- **Application.Queries** (`DNDTracker.Application.Queries`): Contains query handlers for read operations
-- **SharedKernel**: Common primitives like `AggregateRoot<T>`, `Entity`, and `DomainEvent`
-- **Vocabulary**: Enums, exceptions, models, and value objects
+## Solution structure
 
-### Adapters (Infrastructure)
-- **Inbound Adapters**: 
-  - `DNDTracker.Inbound.RestAdapter`: REST API controllers
-  - `DNDTracker.Inbound.InMemoryAdapter`: In-memory mediator for testing
-- **Outbound Adapters**:
-  - `DNDTracker.Outbound.PostgresDb`: PostgreSQL repository implementations
-  - `DNDTracker.Outbound.InMemoryAdapter`: In-memory implementations for messaging
+```text
+src/
+├── DNDTracker.Domain                 # Aggregates, entities, domain events, repository ports
+├── DNDTracker.Application            # Command handlers and write-side orchestration
+├── DNDTracker.Application.Queries    # Query handlers and read-side orchestration
+├── DNDTracker.Inbound.RestAdapter    # HTTP DTOs and controllers
+├── DNDTracker.Inbound.AmqpAdapter    # RabbitMQ consumers / hosted services
+├── DNDTracker.Outbound.PostgresDb    # EF Core DbContext, repositories, migrations
+├── DNDTracker.Outbound.RabbitMq      # RabbitMQ publisher and topology setup
+├── DNDTracker.DataAccessObject.Mapping # Domain <-> persistence mapping
+├── DNDTracker.SharedKernel           # CQRS abstractions and base primitives
+├── DNDTracker.Vocabulary             # Enums, exceptions, persistence models, value objects
+└── DNDTracker.Main                   # Composition root and application startup
 
-### Main Application
-- **DNDTracker.Main**: Entry point with dependency injection setup
+tst/
+├── DNDTracker.Application.Tests
+├── DNDTracker.Domain.Tests
+├── DNDTracker.Inbound.RestAdapter.Tests
+├── DNDTracker.BackendInfrastructure.PostgresDb.Tests
+└── DNDTracker.Main.IntegrationTests
+```
 
-## 🚀 Quick Start
+## Architecture at a glance
 
-### Prerequisites
-- .NET 9.0 SDK
+### Domain
+`DNDTracker.Domain` owns the business model.
+
+- `Campaign` is the aggregate root
+- `Hero` is an entity inside the campaign aggregate
+- IDs are strongly typed (`CampaignId`, `HeroId`)
+- Domain events are raised from entities with `AddDomainEvent()`
+
+### CQRS split
+- **Commands** live in `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Application/UseCases`
+- **Queries** live in `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Application.Queries/UseCases`
+- Controllers translate HTTP payloads into MediatR requests
+
+### Infrastructure
+- PostgreSQL repositories are implemented in `DNDTracker.Outbound.PostgresDb`
+- RabbitMQ event publishing is implemented in `DNDTracker.Outbound.RabbitMq`
+- Consumer hosting is implemented in `DNDTracker.Inbound.AmqpAdapter`
+- `DNDTracker.Main/Program.cs` wires the application together, applies migrations at startup, and initializes RabbitMQ topology
+
+## Main API endpoints
+
+The REST adapter currently exposes:
+
+- `GET /api/Campaign` — list campaigns
+- `GET /api/Campaign/{campaignName}` — fetch a campaign by name
+- `POST /api/Campaign` — create a campaign
+- `POST /api/Campaign/{campaignName}/heroes` — add a hero to a campaign
+- `GET /api/Health` — controller-based health endpoint
+- `GET /health` — lightweight health endpoint mapped in `Program.cs`
+- `/scalar/v1` — Scalar API reference UI
+- `/openapi/v1.json` — generated OpenAPI document
+- `/metrics` — Prometheus scraping endpoint
+
+### Example request: create a campaign
+
+```json
+{
+  "campaignName": "Curse of Strahd",
+  "campaignDescription": "Gothic horror campaign",
+  "campaignImage": "strahd.jpg",
+  "createdDate": "2026-08-13T12:00:00Z",
+  "isActive": true
+}
+```
+
+### Example request: add a hero
+
+```json
+{
+  "hero": {
+    "name": "Ludwin",
+    "class": "Paladin",
+    "race": "HalfElf",
+    "alignment": "Good",
+    "level": 1,
+    "experience": 0,
+    "hitPoints": 10,
+    "hitDice": "D4"
+  }
+}
+```
+
+## Prerequisites
+
+- .NET 10 SDK
 - Docker and Docker Compose
+- Optional: `dotnet-ef` tool for migration authoring
+- Optional: user secret `NEW_RELIC_LICENSE_KEY` for the local observability stack
 
-### Running with Docker Compose
-
-The easiest way to run the entire application stack is using Docker Compose:
-
-```bash
-# Clone the repository
-git clone https://github.com/GabrieleToffanin/DNDTracker.git
-cd DNDTracker
-
-# Start all services
-docker-compose up --build
-```
-
-This will start all services including the API, database, message queue, and monitoring stack.
-
-### Manual Build and Run
+## Build and test
 
 ```bash
-# Build entire solution
-dotnet build DNDTracker.sln
+dotnet restore /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln
+dotnet build /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln --no-restore
 
-# Run the main API
-dotnet run --project src/DNDTracker.Main
+dotnet test /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln
+dotnet test /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln --filter "Category!=Integration"
 ```
 
-## 📋 Docker Compose Services
-
-The `docker-compose.yml` file orchestrates multiple services:
-
-### Core Application Services
-
-#### DNDTracker API (`dndtracker.api`)
-- **Purpose**: Main .NET API application
-- **Ports**: 
-  - `5169:8080` - HTTP API endpoint
-  - `8081:8081` - Additional endpoint
-- **Links**: 
-  - API: http://localhost:5169
-  - Scalar API Documentation: http://localhost:5169/scalar/v1
-
-#### PostgreSQL Database (`postgres`)
-- **Purpose**: Primary database for application data
-- **Port**: `5432:5432`
-- **Credentials**: 
-  - Username: `postgres`
-  - Password: `postgres`
-  - Database: `dndtracker`
-- **Connection**: `Host=localhost;Port=5432;Database=dndtracker;Username=postgres;Password=postgres`
-
-#### RabbitMQ Message Broker (`rabbitmq`)
-- **Purpose**: Message queue for asynchronous communication
-- **Ports**: 
-  - `5672:5672` - AMQP protocol
-  - `15672:15672` - Management UI
-- **Links**: 
-  - Management UI: http://localhost:15672
-  - Credentials: `guest/guest`
-
-### Monitoring & Observability Stack (ELK + OpenTelemetry)
-
-#### Elasticsearch (`es01`)
-- **Purpose**: Search and analytics engine for logs and metrics
-- **Port**: `9200:9200` (configurable via `ES_PORT` env var)
-- **Link**: https://localhost:9200
-- **Credentials**: `elastic/${ELASTIC_PASSWORD}`
-
-#### Kibana (`kibana`)
-- **Purpose**: Data visualization and exploration for Elasticsearch
-- **Port**: `5601:5601` (configurable via `KIBANA_PORT` env var)
-- **Link**: http://localhost:5601
-- **Credentials**: `kibana_system/${KIBANA_PASSWORD}`
-
-#### Logstash (`logstash01`)
-- **Purpose**: Data processing pipeline for logs
-- **Function**: Ingests, transforms, and ships logs to Elasticsearch
-
-#### Metricbeat (`metricbeat01`)
-- **Purpose**: Lightweight shipper for system and service metrics
-- **Function**: Collects metrics from Docker containers and system
-
-#### Filebeat (`filebeat01`)
-- **Purpose**: Lightweight shipper for logs
-- **Function**: Collects and ships log files to Elasticsearch
-
-#### OpenTelemetry Collector (`otel-collector`)
-- **Purpose**: Vendor-agnostic telemetry data collection
-- **Ports**: 
-  - `4317:4317` - OTLP gRPC receiver
-  - `4318:4318` - OTLP HTTP receiver
-  - `8888:8888` - Prometheus metrics
-  - `8889:8889` - Prometheus exporter metrics
-
-#### Setup Service (`setup`)
-- **Purpose**: Initializes SSL certificates and configures the ELK stack
-- **Function**: Generates certificates and sets up user passwords
-
-## 🔧 Environment Configuration
-
-The stack requires environment variables. Create a `.env` file with:
-
-```env
-# Elastic Stack Configuration
-STACK_VERSION=8.11.0
-CLUSTER_NAME=docker-cluster
-LICENSE=basic
-ES_PORT=9200
-KIBANA_PORT=5601
-ES_MEM_LIMIT=1073741824
-KB_MEM_LIMIT=1073741824
-
-# Security
-ELASTIC_PASSWORD=your_elastic_password
-KIBANA_PASSWORD=your_kibana_password
-ENCRYPTION_KEY=your_32_char_encryption_key_here
-```
-
-## 🧪 Testing
+Useful targeted commands:
 
 ```bash
-# Run all tests
-dotnet test
+dotnet test /home/runner/work/DNDTracker/DNDTracker/tst/DNDTracker.Application.Tests/DNDTracker.Application.Tests.csproj
 
-# Run specific test projects
-dotnet test tst/DNDTracker.Application.Tests
-dotnet test tst/DNDTracker.Domain.Tests
-dotnet test tst/DNDTracker.Inbound.RestAdapter.Tests
-dotnet test tst/DNDTracker.Main.IntegrationTests
-dotnet test tst/DNDTracker.BackendInfrastructure.PostgresDb.Tests
+dotnet test /home/runner/work/DNDTracker/DNDTracker/tst/DNDTracker.Main.IntegrationTests/DNDTracker.Main.IntegrationTests.csproj
 ```
 
-## 🗄️ Database Operations
+> There is no dedicated lint or formatting command configured in the repository.
+
+## Run locally
+
+### Fastest full-stack option
+
+The repository includes a helper script that loads the required user secret and starts Docker Compose:
+
+```powershell
+cd /home/runner/work/DNDTracker/DNDTracker
+.\up-local.ps1 -Build
+```
+
+Set the required secret with the shared secrets ID:
+
+```powershell
+dotnet user-secrets set "NEW_RELIC_LICENSE_KEY" "<value>" --id DndTracker
+```
+
+### Docker Compose services
+
+`/home/runner/work/DNDTracker/DNDTracker/docker-compose.yml` starts:
+
+- `dndtracker.api`
+- `postgres`
+- `postgres-init`
+- `rabbitmq`
+- `otel-collector`
+- `jaeger`
+- `prometheus`
+- `loki`
+- `grafana`
+
+Useful local URLs:
+
+| Service | URL |
+|---|---|
+| API | http://localhost:5169 |
+| Scalar docs | http://localhost:5169/scalar/v1 |
+| RabbitMQ UI | http://localhost:15672 |
+| Grafana | http://localhost:3000 |
+| Jaeger | http://localhost:16686 |
+| Prometheus | http://localhost:9090 |
+| Loki | http://localhost:3100 |
+
+### Run only the API from the CLI
+
+If PostgreSQL and RabbitMQ are already available locally:
 
 ```bash
-# Add new migration (from src/DNDTracker.Outbound.PostgresDb directory)
-dotnet ef migrations add <MigrationName> --context DNDTrackerPostgresDbContext
-
-# Update database
-dotnet ef database update --context DNDTrackerPostgresDbContext
+dotnet run --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main/DNDTracker.Main.csproj
 ```
 
-## 📊 Key Domain Concepts
+## Database and migrations
 
-### Aggregates
-- **Campaign**: Main aggregate root with heroes, uses `CampaignId` as strong-typed identifier
-- **Hero**: Entity within Campaign aggregate, uses `HeroId` as strong-typed identifier
-
-### Domain Events
-- `HeroAddedDomainEvent`: Triggered when a hero is added to a campaign
-- `SpellLearnedDomainEvent`: Triggered when a hero learns a spell
-
-### CQRS Pattern
-Commands and queries are separated:
-- Commands in `DNDTracker.Application/UseCases/`
-- Queries in `DNDTracker.Application.Queries/UseCases/`
-- Uses MediatR for command/query handling
-
-## 🔗 Service URLs Summary
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| DNDTracker API | http://localhost:5169 | Main application API |
-| API Documentation | http://localhost:5169/scalar/v1 | Scalar API docs |
-| PostgreSQL | localhost:5432 | Database connection |
-| RabbitMQ Management | http://localhost:15672 | Message queue management |
-| Elasticsearch | https://localhost:9200 | Search engine |
-| Kibana | http://localhost:5601 | Log/metrics visualization |
-| OTLP gRPC | localhost:4317 | OpenTelemetry gRPC |
-| OTLP HTTP | localhost:4318 | OpenTelemetry HTTP |
-| Prometheus Metrics | localhost:8888 | Collector metrics |
-
-## 🛠️ Development
-
-### Testing Framework
-- **xUnit** for unit and integration tests
-- **FluentAssertions** for readable assertions
-- **FsCheck.Xunit** for property-based testing
-- **Testcontainers** for integration tests with real databases
-
-### Project Structure
-- `src/` - Application code
-- `tst/` - Test projects
-- `tools/` - SDK and utilities
-- `dndtracker/` - Helm charts for Kubernetes deployment
-
-## ⚓ Kubernetes Deployment with Helm
-
-The project includes Helm charts for deploying DNDTracker to Kubernetes clusters.
-
-### Helm Chart Structure
-
-```
-dndtracker/
-├── Chart.yaml          # Chart metadata and dependencies
-├── Chart.lock          # Dependency lock file
-├── values.yaml         # Default configuration values
-├── charts/             # Dependency charts
-│   └── postgresql-12.5.9.tgz
-└── templates/          # Kubernetes manifests
-    ├── deployment.yaml      # Application deployment
-    ├── service.yaml        # Service configuration
-    ├── configmap.yaml      # Environment variables
-    ├── ingress.yaml        # Ingress configuration
-    ├── serviceaccount.yaml # Service account
-    ├── hpa.yaml           # Horizontal Pod Autoscaler
-    └── tests/
-        └── test-connection.yaml
-```
-
-### Dependencies
-
-The chart includes PostgreSQL as a dependency:
-- **PostgreSQL**: Bitnami PostgreSQL chart (v12.5.x with PostgreSQL 16)
-- Automatically deploys a PostgreSQL instance alongside the application
-
-### Key Configuration
-
-#### Application Settings (`values.yaml`)
-```yaml
-# Application image
-image:
-  repository: gabrieletoffanin/dndtracker
-  tag: "latest"
-
-# Service configuration
-service:
-  type: NodePort
-  port: 8080          # Main API port
-  scalarPort: 8081    # Scalar API documentation port
-
-# Resource limits
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
-```
-
-#### Database Configuration
-```yaml
-postgresql:
-  enabled: true
-  image:
-    tag: "16.1.0"
-  auth:
-    postgresPassword: postgres
-    database: dndtracker
-  persistence:
-    size: 1Gi
-```
-
-### Deployment Commands
+The EF Core `DbContext` is in `DNDTracker.Outbound.PostgresDb`, while the startup project is `DNDTracker.Main`.
 
 ```bash
-# Install Helm dependencies
-helm dependency update ./dndtracker
+docker compose -f /home/runner/work/DNDTracker/DNDTracker/docker-compose.yml up -d postgres
 
-# Install the chart
-helm install dndtracker ./dndtracker
+dotnet tool install --global dotnet-ef
 
-# Install with custom values
-helm install dndtracker ./dndtracker -f custom-values.yaml
+dotnet ef migrations add <MigrationName> \
+  --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Outbound.PostgresDb \
+  --startup-project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main \
+  --context DNDTrackerPostgresDbContext
 
-# Upgrade existing deployment
-helm upgrade dndtracker ./dndtracker
-
-# Uninstall
-helm uninstall dndtracker
+dotnet ef database update \
+  --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Outbound.PostgresDb \
+  --startup-project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main \
+  --context DNDTrackerPostgresDbContext
 ```
 
-### Environment Configuration
+Notes:
 
-The chart supports environment-specific configurations:
+- `Program.cs` waits for PostgreSQL and calls `Database.Migrate()` on startup
+- EF configurations are discovered automatically from the `DNDTracker.Outbound.PostgresDb` assembly
+- Persistence changes usually require updates to:
+  - `DNDTracker.Vocabulary.Models`
+  - `DNDTracker.Outbound.PostgresDb/Database/Postgres/Configuration`
+  - `DNDTracker.DataAccessObject.Mapping`
 
-```yaml
-# Development environment
-environment:
-  ASPNETCORE_ENVIRONMENT: Development
-  ASPNETCORE_URLS: "http://+:8080"
-  ConnectionStrings__DefaultConnection: "Host=dndtracker-postgresql;Port=5432;Database=dndtracker;Username=postgres;Password=postgres"
-```
+## Messaging
 
-### Ingress Configuration
+RabbitMQ topology is configured in `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main/appsettings.json`.
 
-Enable external access with ingress:
+Current queues and bindings include:
 
-```yaml
-ingress:
-  enabled: true
-  className: "nginx"
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: dndtracker.yourdomain.com
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls:
-    - secretName: dndtracker-tls
-      hosts:
-        - dndtracker.yourdomain.com
-```
+- `HeroAddedDomainEvent` → `dndtracking.campaign.hero-added`
+- `SpellLearnedDomainEvent` → `dndtracking.campaigns.spell-learned`
+- Exchange: `dnd.events`
 
-### Autoscaling
+When adding a new event:
 
-Enable horizontal pod autoscaling:
+1. Raise the event from the domain model
+2. Publish it from the application handler
+3. Add queue and binding configuration in `appsettings.json`
+4. Register a consumer hosted service when needed
 
-```yaml
-autoscaling:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
-```
+## Testing strategy
 
-### Service Ports in Kubernetes
+- **Application tests** use dummy repositories and publishers
+- **Domain tests** validate domain behavior and repository contracts
+- **REST adapter tests** validate controller behavior
+- **PostgreSQL tests** cover repository behavior against Postgres
+- **Integration tests** use Testcontainers for PostgreSQL and RabbitMQ plus `WebApplicationFactory`
 
-When deployed via Helm, services are accessible through:
-- **Main API**: `http://dndtracker:8080` (internal) or via NodePort/Ingress
-- **API Documentation**: `http://dndtracker:8081/scalar/v1` (internal) or via NodePort/Ingress
-- **PostgreSQL**: `dndtracker-postgresql:5432` (internal cluster access)
+## Deployment
 
-### Running with Minikube
-
-Minikube provides an easy way to run DNDTracker locally on Kubernetes:
-
-#### Prerequisites
-```bash
-# Install Minikube (if not already installed)
-# On macOS
-brew install minikube
-
-# On Ubuntu/Debian
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-
-# On Windows
-choco install minikube
-```
-
-#### Setup and Deployment
-```bash
-# Start Minikube cluster
-minikube start
-
-# Enable required addons
-minikube addons enable ingress
-minikube addons enable metrics-server
-
-# Build and load the Docker image into Minikube
-# Option 1: Build locally and load into Minikube
-docker build -t gabrieletoffanin/dndtracker:latest -f src/DNDTracker.Main/Dockerfile .
-minikube image load gabrieletoffanin/dndtracker:latest
-
-# Option 2: Use Minikube's Docker daemon
-eval $(minikube docker-env)
-docker build -t gabrieletoffanin/dndtracker:latest -f src/DNDTracker.Main/Dockerfile .
-
-# Install Helm dependencies
-helm dependency update ./dndtracker
-
-# Deploy to Minikube
-helm install dndtracker ./dndtracker
-```
-
-#### Accessing the Application
-```bash
-# Get service information
-kubectl get services
-kubectl get pods
-
-# Access via NodePort (default service type)
-minikube service dndtracker --url
-
-# Or use port-forwarding for direct access
-kubectl port-forward service/dndtracker 8080:8080
-# API will be available at http://localhost:8080
-# API Documentation at http://localhost:8080/scalar/v1
-```
-
-#### Minikube-Specific Configuration
-
-Create a `minikube-values.yaml` file for local development:
-
-```yaml
-# minikube-values.yaml
-image:
-  repository: gabrieletoffanin/dndtracker
-  tag: "latest"
-  pullPolicy: Never  # Use local image, don't pull from registry
-
-service:
-  type: NodePort  # Use NodePort for easy access in Minikube
-
-resources:
-  limits:
-    cpu: 200m      # Reduced for local development
-    memory: 256Mi
-  requests:
-    cpu: 50m
-    memory: 128Mi
-
-postgresql:
-  enabled: true
-  persistence:
-    size: 500Mi    # Smaller volume for local development
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 50m
-      memory: 128Mi
-
-ingress:
-  enabled: true
-  className: "nginx"
-  hosts:
-    - host: dndtracker.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-```
-
-Deploy with Minikube-specific values:
-```bash
-helm install dndtracker ./dndtracker -f minikube-values.yaml
-```
-
-#### Using Ingress with Minikube
+The `dndtracker/` directory contains the Helm chart.
 
 ```bash
-# Get Minikube IP
-minikube ip
-
-# Add to /etc/hosts (Linux/macOS) or C:\Windows\System32\drivers\etc\hosts (Windows)
-echo "$(minikube ip) dndtracker.local" | sudo tee -a /etc/hosts
-
-# Access via ingress
-curl http://dndtracker.local
+helm dependency update /home/runner/work/DNDTracker/DNDTracker/dndtracker
+helm install dndtracker /home/runner/work/DNDTracker/DNDTracker/dndtracker -f /home/runner/work/DNDTracker/DNDTracker/dndtracker/values.yaml
 ```
 
-#### Development Workflow
+## Developer guidance for AI agents and contributors
 
-```bash
-# Make changes to your code
-# Rebuild and reload image
-docker build -t gabrieletoffanin/dndtracker:latest -f src/DNDTracker.Main/Dockerfile .
-minikube image load gabrieletoffanin/dndtracker:latest
-
-# Restart deployment to use new image
-kubectl rollout restart deployment/dndtracker
-
-# Or upgrade with Helm
-helm upgrade dndtracker ./dndtracker -f minikube-values.yaml
-```
-
-#### Troubleshooting
-
-```bash
-# Check pod status
-kubectl get pods
-kubectl describe pod <pod-name>
-
-# View logs
-kubectl logs <pod-name>
-
-# Check services
-kubectl get svc
-kubectl describe svc dndtracker
-
-# Access Minikube dashboard
-minikube dashboard
-
-# Clean up
-helm uninstall dndtracker
-minikube stop
-minikube delete
-```
-
-### Monitoring Integration
-
-The Helm chart is designed to work with Kubernetes monitoring stacks:
-- Supports Prometheus metrics scraping
-- Compatible with Grafana dashboards
-- Integrates with Kubernetes logging solutions
-
-## 📝 Additional Notes
-
-- Auto-migration runs on startup with connection retry logic
-- OpenTelemetry traces are sent to the collector and forwarded to Elasticsearch
-- SSL certificates are auto-generated for the ELK stack
-- All services run in a shared Docker network for internal communication
-- Helm charts follow Kubernetes best practices for production deployments
+- `/home/runner/work/DNDTracker/DNDTracker/.github/copilot-instructions.md` contains Copilot-specific repository guidance
+- `/home/runner/work/DNDTracker/DNDTracker/AGENTS.md` contains detailed feature-delivery guidance for autonomous agents

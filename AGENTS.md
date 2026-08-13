@@ -1,150 +1,329 @@
-# AGENTS.md - DNDTracker Development Guide
+# AGENTS.md — DNDTracker Agent Development Playbook
 
-## 🏗️ Architecture Overview
+This file is for coding agents and autonomous contributors working inside DNDTracker.
 
-DNDTracker is a **Clean Architecture + Domain-Driven Design (DDD) + CQRS** application built on .NET 9.0 with hexagonal architecture. Commands and queries are strictly separated into different projects.
+## 1. Mission
 
-**Core Flow:** REST/AMQP Inbound → MediatR → Domain/Application Logic → PostgreSQL/RabbitMQ Outbound
+Deliver small, correct changes that respect the repository architecture:
 
-## 📦 Key Components
+- Clean Architecture
+- DDD
+- CQRS
+- Hexagonal boundaries
+- ASP.NET Core on .NET 10
+- PostgreSQL persistence
+- RabbitMQ-based event flow
 
-| Component | Purpose | Files |
-|-----------|---------|-------|
-| **Domain** | Aggregate roots, entities, domain events, repository interfaces | `src/DNDTracker.Domain/{Campaigns,Heroes}/` |
-| **Application** | CQRS command handlers, business logic orchestration | `src/DNDTracker.Application/UseCases/` |
-| **Application.Queries** | Query handlers, DTOs, read-side logic (separate project) | `src/DNDTracker.Application.Queries/UseCases/` |
-| **Inbound Adapters** | REST controllers, AMQP/RabbitMQ consumers | `src/DNDTracker.Inbound.RestAdapter/`, `src/DNDTracker.Inbound.AmqpAdapter/` |
-| **Outbound Adapters** | PostgreSQL repositories, RabbitMQ publishers, in-memory implementations | `src/DNDTracker.Outbound.PostgresDb/`, `src/DNDTracker.Outbound.RabbitMq/` |
-| **SharedKernel** | Base classes (`AggregateRoot<T>`, `Entity`, `DomainEvent`), MediatR interfaces | `src/DNDTracker.SharedKernel/` |
+Prefer minimal, coherent changes over broad refactors.
 
-## 🔧 Critical Development Patterns
+## 2. Fast project orientation
 
-### Aggregates & Entities
-- Aggregate roots inherit from `AggregateRoot<TId>` with strong-typed IDs (e.g., `CampaignId`)
-- Always use factory methods in aggregates (not public constructors)
-- Domain logic lives in entities, not repositories
-- Track domain events in base `Entity` class via `AddDomainEvent()`
+Repository root: `/home/runner/work/DNDTracker/DNDTracker`
 
-**Example:** `src/DNDTracker.Domain/Campaigns/Campaign.cs` - public factory `Create()` method, private constructor
+### Important directories
 
-### CQRS Commands
-- Handlers inherit from `ICommandHandler<TCommand, TResult>` (via `src/DNDTracker.SharedKernel/Commands/`)
-- Request repository, validate, execute domain logic, save
-- One handler per command - no shared logic between handlers
+| Path | Purpose |
+|---|---|
+| `src/DNDTracker.Domain` | Aggregates, entities, domain events, repository interfaces |
+| `src/DNDTracker.Application` | Command handlers and write-side use cases |
+| `src/DNDTracker.Application.Queries` | Query handlers and read-side use cases |
+| `src/DNDTracker.Inbound.RestAdapter` | HTTP controllers and transport DTOs |
+| `src/DNDTracker.Inbound.AmqpAdapter` | RabbitMQ consumers and hosted services |
+| `src/DNDTracker.Outbound.PostgresDb` | DbContext, EF configuration, migrations, repositories |
+| `src/DNDTracker.Outbound.RabbitMq` | Event publisher and topology initialization |
+| `src/DNDTracker.DataAccessObject.Mapping` | Domain/persistence mapping extensions |
+| `src/DNDTracker.Vocabulary` | Enums, exceptions, persistence models, value objects |
+| `src/DNDTracker.Main` | Composition root and host startup |
+| `tst` | Automated tests |
+| `dndtracker` | Helm chart |
 
-**Example:** `src/DNDTracker.Application/UseCases/Campaigns/CreateCampaign/CreateCampaignCommandHandler.cs`
+### Runtime entry points
 
-### CQRS Queries
-- Handlers in separate `DNDTracker.Application.Queries` project
-- Handlers inherit from `IQueryHandler<TQuery, TResult>`
-- Direct repository queries, return DTOs, no domain events
+- Main program: `src/DNDTracker.Main/Program.cs`
+- REST API controller surface: `src/DNDTracker.Inbound.RestAdapter/Controllers`
+- RabbitMQ topology config: `src/DNDTracker.Main/appsettings.json`
+- Local stack: `docker-compose.yml`
+- Local bootstrap script: `up-local.ps1`
 
-**Example:** `src/DNDTracker.Application.Queries/UseCases/GetCampaign/GetCampaignByNameHandler.cs`
+## 3. Architectural constraints
 
-### REST Integration
-- Controllers use MediatR's `mediator.Send()` to dispatch commands/queries
-- DTOs in `src/DNDTracker.Inbound.RestAdapter/Dtos/`
-- Controllers use fluent response builders (see `CampaignController.cs`)
+### Domain rules belong in the domain
 
-### Async Message Flow
-- Domain events published by entities trigger outbound messages
-- `HeroAddedEventHostedService` consumes from RabbitMQ, publishes to internal event bus
-- Event handlers can trigger side effects without domain coupling
+Use aggregates and entities to enforce behavior.
 
-## 🧪 Testing Conventions
+- `Campaign` is the aggregate root.
+- `Hero` lives inside the campaign aggregate.
+- Keep validation and invariants in aggregate/entity methods.
+- Raise domain events from the entity/aggregate layer.
 
-- **Framework:** xUnit + FluentAssertions + FsCheck.Xunit + Testcontainers
-- **Pattern:** Arrange-Act-Assert with Dummy objects for dependencies
-- **Test doubles:** Located in `Behaviors/Dummies/` folders
-- **Integration tests:** Use Testcontainers for real PostgreSQL instances
+Do not move business rules into:
 
-**Example:** `tst/DNDTracker.Application.Tests/CreateCampaignUseCaseTest.cs`
+- controllers
+- repositories
+- mapping layers
+- startup code
 
-```csharp
-[Fact]
-public async Task CreateCampaign_WithValidName_ShouldSucceed()
-{
-    // Arrange
-    var repository = new DummyCampaignRepository();
-    var handler = new CreateCampaignCommandHandler(repository);
-    
-    // Act
-    var result = await handler.Handle(new CreateCampaignCommand("New Campaign"), CancellationToken.None);
-    
-    // Assert
-    result.Should().NotBeEmpty();
-}
-```
+### CQRS is strict here
 
-## 🚀 Build & Deployment Workflows
+- Commands go in `src/DNDTracker.Application/UseCases/...`
+- Queries go in `src/DNDTracker.Application.Queries/UseCases/...`
+- Do not combine read and write logic in the same handler.
+- Do not add domain side effects inside query handlers.
+
+### Repositories are ports + adapters
+
+- Interfaces stay in the domain project.
+- PostgreSQL implementations stay in `src/DNDTracker.Outbound.PostgresDb/Repositories`.
+- Repository methods load or save aggregates; they should not become a second business layer.
+
+### Mapping boundaries matter
+
+Whenever persistence shape changes:
+
+- update models in `src/DNDTracker.Vocabulary/Models`
+- update EF configuration in `src/DNDTracker.Outbound.PostgresDb/Database/Postgres/Configuration`
+- update mappings in `src/DNDTracker.DataAccessObject.Mapping`
+
+## 4. Canonical implementation patterns
+
+### Pattern A — add a command-backed feature
+
+1. Start from the domain behavior.
+2. Add or update aggregate/entity methods.
+3. Add a command and handler under `src/DNDTracker.Application/UseCases`.
+4. Load state via repository interfaces.
+5. Execute domain behavior.
+6. Publish domain events explicitly if the use case requires it.
+7. Persist via repository.
+8. Expose the use case through the REST adapter only if it is externally reachable.
+9. Add focused tests in application, adapter, and integration layers as needed.
+
+### Pattern B — add a query-backed feature
+
+1. Create a request and handler under `src/DNDTracker.Application.Queries/UseCases`.
+2. Read through repositories or existing read-oriented adapters.
+3. Return DTOs or shared read models.
+4. Keep query handlers side-effect free.
+5. Add query/controller tests.
+
+### Pattern C — add a new domain event workflow
+
+1. Raise the event from aggregate/entity behavior.
+2. Publish the event in the application handler.
+3. Add queue metadata under `RabbitMQ:Topology:Queues` in `src/DNDTracker.Main/appsettings.json`.
+4. Add a matching binding under `RabbitMQ:Topology:Bindings`.
+5. Implement a consumer when the event needs inbound processing.
+6. Register the consumer/hosted service through the AMQP adapter setup.
+7. Add tests around the use case and any new consumer behavior.
+
+### Pattern D — change persistence
+
+1. Update the persistence model.
+2. Update EF configuration.
+3. Update the mapping extensions.
+4. Generate a migration.
+5. Run repository/integration tests.
+6. Verify startup migration still succeeds.
+
+## 5. Feature-development checklist for agents
+
+When implementing a feature, work through this checklist.
+
+### Understand the change
+- Identify whether it is domain, command, query, API, persistence, messaging, or deployment work.
+- Find the existing vertical slice closest to the requested behavior.
+- Reuse existing patterns before introducing new ones.
+
+### Touch the right layers only
+- Domain-only change: stay in Domain + tests unless orchestration must change.
+- New write use case: Domain + Application + maybe REST + tests.
+- New read use case: Application.Queries + maybe REST + tests.
+- DB schema change: Vocabulary + EF config + mapping + migration + tests.
+- Event change: Domain + Application + RabbitMQ config + consumer + tests.
+
+### Validate completeness
+- DTO updated if API contract changed
+- Handler registered by assembly scanning pattern
+- Mapping updated if persistence shape changed
+- Migration added if schema changed
+- Tests added/updated at the lowest effective level
+- Documentation updated when workflow or setup changed
+
+## 6. Testing playbook
+
+### Default commands
 
 ```bash
-# Build entire solution
-dotnet build DNDTracker.sln
-
-# Run with Docker Compose (includes API, PostgreSQL, RabbitMQ, ELK stack, OpenTelemetry)
-docker-compose up --build
-
-# Database migrations (from src/DNDTracker.Outbound.PostgresDb directory)
-dotnet ef migrations add <MigrationName> --context DNDTrackerPostgresDbContext
-dotnet ef database update --context DNDTrackerPostgresDbContext
-
-# Run all tests
-dotnet test
-
-# Run specific test project
-dotnet test tst/DNDTracker.Main.IntegrationTests
-
-# Deploy to Kubernetes with Helm
-helm dependency update ./dndtracker
-helm install dndtracker ./dndtracker -f values.yaml
+dotnet restore DNDTracker.sln
+dotnet build DNDTracker.sln --no-restore
+dotnet test DNDTracker.sln
+dotnet test DNDTracker.sln --filter "Category!=Integration"
 ```
 
-## 🔗 Dependency Injection Setup
+### Which tests to run
 
-Entry point: `src/DNDTracker.Main/Program.cs` (87 lines)
-- MediatR registration with custom handlers
-- PostgreSQL DbContext with auto-migrations
-- RabbitMQ connection setup
-- AMQP adapter background services
-- OpenTelemetry/ELK stack configuration
+| Change type | Minimum validation |
+|---|---|
+| Domain behavior | `tst/DNDTracker.Domain.Tests` and/or `tst/DNDTracker.Application.Tests` |
+| Command handler | `tst/DNDTracker.Application.Tests` |
+| Query/controller change | `tst/DNDTracker.Inbound.RestAdapter.Tests` |
+| PostgreSQL repository change | `tst/DNDTracker.BackendInfrastructure.PostgresDb.Tests` |
+| Startup / middleware / cross-layer behavior | `tst/DNDTracker.Main.IntegrationTests` |
+| Broad change | relevant focused suite first, then `dotnet test DNDTracker.sln` |
 
-## 📊 Domain Events & Publishing
+### Existing testing patterns
 
-1. Entity raises domain event via `AddDomainEvent(event)`
-2. Repository saves entity (EF Core tracks events)
-3. Application publishes events via `IEventPublisher` 
-4. Outbound adapters (RabbitMQ, in-memory) handle event distribution
-5. Inbound adapters (AMQP) consume and trigger downstream handlers
+- xUnit is the test framework.
+- FluentAssertions is the assertion library.
+- Dummy collaborators live under `Behaviors/Dummies`.
+- Integration tests use Testcontainers.
+- API integration tests use `WebApplicationFactory<Program>`.
 
-**Key:** Events flow outward only; domain layer never depends on infrastructure.
+### Testing guidance for agents
 
-## 🎯 When Adding New Features
+- Start narrow: run the smallest relevant suite first.
+- Expand only when the change crosses boundaries.
+- If a handler orchestrates domain events, verify both state change and event publication.
+- If a controller changes, verify HTTP status codes and request/response mapping.
+- If persistence changes, verify mapping round-trips and EF behavior.
 
-1. **Define aggregate:** Create entity in `src/DNDTracker.Domain/{Entity}/`
-2. **Add command:** Create handler in `src/DNDTracker.Application/UseCases/{Feature}/`
-3. **Add query:** Create handler in `src/DNDTracker.Application.Queries/UseCases/{Feature}/`
-4. **Add repository:** Implement in `src/DNDTracker.Outbound.PostgresDb/`
-5. **Add REST endpoint:** Add method to controller in `src/DNDTracker.Inbound.RestAdapter/Controllers/`
-6. **Add tests:** Test handler, repository, and controller in `tst/`
+## 7. Local runtime and infrastructure guide
 
-**Important:** Commands and queries are **never** in the same handler; use separate MediatR requests.
+### Full local stack
 
-## 🐳 Services & Ports
+```powershell
+.\up-local.ps1 -Build
+```
 
-| Service | Port | URL |
-|---------|------|-----|
-| DNDTracker API | 5169 | http://localhost:5169 |
-| Scalar API Docs | 5169 | http://localhost:5169/scalar/v1 |
-| PostgreSQL | 5432 | Host=localhost;Database=dndtracker |
-| RabbitMQ Management | 15672 | http://localhost:15672 (guest/guest) |
-| Kibana (Logs) | 5601 | http://localhost:5601 |
-| OpenTelemetry OTLP | 4317 | localhost:4317 (gRPC) |
+This script:
 
-## 📋 Key Files for Reference
+- reads `NEW_RELIC_LICENSE_KEY` from user-secrets
+- exports it into the local shell environment
+- starts `docker compose up`
 
-- `src/DNDTracker.SharedKernel/Primitives/` - Base classes for entities, aggregates
-- `src/DNDTracker.Domain/IEventPublisher.cs` - Event publishing interface
-- `src/DNDTracker.Main/Program.cs` - Full DI setup
-- `docker-compose.yml` - All services configuration
-- `dndtracker/values.yaml` - Kubernetes Helm values
+### Required local secret
+
+```powershell
+dotnet user-secrets set "NEW_RELIC_LICENSE_KEY" "<value>" --id DndTracker
+```
+
+### Useful URLs
+
+| Service | URL |
+|---|---|
+| API | `http://localhost:5169` |
+| Scalar docs | `http://localhost:5169/scalar/v1` |
+| RabbitMQ UI | `http://localhost:15672` |
+| Grafana | `http://localhost:3000` |
+| Jaeger | `http://localhost:16686` |
+| Prometheus | `http://localhost:9090` |
+
+## 8. EF Core migration workflow
+
+Use both the database project and the startup project.
+
+```bash
+dotnet tool install --global dotnet-ef
+
+dotnet ef migrations add <MigrationName> \
+  --project src/DNDTracker.Outbound.PostgresDb \
+  --startup-project src/DNDTracker.Main \
+  --context DNDTrackerPostgresDbContext
+
+dotnet ef database update \
+  --project src/DNDTracker.Outbound.PostgresDb \
+  --startup-project src/DNDTracker.Main \
+  --context DNDTrackerPostgresDbContext
+```
+
+Agent reminders:
+
+- `Program.cs` already applies migrations on startup.
+- The DbContext discovers entity configurations automatically from its assembly.
+- A schema change without mapping updates is usually incomplete.
+
+## 9. HTTP/API conventions
+
+Controllers should:
+
+- accept transport DTOs
+- translate them into commands/queries
+- call `IMediator.Send(...)`
+- return HTTP responses
+
+Controllers should not:
+
+- contain domain rules
+- perform direct persistence logic
+- become orchestration-heavy when a handler should own the workflow
+
+Current public controller surface is centered on campaigns and health.
+
+## 10. Messaging conventions
+
+RabbitMQ is part of the normal architecture, not an afterthought.
+
+When editing event-driven behavior:
+
+- ensure event names stay aligned with topology keys
+- ensure queue names used in bindings match configured queue names
+- ensure consumer registration exists when a consumer is introduced
+- verify handlers explicitly publish domain events when expected
+
+## 11. Documentation expectations
+
+Update documentation when changes affect:
+
+- developer setup
+- runtime dependencies
+- migration workflow
+- API shape
+- agent/contributor guidance
+
+Primary docs in this repo:
+
+- `README.md` — contributor/user-facing overview
+- `.github/copilot-instructions.md` — Copilot-specific guidance
+- `AGENTS.md` — autonomous agent delivery guide
+
+## 12. Common mistakes to avoid
+
+- Adding business rules to controllers
+- Mixing commands and queries in the same handler or project
+- Forgetting domain-to-model mapping updates after persistence changes
+- Forgetting migrations after schema changes
+- Assuming EF Core auto-publishes domain events
+- Adding RabbitMQ consumers without topology config
+- Running only one narrow test suite for a broad cross-layer change
+- Documenting the wrong target framework
+
+## 13. Done definition for agent-delivered work
+
+A feature is only done when all relevant items below are true:
+
+- Architecture boundaries are still respected
+- The right projects were changed and unrelated layers were left alone
+- Tests relevant to the touched layers pass
+- Persistence/messaging wiring is complete when applicable
+- Documentation is updated when setup or workflow changed
+- No secrets were introduced
+
+## 14. Quick commands
+
+```bash
+# Restore and build
+dotnet restore DNDTracker.sln
+dotnet build DNDTracker.sln --no-restore
+
+# Run all tests
+dotnet test DNDTracker.sln
+
+# Run the non-integration command used by CI
+dotnet test DNDTracker.sln --filter "Category!=Integration"
+
+# Run one test project
+dotnet test tst/DNDTracker.Application.Tests/DNDTracker.Application.Tests.csproj
+
+# Start only PostgreSQL if needed for local DB work
+docker compose up -d postgres
+```
