@@ -9,15 +9,15 @@ namespace DNDTracker.Outbound.RabbitMq.Messaging;
 internal class EventPublisher(
     IOptions<RabbitMqConfiguration> rabbitConfiguration) : IEventPublisher
 {
-    public ValueTask PublishAsync<T>(
-    T message,
-    CancellationToken cancellationToken = default)
-    where T : notnull
+    public async ValueTask PublishAsync<T>(
+        T message,
+        CancellationToken cancellationToken = default)
+        where T : notnull
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        using IConnection connection = CreateConnection();
-        using IModel channel = connection.CreateModel();
+        await using IConnection connection = await CreateConnectionAsync(cancellationToken);
+        await using IChannel channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
         byte[] body = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(message);
         string messageType = message.GetType().Name;
@@ -40,25 +40,25 @@ internal class EventPublisher(
         Dictionary<string, object?> headers = new();
         RabbitMqTelemetry.InjectTraceContext(activity, headers);
 
-        IBasicProperties basicProperties = channel.CreateBasicProperties();
-        basicProperties.Headers = headers;
+        BasicProperties basicProperties = new()
+        {
+            Headers = headers
+        };
 
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: exchange,
             routingKey: routingKey,
             mandatory: false,
             basicProperties: basicProperties,
-            body: body);
-
-        return ValueTask.CompletedTask;
+            body: body,
+            cancellationToken: cancellationToken);
     }
-
 
     private string GetExchangeForMessageType(string messageType)
     {
         var binding = rabbitConfiguration.Value.Topology.Bindings
             .FirstOrDefault(b => b.Queue.Equals(messageType, StringComparison.OrdinalIgnoreCase));
-            
+
         return binding?.Exchange ?? "";
     }
 
@@ -66,11 +66,11 @@ internal class EventPublisher(
     {
         var binding = rabbitConfiguration.Value.Topology.Bindings
             .FirstOrDefault(b => b.Queue.Equals(messageType, StringComparison.OrdinalIgnoreCase));
-            
+
         return binding?.RoutingKey ?? messageType;
     }
 
-    private IConnection CreateConnection()
+    private Task<IConnection> CreateConnectionAsync(CancellationToken cancellationToken)
     {
         ConnectionFactory factory = new()
         {
@@ -84,6 +84,6 @@ internal class EventPublisher(
             AutomaticRecoveryEnabled = true
         };
 
-        return factory.CreateConnection();
+        return factory.CreateConnectionAsync(cancellationToken);
     }
 }

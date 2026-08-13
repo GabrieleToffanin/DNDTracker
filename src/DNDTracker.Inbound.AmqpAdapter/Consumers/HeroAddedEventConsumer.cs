@@ -15,24 +15,23 @@ public class HeroAddedEventConsumer(
     IOptions<RabbitMqConfiguration> rabbitConfiguration,
     ILogger<HeroAddedEventConsumer> logger) : BackgroundService, IAsyncDisposable
 {
-    private IModel? _channel;
+    private IChannel? _channel;
     private IConnection? _connection;
-    private EventingBasicConsumer? _consumer;
     private const string QueueName = "dndtracking.campaign.hero-added";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            _connection = CreateConnection();
-            _channel = _connection.CreateModel();
+            _connection = await CreateConnectionAsync(stoppingToken);
+            _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
-            _consumer = new EventingBasicConsumer(_channel);
-            _consumer.Received += (_, ea) =>
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+            consumer.ReceivedAsync += async (_, ea) =>
             {
                 try
                 {
-                    ProcessMessage(ea);
+                    await ProcessMessageAsync(ea, stoppingToken);
                 }
                 catch (Exception ex)
                 {
@@ -40,7 +39,7 @@ public class HeroAddedEventConsumer(
                 }
             };
 
-            _channel.BasicConsume(QueueName, autoAck: false, consumer: _consumer);
+            await _channel.BasicConsumeAsync(QueueName, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
             logger.LogInformation("✅ HeroAddedEventConsumer started - listening on {QueueName}", QueueName);
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
@@ -51,7 +50,7 @@ public class HeroAddedEventConsumer(
         }
     }
 
-    private IConnection CreateConnection()
+    private Task<IConnection> CreateConnectionAsync(CancellationToken cancellationToken)
     {
         ConnectionFactory factory = new()
         {
@@ -65,12 +64,12 @@ public class HeroAddedEventConsumer(
             AutomaticRecoveryEnabled = true
         };
 
-        return factory.CreateConnection();
+        return factory.CreateConnectionAsync(cancellationToken);
     }
 
-    private void ProcessMessage(BasicDeliverEventArgs ea)
+    private async Task ProcessMessageAsync(BasicDeliverEventArgs ea, CancellationToken cancellationToken)
     {
-        var (traceParent, traceState) = RabbitMqTelemetry.ExtractTraceContext(ea.BasicProperties?.Headers);
+        var (traceParent, traceState) = RabbitMqTelemetry.ExtractTraceContext(ea.BasicProperties.Headers);
         ActivityContext.TryParse(traceParent, traceState, out var parentContext);
 
         using var activity = RabbitMqTelemetry.ActivitySource.StartActivity(
@@ -89,7 +88,7 @@ public class HeroAddedEventConsumer(
         {
             logger.LogWarning("Failed to deserialize HeroAddedDomainEvent");
             activity?.SetStatus(ActivityStatusCode.Error, "Deserialization failed");
-            _channel!.BasicAck(ea.DeliveryTag, false);
+            await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
             return;
         }
 
@@ -99,7 +98,7 @@ public class HeroAddedEventConsumer(
             "🦸 Received hero-added event: Id={EventId}, OccuredOn={OccuredOn}",
             message.Id, message.OccuredOn);
 
-        _channel!.BasicAck(ea.DeliveryTag, false);
+        await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
@@ -110,15 +109,15 @@ public class HeroAddedEventConsumer(
 
         if (_channel != null)
         {
-            _channel.Close();
-            _channel.Dispose();
+            await _channel.CloseAsync(cancellationToken);
+            await _channel.DisposeAsync();
             _channel = null;
         }
 
         if (_connection != null)
         {
-            _connection.Close();
-            _connection.Dispose();
+            await _connection.CloseAsync(cancellationToken);
+            await _connection.DisposeAsync();
             _connection = null;
         }
     }
