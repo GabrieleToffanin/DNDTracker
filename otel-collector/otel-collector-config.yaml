@@ -19,6 +19,8 @@ exporters:
     endpoint: jaeger:4317
     tls:
       insecure: true
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: dndtracker
@@ -38,4 +40,4 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [debug]
+      exporters: [loki, debug]
