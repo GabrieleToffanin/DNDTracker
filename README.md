@@ -50,8 +50,8 @@ tst/
 - Domain events are raised from entities with `AddDomainEvent()`
 
 ### CQRS split
-- **Commands** live in `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Application/UseCases`
-- **Queries** live in `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Application.Queries/UseCases`
+- **Commands** live in `src/DNDTracker.Application/UseCases`
+- **Queries** live in `src/DNDTracker.Application.Queries/UseCases`
 - Controllers translate HTTP payloads into MediatR requests
 
 ### Infrastructure
@@ -113,19 +113,19 @@ The REST adapter currently exposes:
 ## Build and test
 
 ```bash
-dotnet restore /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln
-dotnet build /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln --no-restore
+dotnet restore DNDTracker.sln
+dotnet build DNDTracker.sln --no-restore
 
-dotnet test /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln
-dotnet test /home/runner/work/DNDTracker/DNDTracker/DNDTracker.sln --filter "Category!=Integration"
+dotnet test DNDTracker.sln
+dotnet test DNDTracker.sln --filter "Category!=Integration"
 ```
 
 Useful targeted commands:
 
 ```bash
-dotnet test /home/runner/work/DNDTracker/DNDTracker/tst/DNDTracker.Application.Tests/DNDTracker.Application.Tests.csproj
+dotnet test tst/DNDTracker.Application.Tests/DNDTracker.Application.Tests.csproj
 
-dotnet test /home/runner/work/DNDTracker/DNDTracker/tst/DNDTracker.Main.IntegrationTests/DNDTracker.Main.IntegrationTests.csproj
+dotnet test tst/DNDTracker.Main.IntegrationTests/DNDTracker.Main.IntegrationTests.csproj
 ```
 
 > There is no dedicated lint or formatting command configured in the repository.
@@ -137,7 +137,6 @@ dotnet test /home/runner/work/DNDTracker/DNDTracker/tst/DNDTracker.Main.Integrat
 The repository includes a helper script that loads the required user secret and starts Docker Compose:
 
 ```powershell
-cd /home/runner/work/DNDTracker/DNDTracker
 .\up-local.ps1 -Build
 ```
 
@@ -149,7 +148,7 @@ dotnet user-secrets set "NEW_RELIC_LICENSE_KEY" "<value>" --id DndTracker
 
 ### Docker Compose services
 
-`/home/runner/work/DNDTracker/DNDTracker/docker-compose.yml` starts:
+`docker-compose.yml` starts:
 
 - `dndtracker.api`
 - `postgres`
@@ -178,7 +177,7 @@ Useful local URLs:
 If PostgreSQL and RabbitMQ are already available locally:
 
 ```bash
-dotnet run --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main/DNDTracker.Main.csproj
+dotnet run --project src/DNDTracker.Main/DNDTracker.Main.csproj
 ```
 
 ## Database and migrations
@@ -186,18 +185,18 @@ dotnet run --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main
 The EF Core `DbContext` is in `DNDTracker.Outbound.PostgresDb`, while the startup project is `DNDTracker.Main`.
 
 ```bash
-docker compose -f /home/runner/work/DNDTracker/DNDTracker/docker-compose.yml up -d postgres
+docker compose -f docker-compose.yml up -d postgres
 
 dotnet tool install --global dotnet-ef
 
 dotnet ef migrations add <MigrationName> \
-  --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Outbound.PostgresDb \
-  --startup-project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main \
+  --project src/DNDTracker.Outbound.PostgresDb \
+  --startup-project src/DNDTracker.Main \
   --context DNDTrackerPostgresDbContext
 
 dotnet ef database update \
-  --project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Outbound.PostgresDb \
-  --startup-project /home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main \
+  --project src/DNDTracker.Outbound.PostgresDb \
+  --startup-project src/DNDTracker.Main \
   --context DNDTrackerPostgresDbContext
 ```
 
@@ -212,7 +211,7 @@ Notes:
 
 ## Messaging
 
-RabbitMQ topology is configured in `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main/appsettings.json`.
+RabbitMQ topology is configured in `src/DNDTracker.Main/appsettings.json`.
 
 Current queues and bindings include:
 
@@ -240,11 +239,11 @@ When adding a new event:
 The `dndtracker/` directory contains the Helm chart.
 
 ```bash
-helm dependency update /home/runner/work/DNDTracker/DNDTracker/dndtracker
-helm install dndtracker /home/runner/work/DNDTracker/DNDTracker/dndtracker -f /home/runner/work/DNDTracker/DNDTracker/dndtracker/values.yaml
+helm dependency update dndtracker
+helm install dndtracker dndtracker -f dndtracker/values.yaml
 ```
 
 ## Developer guidance for AI agents and contributors
 
-- `/home/runner/work/DNDTracker/DNDTracker/.github/copilot-instructions.md` contains Copilot-specific repository guidance
-- `/home/runner/work/DNDTracker/DNDTracker/AGENTS.md` contains detailed feature-delivery guidance for autonomous agents
+- `.github/copilot-instructions.md` contains Copilot-specific repository guidance
+- `AGENTS.md` contains detailed feature-delivery guidance for autonomous agents

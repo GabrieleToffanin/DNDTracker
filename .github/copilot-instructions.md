@@ -5,7 +5,7 @@
 DNDTracker is a backend organized with Clean Architecture, DDD, CQRS, and hexagonal boundaries.
 
 - Target framework: `net10.0`
-- Entry point: `/home/runner/work/DNDTracker/DNDTracker/src/DNDTracker.Main/Program.cs`
+- Entry point: `src/DNDTracker.Main/Program.cs`
 - Main aggregate: `Campaign`
 - Main entity inside aggregate: `Hero`
 - Persistence: PostgreSQL via EF Core
