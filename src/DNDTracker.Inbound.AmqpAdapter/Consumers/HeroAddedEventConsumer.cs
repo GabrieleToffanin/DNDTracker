@@ -112,14 +112,22 @@ public class HeroAddedEventConsumer(
 
         if (_channel != null)
         {
-            await _channel.CloseAsync(cancellationToken);
+            try
+            {
+                await _channel.CloseAsync(cancellationToken);
+            }
+            catch (ObjectDisposedException) { }
             await _channel.DisposeAsync();
             _channel = null;
         }
 
         if (_connection != null)
         {
-            await _connection.CloseAsync(cancellationToken);
+            try
+            {
+                await _connection.CloseAsync(cancellationToken);
+            }
+            catch (ObjectDisposedException) { }
             await _connection.DisposeAsync();
             _connection = null;
         }
