@@ -15,19 +15,21 @@ processors:
     limit_mib: 256
 
 exporters:
-  otlp/jaeger:
+  otlp_grpc/jaeger:
     endpoint: jaeger:4317
     tls:
       insecure: true
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
+  otlp_http/loki:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: dndtracker
   # New Relic OTLP export – EU data center
   # All three signals (traces, metrics, logs) share the same gRPC endpoint;
   # the license key is injected at runtime via the NEW_RELIC_LICENSE_KEY env var.
-  otlp/newrelic:
+  otlp_grpc/newrelic:
     endpoint: otlp.eu01.nr-data.net:4317
     headers:
       api-key: ${env:NEW_RELIC_LICENSE_KEY}
@@ -39,12 +41,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp/jaeger, otlp/newrelic, debug]
+      exporters: [otlp_grpc/jaeger, otlp_grpc/newrelic, debug]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [prometheus, otlp/newrelic, debug]
+      exporters: [prometheus, otlp_grpc/newrelic, debug]
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [loki, otlp/newrelic, debug]
+      exporters: [otlp_http/loki, otlp_grpc/newrelic, debug]

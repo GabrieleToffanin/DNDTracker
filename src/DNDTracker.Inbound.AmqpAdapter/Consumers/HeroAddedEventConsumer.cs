@@ -80,6 +80,9 @@ public class HeroAddedEventConsumer(
         activity?.SetTag("messaging.system", "rabbitmq");
         activity?.SetTag("messaging.destination", QueueName);
         activity?.SetTag("messaging.operation", "process");
+        activity?.SetTag("server.address", rabbitConfiguration.Value.Host);
+        activity?.SetTag("server.port", rabbitConfiguration.Value.Port);
+        activity?.SetTag("peer.service", "rabbitmq");
 
         byte[] body = ea.Body.ToArray();
         HeroAddedDomainEvent? message = JsonSerializer.Deserialize<HeroAddedDomainEvent>(body);

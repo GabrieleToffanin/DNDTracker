@@ -36,6 +36,9 @@ internal class EventPublisher(
         activity?.SetTag("messaging.destination_kind", "exchange");
         activity?.SetTag("messaging.rabbitmq.routing_key", routingKey);
         activity?.SetTag("messaging.message_type", messageType);
+        activity?.SetTag("server.address", rabbitConfiguration.Value.Host);
+        activity?.SetTag("server.port", rabbitConfiguration.Value.Port);
+        activity?.SetTag("peer.service", "rabbitmq");
 
         Dictionary<string, object?> headers = new();
         RabbitMqTelemetry.InjectTraceContext(activity, headers);

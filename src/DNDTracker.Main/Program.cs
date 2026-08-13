@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using DNDTracker.Application.Behaviors;
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
+using MediatR;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
@@ -76,6 +78,8 @@ public class Program
                 })
                 .AddHttpClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
+                .AddSource("Npgsql")
+                .AddSource(TracingPipelineBehavior<object, object>.ActivitySource.Name)
                 .AddSource(RabbitMqTelemetry.ActivitySourceName)
                 .AddOtlpExporter(opts => opts.Endpoint = new Uri(otlpEndpoint)))
             .WithMetrics(metrics => metrics
@@ -100,6 +104,9 @@ public class Program
 
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
+        builder.Services.AddScoped(
+            typeof(IPipelineBehavior<,>),
+            typeof(TracingPipelineBehavior<,>));
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
         builder.Services.Configure<RabbitMqConfiguration>(
             builder.Configuration.GetSection("RabbitMQ"));
