@@ -69,7 +69,7 @@ public class HeroAddedEventConsumer(
 
     private async Task ProcessMessageAsync(BasicDeliverEventArgs ea, CancellationToken cancellationToken)
     {
-        var (traceParent, traceState) = RabbitMqTelemetry.ExtractTraceContext(ea.BasicProperties.Headers);
+        var (traceParent, traceState) = RabbitMqTelemetry.ExtractTraceContext(ea.BasicProperties?.Headers);
         ActivityContext.TryParse(traceParent, traceState, out var parentContext);
 
         using var activity = RabbitMqTelemetry.ActivitySource.StartActivity(
