@@ -115,9 +115,9 @@ public class HeroAddedEventConsumer(
             try
             {
                 await _channel.CloseAsync(cancellationToken);
+                await _channel.DisposeAsync();
             }
             catch (ObjectDisposedException) { }
-            await _channel.DisposeAsync();
             _channel = null;
         }
 
@@ -126,9 +126,9 @@ public class HeroAddedEventConsumer(
             try
             {
                 await _connection.CloseAsync(cancellationToken);
+                await _connection.DisposeAsync();
             }
             catch (ObjectDisposedException) { }
-            await _connection.DisposeAsync();
             _connection = null;
         }
     }
