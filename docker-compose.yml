@@ -109,6 +109,8 @@ services:
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
       - ./otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    environment:
+      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata nell'ambiente locale}
     ports:
       - "4317:4317"   # OTLP gRPC receiver
       - "4318:4318"   # OTLP HTTP receiver
