@@ -4,6 +4,7 @@ volumes:
   postgres-data:
   rabbitmq-data:
   rabbitmq-logs:
+  prometheus-data:
 
 networks:
   default:
@@ -27,21 +28,22 @@ services:
         max-file: "3"
         tag: "{{.Name}}"
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=dndtracker;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=dndtracker;Username=postgres;******
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=guest
       - RabbitMQ__Password=guest
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - Scalar__Enabled=true
-      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata nell'ambiente locale}
-      - NEW_RELIC_APP_NAME=DndTracker
-      - NEW_RELIC_REGION=eu
-      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - OpenTelemetry__ServiceName=DNDTracker
+      - OpenTelemetry__ServiceVersion=1.0.0
+      - OpenTelemetry__Endpoint=http://otel-collector:4317
     depends_on:
       postgres-init:
         condition: service_completed_successfully
       rabbitmq:
+        condition: service_started
+      otel-collector:
         condition: service_started
     networks:
       - default
@@ -99,36 +101,40 @@ services:
     networks:
       - default
 
-  newrelic-infra:
-    image: dndtracker.newrelic-infra
-    container_name: newrelic-infra
-    build:
-      context: ./newrelic-infra
-      dockerfile: newrelic-infra.dockerfile
-    environment:
-      NRIA_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata}
-      NRIA_ENDPOINT: https://infra-api.eu.newrelic.com
-      NRIA_DISPLAY_NAME: dndtracker-docker
-      NRIA_LOG_FORWARDING_ENABLED: "true"
-      RABBITMQ_MANAGEMENT_HOST: host.docker.internal
-      RABBITMQ_MANAGEMENT_PORT: "15672"
-      RABBITMQ_MANAGEMENT_USERNAME: guest
-      RABBITMQ_MANAGEMENT_PASSWORD: guest
-      POSTGRES_MONITORING_HOST: host.docker.internal
-      POSTGRES_MONITORING_PORT: "5432"
-      POSTGRES_MONITORING_DATABASE: dndtracker
-      POSTGRES_MONITORING_USERNAME: postgres
-      POSTGRES_MONITORING_PASSWORD: postgres
-    cap_add:
-      - SYS_PTRACE
-    network_mode: host
-    privileged: true
-    pid: host
+  # Observability stack
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
-      - /:/host:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - rabbitmq-logs:/var/log/rabbitmq:ro
+      - ./otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8889:8889"   # Prometheus metrics scrape endpoint
     depends_on:
-      - rabbitmq
-    restart: unless-stopped
+      - jaeger
+    networks:
+      - default
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14317:4317"  # Jaeger OTLP gRPC (internal: 4317)
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - default
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"   # Prometheus UI
+    networks:
+      - default
