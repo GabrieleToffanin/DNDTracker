@@ -5,6 +5,8 @@ volumes:
   rabbitmq-data:
   rabbitmq-logs:
   prometheus-data:
+  loki-data:
+  grafana-data:
 
 networks:
   default:
@@ -113,6 +115,7 @@ services:
       - "8889:8889"   # Prometheus metrics scrape endpoint
     depends_on:
       - jaeger
+      - loki
     networks:
       - default
 
@@ -136,5 +139,32 @@ services:
       - prometheus-data:/prometheus
     ports:
       - "9090:9090"   # Prometheus UI
+    networks:
+      - default
+
+  loki:
+    image: grafana/loki:3.3.2
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"   # Loki API
+    volumes:
+      - loki-data:/loki
+    networks:
+      - default
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    ports:
+      - "3000:3000"   # Grafana UI (admin/admin)
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - loki
+      - jaeger
     networks:
       - default
