@@ -24,6 +24,13 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: dndtracker
+  # New Relic OTLP export – EU data center
+  # All three signals (traces, metrics, logs) share the same gRPC endpoint;
+  # the license key is injected at runtime via the NEW_RELIC_LICENSE_KEY env var.
+  otlp/newrelic:
+    endpoint: otlp.eu01.nr-data.net:4317
+    headers:
+      api-key: ${env:NEW_RELIC_LICENSE_KEY}
   debug:
     verbosity: basic
 
@@ -32,12 +39,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp/jaeger, debug]
+      exporters: [otlp/jaeger, otlp/newrelic, debug]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [prometheus, debug]
+      exporters: [prometheus, otlp/newrelic, debug]
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [loki, debug]
+      exporters: [loki, otlp/newrelic, debug]
