@@ -117,6 +117,8 @@ public class Program
             builder.Configuration.GetSection("Backpressure"));
         builder.Services.AddSingleton<BackpressureOptions>(provider =>
             provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<BackpressureOptions>>().Value);
+        builder.Services.AddProblemDetails();
+        builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 
         WebApplication app = builder.Build();
 
@@ -137,6 +139,7 @@ public class Program
             app.UseHttpsRedirection();
         }
 
+        app.UseExceptionHandler();
         app.UseMiddleware<BackpressureMiddleware>();
         app.UseAuthorization();
         app.MapControllers();

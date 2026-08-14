@@ -4,6 +4,7 @@ using DNDTracker.Application.Queries.UseCases.GetCampaignTracker;
 using DNDTracker.Application.Queries.UseCases.RollDice;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
+using DNDTracker.Application.UseCases.Campaigns.Tracker;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Inbound.RestAdapter.Dtos;
@@ -137,5 +138,78 @@ public class CampaignControllerTests
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.StatusCode.Should().Be((int)HttpStatusCode.OK);
         okResult.Value.Should().BeEquivalentTo(expectedResult);
+    }
+
+    [Fact]
+    public async Task UpdateCharacterHitPoints_ReturnsNoContent_WhenSuccessful()
+    {
+        var mediator = new DummyMediator();
+        var campaignName = "Test Campaign";
+        var characterId = Guid.NewGuid();
+        var request = new UpdateCharacterHitPointsRequest(10, 0, 0);
+
+        mediator.RegisterHandler<UpdateCharacterHitPointsCommand>((_, __) => Task.CompletedTask);
+
+        var controller = new CampaignController(mediator);
+
+        var result = await controller.UpdateCharacterHitPoints(campaignName, characterId, request, CancellationToken.None);
+
+        result.Should().BeOfType<NoContentResult>()
+            .Which.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task AddCharacterCondition_ReturnsNoContent_WhenSuccessful()
+    {
+        var mediator = new DummyMediator();
+        var campaignName = "Test Campaign";
+        var characterId = Guid.NewGuid();
+        var request = new AddCharacterConditionRequest("Stunned", 2);
+
+        mediator.RegisterHandler<AddCharacterConditionCommand>((_, __) => Task.CompletedTask);
+
+        var controller = new CampaignController(mediator);
+
+        var result = await controller.AddCharacterCondition(campaignName, characterId, request, CancellationToken.None);
+
+        result.Should().BeOfType<NoContentResult>()
+            .Which.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task StartCombat_ReturnsNoContent_WhenSuccessful()
+    {
+        var mediator = new DummyMediator();
+        var campaignName = "Test Campaign";
+        var request = new StartCombatRequest(
+        [
+            new CombatantInput(Guid.NewGuid(), "Goblin", CombatParticipantType.Monster, 15, 10, 10, 0, false, null)
+        ]);
+
+        mediator.RegisterHandler<StartCombatCommand>((_, __) => Task.CompletedTask);
+
+        var controller = new CampaignController(mediator);
+
+        var result = await controller.StartCombat(campaignName, request, CancellationToken.None);
+
+        result.Should().BeOfType<NoContentResult>()
+            .Which.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task UpdateCombatHitPoints_ReturnsNoContent_WhenSuccessful()
+    {
+        var mediator = new DummyMediator();
+        var campaignName = "Test Campaign";
+        var request = new UpdateCombatHitPointsRequest(Guid.NewGuid(), 5, 0, 0);
+
+        mediator.RegisterHandler<UpdateCombatantHitPointsCommand>((_, __) => Task.CompletedTask);
+
+        var controller = new CampaignController(mediator);
+
+        var result = await controller.UpdateCombatHitPoints(campaignName, request, CancellationToken.None);
+
+        result.Should().BeOfType<NoContentResult>()
+            .Which.StatusCode.Should().Be((int)HttpStatusCode.NoContent);
     }
 }
