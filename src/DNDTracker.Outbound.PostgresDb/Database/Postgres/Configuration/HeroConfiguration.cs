@@ -13,16 +13,36 @@ public class HeroConfiguration : IEntityTypeConfiguration<HeroModel>
         builder.Property(c => c.Id)
             .ValueGeneratedNever();
 
-        builder.Property(h => h.InventoryJson).HasDefaultValue("[]");
-        builder.Property(h => h.EquipmentJson).HasDefaultValue("[]");
-        builder.Property(h => h.SpellbookJson).HasDefaultValue("[]");
-        builder.Property(h => h.SpellSlotsJson).HasDefaultValue("[]");
-        builder.Property(h => h.ConditionsJson).HasDefaultValue("[]");
-
         builder.HasOne(h => h.Campaign)
-            .WithMany(c => c.Heroes);
+            .WithMany(c => c.Heroes)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany<SpellModel>(h => h.Spells)
             .WithMany(s => s.Heroes);
+
+        builder.HasMany(h => h.Inventory)
+            .WithOne(item => item.Hero)
+            .HasForeignKey(item => item.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.Equipment)
+            .WithOne(item => item.Hero)
+            .HasForeignKey(item => item.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.Spellbook)
+            .WithOne(entry => entry.Hero)
+            .HasForeignKey(entry => entry.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.SpellSlots)
+            .WithOne(slot => slot.Hero)
+            .HasForeignKey(slot => slot.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.Conditions)
+            .WithOne(condition => condition.Hero)
+            .HasForeignKey(condition => condition.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

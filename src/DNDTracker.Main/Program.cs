@@ -122,8 +122,17 @@ public class Program
 
         WebApplication app = builder.Build();
 
-        ApplyMigrationsToPostgres(app);
-        await app.Services.InitializeRabbitMqTopologyAsync();
+        bool initMode = string.Equals(
+            builder.Configuration["DNDTRACKER_INIT"],
+            "true",
+            StringComparison.OrdinalIgnoreCase)
+            || Array.Exists(args, arg => string.Equals(arg, "--init", StringComparison.OrdinalIgnoreCase));
+
+        if (initMode)
+        {
+            await InfrastructureBootstrapper.InitializeAsync(app);
+            return;
+        }
 
         app.MapOpenApi();
         app.MapScalarApiReference(options =>
@@ -147,52 +156,6 @@ public class Program
         app.MapPrometheusScrapingEndpoint();
 
         app.Run();
-    }
-
-    private static void ApplyMigrationsToPostgres(WebApplication app)
-    {
-        using IServiceScope scope = app.Services.CreateScope();
-        IServiceProvider services = scope.ServiceProvider;
-
-        try
-        {
-            DNDTrackerPostgresDbContext dbContext = services.GetRequiredService<DNDTrackerPostgresDbContext>();
-            WaitForDbConnection(dbContext);
-            dbContext.Database.Migrate();
-            app.Logger.LogInformation("Database migrations applied successfully");
-        }
-        catch (Exception ex)
-        {
-            ILogger<Program> logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating the database");
-        }
-    }
-
-    private static void WaitForDbConnection(DNDTrackerPostgresDbContext context, int retryCount = 30, int delayMs = 1000)
-    {
-        int currentRetry = 0;
-        while (currentRetry < retryCount)
-        {
-            try
-            {
-                if (context.Database.CanConnect())
-                {
-                    Console.WriteLine("✅ Database connection established");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                currentRetry++;
-                if (currentRetry >= retryCount)
-                {
-                    throw;
-                }
-
-                Console.WriteLine($"⏳ Database connection attempt {currentRetry}/{retryCount} failed: {ex.Message}");
-                Thread.Sleep(delayMs);
-            }
-        }
     }
 
     private static void ConfigureMediatR(MediatRServiceConfiguration configuration)

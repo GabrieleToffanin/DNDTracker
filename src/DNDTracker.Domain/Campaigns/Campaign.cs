@@ -30,23 +30,23 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         List<LootResource> loot,
         List<CampaignMember> members) : base(id)
     {
-        CampaignName = campaignName;
-        CampaignDescription = campaignDescription;
-        CampaignImage = campaignImage;
-        IsActive = isActive;
-        CreatedDate = DateTime.SpecifyKind(createdDate, DateTimeKind.Utc);
-        UpdatedDate = DateTime.SpecifyKind(updatedDate, DateTimeKind.Utc);
-        DeletedDate = deletedDate is not null ? DateTime.SpecifyKind(deletedDate.Value, DateTimeKind.Utc) : null;
-        Heroes = heroes;
-        MonsterLibrary = monsterLibrary;
-        ActiveCombat = activeCombat;
-        SessionLogs = sessionLogs;
-        TimelineEntries = timelineEntries;
-        Npcs = npcs;
-        Locations = locations;
-        Quests = quests;
-        Loot = loot;
-        Members = members;
+        this.CampaignName = campaignName;
+        this.CampaignDescription = campaignDescription;
+        this.CampaignImage = campaignImage;
+        this.IsActive = isActive;
+        this.CreatedDate = DateTime.SpecifyKind(createdDate, DateTimeKind.Utc);
+        this.UpdatedDate = DateTime.SpecifyKind(updatedDate, DateTimeKind.Utc);
+        this.DeletedDate = deletedDate is not null ? DateTime.SpecifyKind(deletedDate.Value, DateTimeKind.Utc) : null;
+        this.Heroes = heroes;
+        this.MonsterLibrary = monsterLibrary;
+        this.ActiveCombat = activeCombat;
+        this.SessionLogs = sessionLogs;
+        this.TimelineEntries = timelineEntries;
+        this.Npcs = npcs;
+        this.Locations = locations;
+        this.Quests = quests;
+        this.Loot = loot;
+        this.Members = members;
     }
 
     public string CampaignName { get; private set; }
@@ -134,10 +134,10 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     {
         ArgumentNullException.ThrowIfNull(hero);
 
-        Heroes.AddRange(hero);
+        this.Heroes.AddRange(hero);
 
         HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
-        AddDomainEvent(heroAddedEvent);
+        this.AddDomainEvent(heroAddedEvent);
     }
 
     public void AddMonsterToLibrary(MonsterStatBlock monster)
@@ -146,8 +146,8 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         var resolvedMonster = monster.Id == Guid.Empty
             ? monster with { Id = Guid.NewGuid() }
             : monster;
-        MonsterLibrary.Add(resolvedMonster);
-        UpdatedDate = DateTime.UtcNow;
+        this.MonsterLibrary.Add(resolvedMonster);
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void StartCombat(IEnumerable<CombatantState> combatants)
@@ -159,20 +159,20 @@ public sealed class Campaign : AggregateRoot<CampaignId>
             .ThenBy(c => c.Name)
             .ToList();
 
-        ActiveCombat = new CombatState(
+        this.ActiveCombat = new CombatState(
             Round: ordered.Count > 0 ? 1 : 0,
             TurnIndex: 0,
             InitiativeOrder: ordered);
-        UpdatedDate = DateTime.UtcNow;
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void ReorderCombat(Guid combatantId, int targetIndex)
     {
-        if (ActiveCombat is null)
+        if (this.ActiveCombat is null)
             throw new InvalidOperationException("Combat is not active.");
 
-        var initiative = ActiveCombat.InitiativeOrder.ToList();
-        var currentIndex = initiative.FindIndex(c => c.Id == combatantId);
+        var initiative = this.ActiveCombat.InitiativeOrder.ToList();
+        int currentIndex = initiative.FindIndex(c => c.Id == combatantId);
         if (currentIndex < 0)
             throw new InvalidOperationException("Combatant not found.");
 
@@ -181,29 +181,29 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         initiative.RemoveAt(currentIndex);
         initiative.Insert(targetIndex, combatant);
 
-        ActiveCombat = ActiveCombat with { InitiativeOrder = initiative };
-        UpdatedDate = DateTime.UtcNow;
+        this.ActiveCombat = this.ActiveCombat with { InitiativeOrder = initiative };
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AdvanceCombatTurn()
     {
-        if (ActiveCombat is null || ActiveCombat.InitiativeOrder.Count == 0)
+        if (this.ActiveCombat is null || this.ActiveCombat.InitiativeOrder.Count == 0)
             throw new InvalidOperationException("Combat is not active.");
 
-        var nextTurn = ActiveCombat.TurnIndex + 1;
-        var nextRound = ActiveCombat.Round;
+        int nextTurn = this.ActiveCombat.TurnIndex + 1;
+        int nextRound = this.ActiveCombat.Round;
 
-        if (nextTurn >= ActiveCombat.InitiativeOrder.Count)
+        if (nextTurn >= this.ActiveCombat.InitiativeOrder.Count)
         {
             nextTurn = 0;
             nextRound++;
         }
 
-        ActiveCombat = ActiveCombat with
+        this.ActiveCombat = this.ActiveCombat with
         {
             Round = nextRound,
             TurnIndex = nextTurn,
-            InitiativeOrder = ActiveCombat.InitiativeOrder
+            InitiativeOrder = this.ActiveCombat.InitiativeOrder
                 .Select(c => c with
                 {
                     Conditions = c.Conditions
@@ -216,33 +216,33 @@ public sealed class Campaign : AggregateRoot<CampaignId>
                 .ToList()
         };
 
-        UpdatedDate = DateTime.UtcNow;
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void ApplyCombatantHitPointDelta(Guid combatantId, int damage, int healing, int temporaryHitPointsDelta)
     {
-        if (ActiveCombat is null)
+        if (this.ActiveCombat is null)
             throw new InvalidOperationException("Combat is not active.");
 
         if (damage < 0 || healing < 0)
             throw new ArgumentOutOfRangeException(nameof(damage), "Damage and healing must be non-negative.");
 
-        var updatedOrder = ActiveCombat.InitiativeOrder.Select(combatant =>
+        var updatedOrder = this.ActiveCombat.InitiativeOrder.Select(combatant =>
         {
             if (combatant.Id != combatantId)
                 return combatant;
 
-            var temporaryHitPoints = Math.Max(0, combatant.TemporaryHitPoints + temporaryHitPointsDelta);
-            var remainingDamage = damage;
+            int temporaryHitPoints = Math.Max(0, combatant.TemporaryHitPoints + temporaryHitPointsDelta);
+            int remainingDamage = damage;
 
             if (temporaryHitPoints > 0 && remainingDamage > 0)
             {
-                var absorbed = Math.Min(temporaryHitPoints, remainingDamage);
+                int absorbed = Math.Min(temporaryHitPoints, remainingDamage);
                 temporaryHitPoints -= absorbed;
                 remainingDamage -= absorbed;
             }
 
-            var currentHp = Math.Max(0, combatant.CurrentHitPoints - remainingDamage);
+            int currentHp = Math.Max(0, combatant.CurrentHitPoints - remainingDamage);
             currentHp = Math.Min(combatant.MaxHitPoints, currentHp + healing);
 
             return combatant with
@@ -252,16 +252,16 @@ public sealed class Campaign : AggregateRoot<CampaignId>
             };
         }).ToList();
 
-        ActiveCombat = ActiveCombat with { InitiativeOrder = updatedOrder };
-        UpdatedDate = DateTime.UtcNow;
+        this.ActiveCombat = this.ActiveCombat with { InitiativeOrder = updatedOrder };
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddCombatCondition(Guid combatantId, CharacterCondition condition)
     {
-        if (ActiveCombat is null)
+        if (this.ActiveCombat is null)
             throw new InvalidOperationException("Combat is not active.");
 
-        var updatedOrder = ActiveCombat.InitiativeOrder.Select(combatant =>
+        var updatedOrder = this.ActiveCombat.InitiativeOrder.Select(combatant =>
         {
             if (combatant.Id != combatantId)
                 return combatant;
@@ -274,66 +274,66 @@ public sealed class Campaign : AggregateRoot<CampaignId>
             return combatant with { Conditions = updatedConditions };
         }).ToList();
 
-        ActiveCombat = ActiveCombat with { InitiativeOrder = updatedOrder };
-        UpdatedDate = DateTime.UtcNow;
+        this.ActiveCombat = this.ActiveCombat with { InitiativeOrder = updatedOrder };
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddSessionLog(SessionLogEntry entry)
     {
-        SessionLogs.Add(entry);
-        TimelineEntries.Add(new CampaignTimelineEntry(Guid.NewGuid(), DateTime.UtcNow, $"Session logged: {entry.Summary}"));
-        UpdatedDate = DateTime.UtcNow;
+        this.SessionLogs.Add(entry);
+        this.TimelineEntries.Add(new CampaignTimelineEntry(Guid.NewGuid(), DateTime.UtcNow, $"Session logged: {entry.Summary}"));
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddTimelineEntry(CampaignTimelineEntry entry)
     {
-        TimelineEntries.Add(entry);
-        UpdatedDate = DateTime.UtcNow;
+        this.TimelineEntries.Add(entry);
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddNpc(NpcResource npc)
     {
-        Npcs.Add(npc);
-        UpdatedDate = DateTime.UtcNow;
+        this.Npcs.Add(npc);
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddLocation(LocationResource location)
     {
-        Locations.Add(location);
-        UpdatedDate = DateTime.UtcNow;
+        this.Locations.Add(location);
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddQuest(QuestResource quest)
     {
-        var existing = Quests.FindIndex(q => q.Id == quest.Id);
+        int existing = this.Quests.FindIndex(q => q.Id == quest.Id);
         if (existing >= 0)
-            Quests[existing] = quest;
+            this.Quests[existing] = quest;
         else
-            Quests.Add(quest);
+            this.Quests.Add(quest);
 
-        UpdatedDate = DateTime.UtcNow;
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddLoot(LootResource lootItem)
     {
-        Loot.Add(lootItem);
-        UpdatedDate = DateTime.UtcNow;
+        this.Loot.Add(lootItem);
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public void AddMember(CampaignMember member)
     {
-        var existing = Members.FindIndex(m => m.UserId == member.UserId);
+        int existing = this.Members.FindIndex(m => m.UserId == member.UserId);
         if (existing >= 0)
-            Members[existing] = member;
+            this.Members[existing] = member;
         else
-            Members.Add(member);
+            this.Members.Add(member);
 
-        UpdatedDate = DateTime.UtcNow;
+        this.UpdatedDate = DateTime.UtcNow;
     }
 
     public CampaignMemberRole GetRoleOrDefault(Guid userId)
     {
-        return Members.FirstOrDefault(x => x.UserId == userId)?.Role ?? CampaignMemberRole.Player;
+        return this.Members.FirstOrDefault(x => x.UserId == userId)?.Role ?? CampaignMemberRole.Player;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

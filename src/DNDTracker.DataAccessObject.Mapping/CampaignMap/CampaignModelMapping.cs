@@ -1,7 +1,5 @@
 using DNDTracker.DataAccessObject.Mapping.HeroMap;
-using DNDTracker.DataAccessObject.Mapping.Json;
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Vocabulary.ValueObjects;
 using DNDTracker.Vocabulary.Models;
 
 namespace DNDTracker.DataAccessObject.Mapping.CampaignMap;
@@ -18,15 +16,15 @@ public static class CampaignModelMapping
             campaignModel.CreatedDate,
             campaignModel.IsActive,
             campaignModel.Heroes.Select(h => h.MapToDomain()).ToList(),
-            JsonCollectionMapper.DeserializeCollection<MonsterStatBlock>(campaignModel.MonsterLibraryJson).ToList(),
-            JsonCollectionMapper.Deserialize<CombatState>(campaignModel.ActiveCombatJson),
-            JsonCollectionMapper.DeserializeCollection<SessionLogEntry>(campaignModel.SessionLogsJson).ToList(),
-            JsonCollectionMapper.DeserializeCollection<CampaignTimelineEntry>(campaignModel.TimelineEntriesJson).ToList(),
-            JsonCollectionMapper.DeserializeCollection<NpcResource>(campaignModel.NpcsJson).ToList(),
-            JsonCollectionMapper.DeserializeCollection<LocationResource>(campaignModel.LocationsJson).ToList(),
-            JsonCollectionMapper.DeserializeCollection<QuestResource>(campaignModel.QuestsJson).ToList(),
-            JsonCollectionMapper.DeserializeCollection<LootResource>(campaignModel.LootJson).ToList(),
-            JsonCollectionMapper.DeserializeCollection<CampaignMember>(campaignModel.MembersJson).ToList()
+            campaignModel.MonsterLibrary.Select(monster => monster.ToValueObject()).ToList(),
+            campaignModel.ActiveCombat?.ToValueObject(),
+            campaignModel.SessionLogs.Select(entry => entry.ToValueObject()).ToList(),
+            campaignModel.TimelineEntries.Select(entry => entry.ToValueObject()).ToList(),
+            campaignModel.Npcs.Select(npc => npc.ToValueObject()).ToList(),
+            campaignModel.Locations.Select(location => location.ToValueObject()).ToList(),
+            campaignModel.Quests.Select(quest => quest.ToValueObject()).ToList(),
+            campaignModel.Loot.Select(loot => loot.ToValueObject()).ToList(),
+            campaignModel.Members.Select(member => member.ToValueObject()).ToList()
         );
     }
 
@@ -41,19 +39,20 @@ public static class CampaignModelMapping
             IsActive = campaign.IsActive,
             CreatedDate = campaign.CreatedDate,
             UpdatedDate = campaign.UpdatedDate,
-            DeletedDate = campaign.DeletedDate,
-            MonsterLibraryJson = JsonCollectionMapper.Serialize(campaign.MonsterLibrary),
-            ActiveCombatJson = campaign.ActiveCombat is null ? null : JsonCollectionMapper.SerializeObject(campaign.ActiveCombat),
-            SessionLogsJson = JsonCollectionMapper.Serialize(campaign.SessionLogs),
-            TimelineEntriesJson = JsonCollectionMapper.Serialize(campaign.TimelineEntries),
-            NpcsJson = JsonCollectionMapper.Serialize(campaign.Npcs),
-            LocationsJson = JsonCollectionMapper.Serialize(campaign.Locations),
-            QuestsJson = JsonCollectionMapper.Serialize(campaign.Quests),
-            LootJson = JsonCollectionMapper.Serialize(campaign.Loot),
-            MembersJson = JsonCollectionMapper.Serialize(campaign.Members)
+            DeletedDate = campaign.DeletedDate
         };
 
         campaignModel.Heroes.AddRange(campaign.Heroes.Select(h => h.MapToModel()));
+        campaignModel.MonsterLibrary.AddRange(campaign.MonsterLibrary.Select(MonsterStatBlockModel.From));
+        if (campaign.ActiveCombat is not null)
+            campaignModel.SetActiveCombat(ActiveCombatModel.From(campaign.ActiveCombat));
+        campaignModel.SessionLogs.AddRange(campaign.SessionLogs.Select(SessionLogEntryModel.From));
+        campaignModel.TimelineEntries.AddRange(campaign.TimelineEntries.Select(CampaignTimelineEntryModel.From));
+        campaignModel.Npcs.AddRange(campaign.Npcs.Select(NpcResourceModel.From));
+        campaignModel.Locations.AddRange(campaign.Locations.Select(LocationResourceModel.From));
+        campaignModel.Quests.AddRange(campaign.Quests.Select(QuestResourceModel.From));
+        campaignModel.Loot.AddRange(campaign.Loot.Select(LootResourceModel.From));
+        campaignModel.Members.AddRange(campaign.Members.Select(CampaignMemberModel.From));
 
         return campaignModel;
     }

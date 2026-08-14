@@ -61,29 +61,29 @@ public sealed class Hero : AggregateRoot<HeroId>
         IEnumerable<SpellSlotUsage> spellSlots,
         IEnumerable<CharacterCondition> conditions) : base(id)
     {
-        Name = name;
-        Class = @class;
-        Race = race;
-        Alignment = alignment;
-        Level = level;
-        Experience = experience;
-        HitPoints = hitPoints;
-        HitDice = hitDice;
-        IsNonPlayerCharacter = isNonPlayerCharacter;
-        AbilityScores = abilityScores;
-        CurrentHitPoints = currentHitPoints;
-        MaxHitPoints = maxHitPoints;
-        TemporaryHitPoints = temporaryHitPoints;
-        ArmorClass = armorClass;
-        Initiative = initiative;
-        Speed = speed;
-        Notes = notes;
-        Background = background;
-        Inventory = inventory.ToList();
-        Equipment = equipment.ToList();
-        Spellbook = spellbook.ToList();
-        SpellSlots = spellSlots.ToList();
-        Conditions = conditions.ToList();
+        this.Name = name;
+        this.Class = @class;
+        this.Race = race;
+        this.Alignment = alignment;
+        this.Level = level;
+        this.Experience = experience;
+        this.HitPoints = hitPoints;
+        this.HitDice = hitDice;
+        this.IsNonPlayerCharacter = isNonPlayerCharacter;
+        this.AbilityScores = abilityScores;
+        this.CurrentHitPoints = currentHitPoints;
+        this.MaxHitPoints = maxHitPoints;
+        this.TemporaryHitPoints = temporaryHitPoints;
+        this.ArmorClass = armorClass;
+        this.Initiative = initiative;
+        this.Speed = speed;
+        this.Notes = notes;
+        this.Background = background;
+        this.Inventory = [.. inventory];
+        this.Equipment = [.. equipment];
+        this.Spellbook = [.. spellbook];
+        this.SpellSlots = [.. spellSlots];
+        this.Conditions = [.. conditions];
     }
 
     public static Hero Create(
@@ -178,74 +178,74 @@ public sealed class Hero : AggregateRoot<HeroId>
         if (damage < 0 || healing < 0)
             throw new ArgumentOutOfRangeException(nameof(damage), "Damage and healing must be non-negative.");
 
-        TemporaryHitPoints = Math.Max(0, TemporaryHitPoints + temporaryHitPointsDelta);
+        this.TemporaryHitPoints = Math.Max(0, this.TemporaryHitPoints + temporaryHitPointsDelta);
 
-        var remainingDamage = damage;
-        if (remainingDamage > 0 && TemporaryHitPoints > 0)
+        int remainingDamage = damage;
+        if (remainingDamage > 0 && this.TemporaryHitPoints > 0)
         {
-            var absorbed = Math.Min(TemporaryHitPoints, remainingDamage);
-            TemporaryHitPoints -= absorbed;
+            int absorbed = Math.Min(this.TemporaryHitPoints, remainingDamage);
+            this.TemporaryHitPoints -= absorbed;
             remainingDamage -= absorbed;
         }
 
         if (remainingDamage > 0)
-            CurrentHitPoints = Math.Max(0, CurrentHitPoints - remainingDamage);
+            this.CurrentHitPoints = Math.Max(0, this.CurrentHitPoints - remainingDamage);
 
         if (healing > 0)
-            CurrentHitPoints = Math.Min(MaxHitPoints, CurrentHitPoints + healing);
+            this.CurrentHitPoints = Math.Min(this.MaxHitPoints, this.CurrentHitPoints + healing);
     }
 
     public void AddCondition(CharacterCondition condition)
     {
         ArgumentNullException.ThrowIfNull(condition);
 
-        Conditions.RemoveAll(c => c.Name.Equals(condition.Name, StringComparison.OrdinalIgnoreCase));
-        Conditions.Add(condition);
+        this.Conditions.RemoveAll(c => c.Name.Equals(condition.Name, StringComparison.OrdinalIgnoreCase));
+        this.Conditions.Add(condition);
     }
 
     public void AddInventoryItem(InventoryItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        Inventory.Add(item);
+        this.Inventory.Add(item);
     }
 
     public void AddEquipmentItem(InventoryItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
-        Equipment.Add(item);
+        this.Equipment.Add(item);
     }
 
     public void SetSpellbook(IEnumerable<CharacterSpellEntry> spells, IEnumerable<SpellSlotUsage> spellSlots)
     {
-        Spellbook = spells.ToList();
-        SpellSlots = spellSlots.ToList();
+        this.Spellbook = [.. spells];
+        this.SpellSlots = [.. spellSlots];
     }
 
     public void UpdateNotes(string notes, string background)
     {
-        Notes = notes;
-        Background = background;
+        this.Notes = notes;
+        this.Background = background;
     }
 
     public void AddSpell(Spell spell)
     {
         ArgumentNullException.ThrowIfNull(spell);
 
-        if (!IsSpellAvailable(spell))
+        if (!this.IsSpellAvailable(spell))
             SpellUnavailableException.Throw("The spell is not available for the hero.");
 
-        Spells.Add(spell);
+        this.Spells.Add(spell);
 
         SpellLearnedDomainEvent spellLearnedDomainEvent = new(
             Guid.NewGuid(),
             DateTime.UtcNow,
             spell);
 
-        AddDomainEvent(spellLearnedDomainEvent);
+        this.AddDomainEvent(spellLearnedDomainEvent);
     }
 
     public bool IsSpellAvailable(Spell spell)
     {
-        return spell.Level <= Level;
+        return spell.Level <= this.Level;
     }
 }

@@ -4,6 +4,7 @@ using DNDTracker.Outbound.PostgresDb.Repositories;
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Tests.Behaviors;
 using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
 namespace DNDTracker.BackendInfrastructure.PostgresDb.Tests;
@@ -20,7 +21,6 @@ public class PostgresCampaignRepository : CampaignRepositorySpecification, IAsyn
     private PostgreSqlContainer PostgresContainer { get; } = new PostgreSqlBuilder()
         .WithPassword("test")
         .WithPortBinding(5432, true)
-        .WithName("PostgresIntegrationTest")
         .WithUsername("test")
         .WithDatabase("testdb")
         .Build();
@@ -37,7 +37,7 @@ public class PostgresCampaignRepository : CampaignRepositorySpecification, IAsyn
         await PostgresContainer.StartAsync();
         Context = new DNDTrackerPostgresDbContext(PostgresContainer.GetConnectionString());
         _campaignRepository = CreateRepository();
-        await Context.Database.EnsureCreatedAsync();
+        await Context.Database.MigrateAsync();
     }
 
     public async Task DisposeAsync()
