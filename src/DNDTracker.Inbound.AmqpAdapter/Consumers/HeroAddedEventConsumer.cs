@@ -117,7 +117,10 @@ public class HeroAddedEventConsumer(
                 await _channel.CloseAsync(cancellationToken);
                 await _channel.DisposeAsync();
             }
-            catch (ObjectDisposedException) { }
+            catch (ObjectDisposedException ex)
+            {
+                logger.LogWarning(ex, "Channel was already disposed during HeroAddedEventConsumer shutdown");
+            }
             _channel = null;
         }
 
@@ -128,7 +131,10 @@ public class HeroAddedEventConsumer(
                 await _connection.CloseAsync(cancellationToken);
                 await _connection.DisposeAsync();
             }
-            catch (ObjectDisposedException) { }
+            catch (ObjectDisposedException ex)
+            {
+                logger.LogWarning(ex, "Connection was already disposed during HeroAddedEventConsumer shutdown");
+            }
             _connection = null;
         }
     }
