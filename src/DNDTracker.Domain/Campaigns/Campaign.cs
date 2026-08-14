@@ -140,7 +140,6 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         ArgumentNullException.ThrowIfNull(heroes);
 
         Heroes.AddRange(heroes);
-        UpdatedDate = DateTime.UtcNow;
 
         HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
         AddDomainEvent(heroAddedEvent);
