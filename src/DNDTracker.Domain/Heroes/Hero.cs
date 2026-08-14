@@ -9,17 +9,32 @@ namespace DNDTracker.Domain.Heroes;
 
 public sealed class Hero : AggregateRoot<HeroId>
 {
-    public string Name { get; init; }
-    public HeroClass Class { get; init; }
-    public Race Race { get; init; }
-    public Alignment Alignment { get; init; }
-    public int Level { get; init; }
-    public int Experience { get; init; }
-    public int HitPoints { get; init; }
-    public DiceType HitDice { get; init; }
+    public string Name { get; private set; }
+    public HeroClass Class { get; private set; }
+    public Race Race { get; private set; }
+    public Alignment Alignment { get; private set; }
+    public int Level { get; private set; }
+    public int Experience { get; private set; }
+    public int HitPoints { get; private set; }
+    public DiceType HitDice { get; private set; }
+    public bool IsNonPlayerCharacter { get; private set; }
+    public AbilityScores AbilityScores { get; private set; }
+    public int CurrentHitPoints { get; private set; }
+    public int MaxHitPoints { get; private set; }
+    public int TemporaryHitPoints { get; private set; }
+    public int ArmorClass { get; private set; }
+    public int Initiative { get; private set; }
+    public int Speed { get; private set; }
+    public string Notes { get; private set; }
+    public string Background { get; private set; }
+    public List<InventoryItem> Inventory { get; private set; }
+    public List<InventoryItem> Equipment { get; private set; }
+    public List<CharacterSpellEntry> Spellbook { get; private set; }
+    public List<SpellSlotUsage> SpellSlots { get; private set; }
+    public List<CharacterCondition> Conditions { get; private set; }
     public HashSet<Spell> Spells { get; } = [];
-    public Campaign Campaign { get; init; }
-    
+    public Campaign? Campaign { get; private set; }
+
     private Hero(
         HeroId id,
         string name,
@@ -29,18 +44,48 @@ public sealed class Hero : AggregateRoot<HeroId>
         int level,
         int experience,
         int hitPoints,
-        DiceType hitDice) : base(id)
-    { 
-        this.Name = name;
-        this.Class = @class;
-        this.Race = race;
-        this.Alignment = alignment;
-        this.Level = level;
-        this.Experience = experience;
-        this.HitPoints = hitPoints;
-        this.HitDice = hitDice;
+        DiceType hitDice,
+        bool isNonPlayerCharacter,
+        AbilityScores abilityScores,
+        int currentHitPoints,
+        int maxHitPoints,
+        int temporaryHitPoints,
+        int armorClass,
+        int initiative,
+        int speed,
+        string notes,
+        string background,
+        IEnumerable<InventoryItem> inventory,
+        IEnumerable<InventoryItem> equipment,
+        IEnumerable<CharacterSpellEntry> spellbook,
+        IEnumerable<SpellSlotUsage> spellSlots,
+        IEnumerable<CharacterCondition> conditions) : base(id)
+    {
+        Name = name;
+        Class = @class;
+        Race = race;
+        Alignment = alignment;
+        Level = level;
+        Experience = experience;
+        HitPoints = hitPoints;
+        HitDice = hitDice;
+        IsNonPlayerCharacter = isNonPlayerCharacter;
+        AbilityScores = abilityScores;
+        CurrentHitPoints = currentHitPoints;
+        MaxHitPoints = maxHitPoints;
+        TemporaryHitPoints = temporaryHitPoints;
+        ArmorClass = armorClass;
+        Initiative = initiative;
+        Speed = speed;
+        Notes = notes;
+        Background = background;
+        Inventory = inventory.ToList();
+        Equipment = equipment.ToList();
+        Spellbook = spellbook.ToList();
+        SpellSlots = spellSlots.ToList();
+        Conditions = conditions.ToList();
     }
-    
+
     public static Hero Create(
         Guid? id,
         string name,
@@ -50,10 +95,25 @@ public sealed class Hero : AggregateRoot<HeroId>
         int level,
         int experience,
         int hitPoints,
-        DiceType hitDice)
+        DiceType hitDice,
+        bool isNonPlayerCharacter,
+        AbilityScores abilityScores,
+        int currentHitPoints,
+        int maxHitPoints,
+        int temporaryHitPoints,
+        int armorClass,
+        int initiative,
+        int speed,
+        string notes,
+        string background,
+        IEnumerable<InventoryItem>? inventory = null,
+        IEnumerable<InventoryItem>? equipment = null,
+        IEnumerable<CharacterSpellEntry>? spellbook = null,
+        IEnumerable<SpellSlotUsage>? spellSlots = null,
+        IEnumerable<CharacterCondition>? conditions = null)
     {
         var currentId = id is not null ? HeroId.Create(id.Value) : HeroId.Create();
-        
+
         return new Hero(
             currentId,
             name,
@@ -63,9 +123,24 @@ public sealed class Hero : AggregateRoot<HeroId>
             level,
             experience,
             hitPoints,
-            hitDice);
+            hitDice,
+            isNonPlayerCharacter,
+            abilityScores,
+            currentHitPoints,
+            maxHitPoints,
+            temporaryHitPoints,
+            armorClass,
+            initiative,
+            speed,
+            notes,
+            background,
+            inventory ?? [],
+            equipment ?? [],
+            spellbook ?? [],
+            spellSlots ?? [],
+            conditions ?? []);
     }
-    
+
     public static Hero Create(
         string name,
         HeroClass @class,
@@ -76,10 +151,8 @@ public sealed class Hero : AggregateRoot<HeroId>
         int hitPoints,
         DiceType hitDice)
     {
-        var currentId = HeroId.Create();
-        
-        return new Hero(
-            currentId,
+        return Create(
+            null,
             name,
             @class,
             race,
@@ -87,43 +160,94 @@ public sealed class Hero : AggregateRoot<HeroId>
             level,
             experience,
             hitPoints,
-            hitDice);
+            hitDice,
+            false,
+            AbilityScores.Default,
+            hitPoints,
+            hitPoints,
+            0,
+            10,
+            0,
+            30,
+            string.Empty,
+            string.Empty);
     }
 
-    /// <summary>
-    /// Adds a spell to the hero's list of known spells if it is available for the hero to use.
-    /// </summary>
-    /// <param name="spell">The spell to be added to the hero's known spells.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the provided spell is null.</exception>
-    /// <exception cref="SpellUnavailableException">Thrown when the spell is not available
-    /// for the hero to use based on the hero's current level.</exception>
+    public void ApplyHitPointDelta(int damage, int healing, int temporaryHitPointsDelta)
+    {
+        if (damage < 0 || healing < 0)
+            throw new ArgumentOutOfRangeException(nameof(damage), "Damage and healing must be non-negative.");
+
+        TemporaryHitPoints = Math.Max(0, TemporaryHitPoints + temporaryHitPointsDelta);
+
+        var remainingDamage = damage;
+        if (remainingDamage > 0 && TemporaryHitPoints > 0)
+        {
+            var absorbed = Math.Min(TemporaryHitPoints, remainingDamage);
+            TemporaryHitPoints -= absorbed;
+            remainingDamage -= absorbed;
+        }
+
+        if (remainingDamage > 0)
+            CurrentHitPoints = Math.Max(0, CurrentHitPoints - remainingDamage);
+
+        if (healing > 0)
+            CurrentHitPoints = Math.Min(MaxHitPoints, CurrentHitPoints + healing);
+
+        HitPoints = CurrentHitPoints;
+    }
+
+    public void AddCondition(CharacterCondition condition)
+    {
+        ArgumentNullException.ThrowIfNull(condition);
+
+        Conditions.RemoveAll(c => c.Name.Equals(condition.Name, StringComparison.OrdinalIgnoreCase));
+        Conditions.Add(condition);
+    }
+
+    public void AddInventoryItem(InventoryItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        Inventory.Add(item);
+    }
+
+    public void AddEquipmentItem(InventoryItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        Equipment.Add(item);
+    }
+
+    public void SetSpellbook(IEnumerable<CharacterSpellEntry> spells, IEnumerable<SpellSlotUsage> spellSlots)
+    {
+        Spellbook = spells.ToList();
+        SpellSlots = spellSlots.ToList();
+    }
+
+    public void UpdateNotes(string notes, string background)
+    {
+        Notes = notes;
+        Background = background;
+    }
+
     public void AddSpell(Spell spell)
     {
         ArgumentNullException.ThrowIfNull(spell);
-        
-        if (!this.IsSpellAvailable(spell))
-            SpellUnavailableException.Throw(
-                message: "The spell is not available for the hero.");
-        
-        this.Spells.Add(spell);
+
+        if (!IsSpellAvailable(spell))
+            SpellUnavailableException.Throw("The spell is not available for the hero.");
+
+        Spells.Add(spell);
 
         SpellLearnedDomainEvent spellLearnedDomainEvent = new(
             Guid.NewGuid(),
             DateTime.UtcNow,
             spell);
-        
-        this.AddDomainEvent(spellLearnedDomainEvent);
+
+        AddDomainEvent(spellLearnedDomainEvent);
     }
 
-    /// <summary>
-    /// Determines whether a given spell is available for the hero to use
-    /// based on the hero's current level.
-    /// Logic has to be updated also on other params, but for simplicity we will leave it like this.
-    /// </summary>
-    /// <param name="spell">The spell to evaluate for availability.</param>
-    /// <returns>True if the spell's level is less than or equal to the hero's level; otherwise, false.</returns>
     public bool IsSpellAvailable(Spell spell)
     {
-        return spell.Level <= this.Level;
+        return spell.Level <= Level;
     }
 }
