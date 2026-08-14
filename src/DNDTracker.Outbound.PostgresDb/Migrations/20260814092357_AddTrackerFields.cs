@@ -15,7 +15,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
                 table: "HeroModel",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 10);
 
             migrationBuilder.AddColumn<string>(
                 name: "Background",
@@ -101,6 +101,8 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
                 nullable: false,
                 defaultValue: 0);
 
+            migrationBuilder.Sql("UPDATE \"HeroModel\" SET \"MaxHitPoints\" = \"HitPoints\", \"CurrentHitPoints\" = \"HitPoints\" WHERE \"MaxHitPoints\" = 0 AND \"CurrentHitPoints\" = 0;");
+
             migrationBuilder.AddColumn<string>(
                 name: "Notes",
                 table: "HeroModel",
@@ -113,7 +115,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
                 table: "HeroModel",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 30);
 
             migrationBuilder.AddColumn<string>(
                 name: "SpellSlotsJson",

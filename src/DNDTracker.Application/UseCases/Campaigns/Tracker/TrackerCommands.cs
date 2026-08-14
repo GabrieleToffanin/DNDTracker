@@ -99,7 +99,7 @@ public sealed class UpdateCharacterHitPointsCommandHandler(ICampaignRepository c
         return UpdateCampaignAsync(request.CampaignName, campaign =>
         {
             var hero = campaign.Heroes.FirstOrDefault(h => h.Id.Id == request.CharacterId)
-                ?? throw new InvalidOperationException($"Character {request.CharacterId} not found.");
+                ?? throw new CharacterNotFoundException($"Character {request.CharacterId} not found.");
             hero.ApplyHitPointDelta(request.Damage, request.Healing, request.TemporaryHitPointsDelta);
         }, cancellationToken);
     }
@@ -112,7 +112,7 @@ public sealed class AddCharacterConditionCommandHandler(ICampaignRepository camp
         return UpdateCampaignAsync(request.CampaignName, campaign =>
         {
             var hero = campaign.Heroes.FirstOrDefault(h => h.Id.Id == request.CharacterId)
-                ?? throw new InvalidOperationException($"Character {request.CharacterId} not found.");
+                ?? throw new CharacterNotFoundException($"Character {request.CharacterId} not found.");
             hero.AddCondition(request.Condition);
         }, cancellationToken);
     }

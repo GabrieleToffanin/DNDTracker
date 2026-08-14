@@ -224,13 +224,16 @@ public sealed class Campaign : AggregateRoot<CampaignId>
         if (ActiveCombat is null)
             throw new InvalidOperationException("Combat is not active.");
 
+        if (damage < 0 || healing < 0)
+            throw new ArgumentOutOfRangeException(nameof(damage), "Damage and healing must be non-negative.");
+
         var updatedOrder = ActiveCombat.InitiativeOrder.Select(combatant =>
         {
             if (combatant.Id != combatantId)
                 return combatant;
 
             var temporaryHitPoints = Math.Max(0, combatant.TemporaryHitPoints + temporaryHitPointsDelta);
-            var remainingDamage = Math.Max(0, damage);
+            var remainingDamage = damage;
 
             if (temporaryHitPoints > 0 && remainingDamage > 0)
             {
@@ -240,7 +243,7 @@ public sealed class Campaign : AggregateRoot<CampaignId>
             }
 
             var currentHp = Math.Max(0, combatant.CurrentHitPoints - remainingDamage);
-            currentHp = Math.Min(combatant.MaxHitPoints, currentHp + Math.Max(0, healing));
+            currentHp = Math.Min(combatant.MaxHitPoints, currentHp + healing);
 
             return combatant with
             {

@@ -288,7 +288,7 @@ public class CampaignController(
 
         await mediator.Send(mappedRequest, cancellationToken);
 
-        return CreatedAtAction(nameof(CreateCampaign), new { command.CampaignName }, null);
+        return CreatedAtAction(nameof(CreateCampaign), new { campaignName = command.CampaignName }, null);
     }
 
     public Hero ToDomain(HeroDto dto)
