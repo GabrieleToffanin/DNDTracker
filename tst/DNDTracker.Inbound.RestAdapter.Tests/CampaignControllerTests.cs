@@ -1,9 +1,9 @@
 using System.Net;
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.Queries.UseCases.GetCampaignTracker;
+using DNDTracker.Application.Queries.UseCases.RollDice;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
-using DNDTracker.Application.UseCases.Campaigns.Tracker;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Inbound.RestAdapter.Dtos;
@@ -127,7 +127,7 @@ public class CampaignControllerTests
         var mediator = new DummyMediator();
         var expectedResult = new DiceRollResult("1d20", 15, [15], 0, "attack");
 
-        mediator.RegisterHandler<RollDiceQuery, DiceRollResult>((_, _) => expectedResult);
+        mediator.RegisterHandler<RollDiceInCampaign, DiceRollResult>((_, _) => expectedResult);
 
         var controller = new CampaignController(mediator);
         var request = new RollDiceRequest("1d20", 0, "attack");

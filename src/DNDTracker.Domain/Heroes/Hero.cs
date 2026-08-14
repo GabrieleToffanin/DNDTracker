@@ -193,8 +193,6 @@ public sealed class Hero : AggregateRoot<HeroId>
 
         if (healing > 0)
             CurrentHitPoints = Math.Min(MaxHitPoints, CurrentHitPoints + healing);
-
-        HitPoints = CurrentHitPoints;
     }
 
     public void AddCondition(CharacterCondition condition)

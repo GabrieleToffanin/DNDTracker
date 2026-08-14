@@ -2,7 +2,6 @@ using DNDTracker.Domain.Campaigns;
 using DNDTracker.SharedKernel.Commands;
 using DNDTracker.Vocabulary.Exceptions;
 using DNDTracker.Vocabulary.ValueObjects;
-using MediatR;
 
 namespace DNDTracker.Application.UseCases.Campaigns.Tracker;
 
@@ -20,8 +19,6 @@ public sealed record AddLootCommand(string CampaignName, LootResource Loot) : IC
 public sealed record AddCampaignMemberCommand(string CampaignName, CampaignMember Member) : ICommand;
 public sealed record UpdateCharacterHitPointsCommand(string CampaignName, Guid CharacterId, int Damage, int Healing, int TemporaryHitPointsDelta) : ICommand;
 public sealed record AddCharacterConditionCommand(string CampaignName, Guid CharacterId, CharacterCondition Condition) : ICommand;
-
-public sealed record RollDiceQuery(string Expression, int Modifier, string? Context) : IRequest<DiceRollResult>;
 
 public sealed class AddMonsterToLibraryCommandHandler(ICampaignRepository campaignRepository) : CampaignTrackerCommandHandlerBase(campaignRepository), ICommandHandler<AddMonsterToLibraryCommand>
 {
@@ -118,33 +115,6 @@ public sealed class AddCharacterConditionCommandHandler(ICampaignRepository camp
                 ?? throw new InvalidOperationException($"Character {request.CharacterId} not found.");
             hero.AddCondition(request.Condition);
         }, cancellationToken);
-    }
-}
-
-public sealed class RollDiceQueryHandler : IRequestHandler<RollDiceQuery, DiceRollResult>
-{
-    public Task<DiceRollResult> Handle(RollDiceQuery request, CancellationToken cancellationToken)
-    {
-        ParseExpression(request.Expression, out var numberOfDice, out var diceSides);
-
-        if (numberOfDice <= 0 || diceSides <= 0)
-            throw new ArgumentOutOfRangeException(nameof(request.Expression), "Dice expression is not valid.");
-
-        var rolls = new List<int>(numberOfDice);
-        for (var i = 0; i < numberOfDice; i++)
-            rolls.Add(Random.Shared.Next(1, diceSides + 1));
-
-        var total = rolls.Sum() + request.Modifier;
-
-        return Task.FromResult(new DiceRollResult(request.Expression, total, rolls, request.Modifier, request.Context));
-    }
-
-    private static void ParseExpression(string expression, out int numberOfDice, out int diceSides)
-    {
-        var cleanedExpression = expression.Trim().ToLowerInvariant();
-        var separators = cleanedExpression.Split('d', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (separators.Length != 2 || !int.TryParse(separators[0], out numberOfDice) || !int.TryParse(separators[1], out diceSides))
-            throw new ArgumentException("Dice expression must be in NdM format (e.g. 1d20).", nameof(expression));
     }
 }
 

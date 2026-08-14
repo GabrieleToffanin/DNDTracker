@@ -1,5 +1,6 @@
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.Queries.UseCases.GetCampaignTracker;
+using DNDTracker.Application.Queries.UseCases.RollDice;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Application.UseCases.Campaigns.Tracker;
@@ -113,7 +114,7 @@ public class CampaignController(
         CancellationToken cancellationToken)
     {
         var monster = new MonsterStatBlock(
-            Guid.NewGuid(),
+            Guid.Empty,
             request.Name,
             request.CreatureType,
             request.ArmorClass,
@@ -268,8 +269,7 @@ public class CampaignController(
         [FromBody] RollDiceRequest request,
         CancellationToken cancellationToken)
     {
-        _ = campaignName;
-        var result = await mediator.Send(new RollDiceQuery(request.Expression, request.Modifier, request.Context), cancellationToken);
+        var result = await mediator.Send(new RollDiceInCampaign(campaignName, request.Expression, request.Modifier, request.Context), cancellationToken);
         return Ok(result);
     }
 
