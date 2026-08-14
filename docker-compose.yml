@@ -41,12 +41,36 @@ services:
       - OpenTelemetry__ServiceVersion=1.0.0
       - OpenTelemetry__Endpoint=http://otel-collector:4317
     depends_on:
+      init-dndtracker:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - default
+
+  init-dndtracker:
+    image: dndtracker.main
+    build:
+      context: .
+      dockerfile: src/DNDTracker.Main/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=dndtracker;Username=postgres;Password=postgres
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DNDTRACKER_INIT=true
+      - OpenTelemetry__ServiceName=DNDTracker
+      - OpenTelemetry__ServiceVersion=1.0.0
+      - OpenTelemetry__Endpoint=http://otel-collector:4317
+    depends_on:
       postgres-init:
         condition: service_completed_successfully
       rabbitmq:
-        condition: service_started
-      otel-collector:
-        condition: service_started
+        condition: service_healthy
+    restart: "no"
     networks:
       - default
 
@@ -100,6 +124,11 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
       - rabbitmq-logs:/var/log/rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     networks:
       - default
 

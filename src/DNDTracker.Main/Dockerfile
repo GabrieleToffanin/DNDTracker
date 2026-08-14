@@ -53,13 +53,25 @@ RUN echo '#!/bin/bash' > /app/entrypoint.sh && \
     echo 'POSTGRES_PORT="${POSTGRES_PORT:-5432}"' >> /app/entrypoint.sh && \
     echo 'RABBITMQ_HOST="${RABBITMQ_HOST:-rabbitmq}"' >> /app/entrypoint.sh && \
     echo 'RABBITMQ_PORT="${RABBITMQ_PORT:-5672}"' >> /app/entrypoint.sh && \
-    echo 'echo "Waiting for PostgreSQL at ${POSTGRES_HOST}:${POSTGRES_PORT}..."' >> /app/entrypoint.sh && \
-    echo 'until pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" > /dev/null 2>&1; do sleep 2; done' >> /app/entrypoint.sh && \
-    echo 'echo "PostgreSQL is ready."' >> /app/entrypoint.sh && \
-    echo 'echo "Waiting for RabbitMQ at ${RABBITMQ_HOST}:${RABBITMQ_PORT}..."' >> /app/entrypoint.sh && \
-    echo 'until nc -z "${RABBITMQ_HOST}" "${RABBITMQ_PORT}" > /dev/null 2>&1; do sleep 2; done' >> /app/entrypoint.sh && \
-    echo 'echo "RabbitMQ is ready."' >> /app/entrypoint.sh && \
-    echo 'exec dotnet DNDTracker.Main.dll' >> /app/entrypoint.sh && \
+    echo 'echo "Starting DNDTracker entrypoint with args: $*"' >> /app/entrypoint.sh && \
+    echo 'INIT_MODE="${DNDTRACKER_INIT:-false}"' >> /app/entrypoint.sh && \
+    echo 'if [[ "${INIT_MODE}" != "true" && "${1:-}" != "--init" ]]; then' >> /app/entrypoint.sh && \
+    echo '  echo "Waiting for PostgreSQL at ${POSTGRES_HOST}:${POSTGRES_PORT}..."' >> /app/entrypoint.sh && \
+    echo '  until pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" > /dev/null 2>&1; do sleep 2; done' >> /app/entrypoint.sh && \
+    echo '  echo "PostgreSQL is ready."' >> /app/entrypoint.sh && \
+    echo '  echo "Waiting for RabbitMQ at ${RABBITMQ_HOST}:${RABBITMQ_PORT}..."' >> /app/entrypoint.sh && \
+    echo '  until nc -z "${RABBITMQ_HOST}" "${RABBITMQ_PORT}" > /dev/null 2>&1; do sleep 2; done' >> /app/entrypoint.sh && \
+    echo '  echo "RabbitMQ is ready."' >> /app/entrypoint.sh && \
+    echo 'else' >> /app/entrypoint.sh && \
+    echo '  echo "Init mode detected; waiting for dependencies before bootstrap."' >> /app/entrypoint.sh && \
+    echo '  echo "Waiting for PostgreSQL at ${POSTGRES_HOST}:${POSTGRES_PORT}..."' >> /app/entrypoint.sh && \
+    echo '  until pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" > /dev/null 2>&1; do sleep 2; done' >> /app/entrypoint.sh && \
+    echo '  echo "PostgreSQL is ready."' >> /app/entrypoint.sh && \
+    echo '  echo "Waiting for RabbitMQ at ${RABBITMQ_HOST}:${RABBITMQ_PORT}..."' >> /app/entrypoint.sh && \
+    echo '  until nc -z "${RABBITMQ_HOST}" "${RABBITMQ_PORT}" > /dev/null 2>&1; do sleep 2; done' >> /app/entrypoint.sh && \
+    echo '  echo "RabbitMQ is ready."' >> /app/entrypoint.sh && \
+    echo 'fi' >> /app/entrypoint.sh && \
+    echo 'exec dotnet DNDTracker.Main.dll "$@"' >> /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
 
 ENTRYPOINT ["/app/entrypoint.sh"]

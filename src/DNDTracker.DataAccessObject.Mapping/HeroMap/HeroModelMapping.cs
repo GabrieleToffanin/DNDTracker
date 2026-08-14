@@ -1,4 +1,3 @@
-using DNDTracker.DataAccessObject.Mapping.Json;
 using DNDTracker.Domain.Heroes;
 using DNDTracker.Vocabulary.ValueObjects;
 using DNDTracker.Vocabulary.Models;
@@ -35,17 +34,17 @@ public static class HeroModelMapping
             heroModel.Speed,
             heroModel.Notes,
             heroModel.Background,
-            JsonCollectionMapper.DeserializeCollection<InventoryItem>(heroModel.InventoryJson),
-            JsonCollectionMapper.DeserializeCollection<InventoryItem>(heroModel.EquipmentJson),
-            JsonCollectionMapper.DeserializeCollection<CharacterSpellEntry>(heroModel.SpellbookJson),
-            JsonCollectionMapper.DeserializeCollection<SpellSlotUsage>(heroModel.SpellSlotsJson),
-            JsonCollectionMapper.DeserializeCollection<CharacterCondition>(heroModel.ConditionsJson)
+            heroModel.Inventory.Select(item => item.ToValueObject()),
+            heroModel.Equipment.Select(item => item.ToValueObject()),
+            heroModel.Spellbook.Select(entry => entry.ToValueObject()),
+            heroModel.SpellSlots.Select(slot => slot.ToValueObject()),
+            heroModel.Conditions.Select(condition => condition.ToValueObject())
         );
     }
 
     public static HeroModel MapToModel(this Hero hero)
     {
-        return new HeroModel()
+        var heroModel = new HeroModel
         {
             Id = hero.Id.Id,
             Name = hero.Name,
@@ -70,12 +69,15 @@ public static class HeroModelMapping
             Initiative = hero.Initiative,
             Speed = hero.Speed,
             Notes = hero.Notes,
-            Background = hero.Background,
-            InventoryJson = JsonCollectionMapper.Serialize(hero.Inventory),
-            EquipmentJson = JsonCollectionMapper.Serialize(hero.Equipment),
-            SpellbookJson = JsonCollectionMapper.Serialize(hero.Spellbook),
-            SpellSlotsJson = JsonCollectionMapper.Serialize(hero.SpellSlots),
-            ConditionsJson = JsonCollectionMapper.Serialize(hero.Conditions)
+            Background = hero.Background
         };
+
+        heroModel.Inventory.AddRange(hero.Inventory.Select(InventoryItemModel.From));
+        heroModel.Equipment.AddRange(hero.Equipment.Select(EquipmentItemModel.From));
+        heroModel.Spellbook.AddRange(hero.Spellbook.Select(SpellbookEntryModel.From));
+        heroModel.SpellSlots.AddRange(hero.SpellSlots.Select(SpellSlotUsageModel.From));
+        heroModel.Conditions.AddRange(hero.Conditions.Select(HeroConditionModel.From));
+
+        return heroModel;
     }
 }

@@ -13,7 +13,7 @@ public class PostgreCampaignRepository(
     public async Task<Campaign?> GetCampaignAsync(string campaignName, CancellationToken cancellationToken)
     {
         var campaign = await context.Set<CampaignModel>()
-            .Include(c => c.Heroes)
+            .IncludeTrackerGraph()
             .AsNoTracking()
             .FirstOrDefaultAsync(c => c.CampaignName == campaignName, cancellationToken);
         
@@ -23,6 +23,8 @@ public class PostgreCampaignRepository(
     public async Task<IEnumerable<Campaign>> GetAllCampaignsAsync(CancellationToken cancellationToken)
     {
         var campaigns = await context.Set<CampaignModel>()
+            .IncludeTrackerGraph()
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
         
         return campaigns.Select(c => c.MapToDomain());
@@ -46,13 +48,13 @@ public class PostgreCampaignRepository(
         for (int attempt = 1; ; attempt++)
         {
             var trackedModel = await context.Set<CampaignModel>()
-                .Include(c => c.Heroes)
+                .IncludeTrackerGraph()
                 .FirstOrDefaultAsync(c => c.CampaignName == campaign.CampaignName, cancellationToken);
 
             if (trackedModel is null)
                 throw new InvalidOperationException($"Campaign '{campaign.CampaignName}' not found for update.");
 
-            UpdateTrackedModel(trackedModel, campaign);
+            trackedModel.Apply(campaign.MapToModel());
 
             try
             {
@@ -70,18 +72,34 @@ public class PostgreCampaignRepository(
         }
     }
 
-    private void UpdateTrackedModel(CampaignModel trackedModel, Campaign campaign)
+}
+
+internal static class CampaignModelQueryableExtensions
+{
+    public static IQueryable<CampaignModel> IncludeTrackerGraph(this IQueryable<CampaignModel> campaigns)
     {
-        trackedModel.CampaignName = campaign.CampaignName;
-        trackedModel.CampaignDescription = campaign.CampaignDescription;
-        trackedModel.CampaignImage = campaign.CampaignImage;
-        trackedModel.IsActive = campaign.IsActive;
-        trackedModel.UpdatedDate = campaign.UpdatedDate;
-
-        HashSet<Guid> existingIds = trackedModel.Heroes.Select(h => h.Id).ToHashSet();
-        var newHeroes = campaign.Heroes.Where(h => !existingIds.Contains(h.Id.Id));
-
-        foreach (var hero in newHeroes)
-            trackedModel.Heroes.Add(hero.MapToModel());
+        return campaigns
+            .Include(campaign => campaign.Heroes)
+                .ThenInclude(hero => hero.Inventory)
+            .Include(campaign => campaign.Heroes)
+                .ThenInclude(hero => hero.Equipment)
+            .Include(campaign => campaign.Heroes)
+                .ThenInclude(hero => hero.Spellbook)
+            .Include(campaign => campaign.Heroes)
+                .ThenInclude(hero => hero.SpellSlots)
+            .Include(campaign => campaign.Heroes)
+                .ThenInclude(hero => hero.Conditions)
+            .Include(campaign => campaign.MonsterLibrary)
+            .Include(campaign => campaign.ActiveCombat)
+                .ThenInclude(combat => combat!.InitiativeOrder)
+                    .ThenInclude(combatant => combatant.Conditions)
+            .Include(campaign => campaign.SessionLogs)
+            .Include(campaign => campaign.TimelineEntries)
+            .Include(campaign => campaign.Npcs)
+            .Include(campaign => campaign.Locations)
+            .Include(campaign => campaign.Quests)
+            .Include(campaign => campaign.Loot)
+            .Include(campaign => campaign.Members)
+            .AsSplitQuery();
     }
 }
