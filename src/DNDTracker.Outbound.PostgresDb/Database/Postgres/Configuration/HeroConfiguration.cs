@@ -10,10 +10,14 @@ public class HeroConfiguration : IEntityTypeConfiguration<HeroModel>
     {
         builder.HasKey(c => c.Id);
 
-        // The Id is generated in the domain layer (HeroId), not by the database,
-        // so EF Core must not try to generate/override it on insert.
         builder.Property(c => c.Id)
             .ValueGeneratedNever();
+
+        builder.Property(h => h.InventoryJson).HasDefaultValue("[]");
+        builder.Property(h => h.EquipmentJson).HasDefaultValue("[]");
+        builder.Property(h => h.SpellbookJson).HasDefaultValue("[]");
+        builder.Property(h => h.SpellSlotsJson).HasDefaultValue("[]");
+        builder.Property(h => h.ConditionsJson).HasDefaultValue("[]");
 
         builder.HasOne(h => h.Campaign)
             .WithMany(c => c.Heroes);
