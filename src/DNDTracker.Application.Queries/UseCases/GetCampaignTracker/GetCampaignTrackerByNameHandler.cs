@@ -16,7 +16,7 @@ public sealed class GetCampaignTrackerByNameHandler(ICampaignRepository campaign
             throw new CampaignNotFoundException(request.CampaignName);
 
         var role = request.ViewerUserId is null
-            ? CampaignMemberRole.DungeonMaster
+            ? CampaignMemberRole.Player
             : campaign.GetRoleOrDefault(request.ViewerUserId.Value);
 
         var activeCombat = role == CampaignMemberRole.Player && campaign.ActiveCombat is not null

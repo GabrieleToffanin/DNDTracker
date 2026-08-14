@@ -132,14 +132,9 @@ public sealed class Campaign : AggregateRoot<CampaignId>
 
     public void AddHero(params Hero[] hero)
     {
-        AddCharacter(hero);
-    }
+        ArgumentNullException.ThrowIfNull(hero);
 
-    public void AddCharacter(params Hero[] heroes)
-    {
-        ArgumentNullException.ThrowIfNull(heroes);
-
-        Heroes.AddRange(heroes);
+        Heroes.AddRange(hero);
 
         HeroAddedDomainEvent heroAddedEvent = new(Guid.NewGuid(), DateTime.UtcNow);
         AddDomainEvent(heroAddedEvent);
@@ -148,7 +143,10 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     public void AddMonsterToLibrary(MonsterStatBlock monster)
     {
         ArgumentNullException.ThrowIfNull(monster);
-        MonsterLibrary.Add(monster);
+        var resolvedMonster = monster.Id == Guid.Empty
+            ? monster with { Id = Guid.NewGuid() }
+            : monster;
+        MonsterLibrary.Add(resolvedMonster);
         UpdatedDate = DateTime.UtcNow;
     }
 
@@ -332,7 +330,7 @@ public sealed class Campaign : AggregateRoot<CampaignId>
 
     public CampaignMemberRole GetRoleOrDefault(Guid userId)
     {
-        return Members.FirstOrDefault(x => x.UserId == userId)?.Role ?? CampaignMemberRole.DungeonMaster;
+        return Members.FirstOrDefault(x => x.UserId == userId)?.Role ?? CampaignMemberRole.Player;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
