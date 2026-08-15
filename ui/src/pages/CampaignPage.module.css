@@ -1,0 +1,45 @@
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: .5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: .25rem;
+  flex-wrap: wrap;
+  margin: .75rem 0;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-family: var(--font-heading);
+  font-size: .75rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: .45rem .8rem;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  background: var(--clr-surface);
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.tab:hover {
+  border-color: var(--clr-border2);
+  color: var(--clr-text);
+}
+
+.tabActive {
+  background: var(--clr-panel);
+  border-color: var(--clr-gold);
+  color: var(--clr-gold-lt);
+}
+
+.content {
+  margin-top: .5rem;
+}

@@ -1,0 +1,56 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .6rem 1.5rem;
+  background: var(--clr-surface);
+  border-bottom: 2px solid var(--clr-border);
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+}
+
+.brandIcon {
+  font-size: 1.4rem;
+  color: var(--clr-red-lt);
+  text-shadow: 0 0 8px rgba(196,43,43,.5);
+}
+
+.brandText {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  color: var(--clr-gold-lt);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+  font-family: var(--font-heading);
+  font-size: .8rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
