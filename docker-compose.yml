@@ -50,6 +50,20 @@ services:
     networks:
       - default
 
+  dndtracker.ui:
+    image: dndtracker.ui
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://dndtracker.api:8080
+    depends_on:
+      - dndtracker.api
+    networks:
+      - default
+
   init-dndtracker:
     image: dndtracker.main
     build:
