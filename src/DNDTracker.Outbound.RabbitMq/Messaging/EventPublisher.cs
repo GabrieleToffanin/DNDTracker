@@ -48,6 +48,8 @@ internal class EventPublisher(
             Headers = headers
         };
 
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
         await channel.BasicPublishAsync(
             exchange: exchange,
             routingKey: routingKey,
@@ -55,6 +57,9 @@ internal class EventPublisher(
             basicProperties: basicProperties,
             body: body,
             cancellationToken: cancellationToken);
+
+        stopwatch.Stop();
+        RabbitMqTelemetry.RecordPublish(messageType, stopwatch.Elapsed);
     }
 
     private string GetExchangeForMessageType(string messageType)

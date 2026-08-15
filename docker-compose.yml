@@ -40,6 +40,10 @@ services:
       - OpenTelemetry__ServiceName=DNDTracker
       - OpenTelemetry__ServiceVersion=1.0.0
       - OpenTelemetry__Endpoint=http://otel-collector:4317
+      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata nell'ambiente locale}
+      - NEW_RELIC_APP_NAME=DNDTracker
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LOG=stdout
     depends_on:
       init-dndtracker:
         condition: service_completed_successfully
@@ -65,6 +69,10 @@ services:
       - OpenTelemetry__ServiceName=DNDTracker
       - OpenTelemetry__ServiceVersion=1.0.0
       - OpenTelemetry__Endpoint=http://otel-collector:4317
+      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata nell'ambiente locale}
+      - NEW_RELIC_APP_NAME=DNDTracker
+      - NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
+      - NEW_RELIC_LOG=stdout
     depends_on:
       postgres-init:
         condition: service_completed_successfully

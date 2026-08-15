@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Text;
 
 namespace DNDTracker.Outbound.RabbitMq.Messaging;
@@ -11,8 +12,38 @@ namespace DNDTracker.Outbound.RabbitMq.Messaging;
 public static class RabbitMqTelemetry
 {
     public const string ActivitySourceName = "DNDTracker.RabbitMq";
+    public static readonly Meter Meter = new(ActivitySourceName);
+
+    private static readonly Counter<long> PublishedMessages = Meter.CreateCounter<long>(
+        "dndtracker.rabbitmq.messages_published_total",
+        unit: "{message}");
+    private static readonly Counter<long> ConsumedMessages = Meter.CreateCounter<long>(
+        "dndtracker.rabbitmq.messages_consumed_total",
+        unit: "{message}");
+    private static readonly Histogram<double> PublishDurationSeconds = Meter.CreateHistogram<double>(
+        "dndtracker.rabbitmq.publish_duration_seconds",
+        unit: "s");
+    private static readonly Histogram<double> ConsumeDurationSeconds = Meter.CreateHistogram<double>(
+        "dndtracker.rabbitmq.consume_duration_seconds",
+        unit: "s");
 
     public static readonly ActivitySource ActivitySource = new(ActivitySourceName);
+
+    public static void RecordPublish(string messageType, TimeSpan elapsed)
+    {
+        PublishedMessages.Add(1, new KeyValuePair<string, object?>("messaging.message.type", messageType));
+        PublishDurationSeconds.Record(elapsed.TotalSeconds, new KeyValuePair<string, object?>("messaging.message.type", messageType));
+    }
+
+    public static void RecordConsume(string queueName, string messageType, TimeSpan elapsed)
+    {
+        ConsumedMessages.Add(1,
+            new KeyValuePair<string, object?>("messaging.destination", queueName),
+            new KeyValuePair<string, object?>("messaging.message.type", messageType));
+        ConsumeDurationSeconds.Record(elapsed.TotalSeconds,
+            new KeyValuePair<string, object?>("messaging.destination", queueName),
+            new KeyValuePair<string, object?>("messaging.message.type", messageType));
+    }
 
     public static void InjectTraceContext(Activity? activity, IDictionary<string, object?> headers)
     {

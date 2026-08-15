@@ -84,6 +84,8 @@ public class Program
                 .AddOtlpExporter(opts => opts.Endpoint = new Uri(otlpEndpoint)))
             .WithMetrics(metrics => metrics
                 .SetResourceBuilder(resourceBuilder)
+                .AddMeter(TracingPipelineBehavior<object, object>.Meter.Name)
+                .AddMeter(RabbitMqTelemetry.Meter.Name)
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddRuntimeInstrumentation()

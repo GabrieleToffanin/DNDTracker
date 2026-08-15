@@ -84,6 +84,8 @@ public class HeroAddedEventConsumer(
         activity?.SetTag("server.port", rabbitConfiguration.Value.Port);
         activity?.SetTag("peer.service", "rabbitmq");
 
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
         byte[] body = ea.Body.ToArray();
         HeroAddedDomainEvent? message = JsonSerializer.Deserialize<HeroAddedDomainEvent>(body);
 
@@ -92,6 +94,8 @@ public class HeroAddedEventConsumer(
             logger.LogWarning("Failed to deserialize HeroAddedDomainEvent");
             activity?.SetStatus(ActivityStatusCode.Error, "Deserialization failed");
             await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
+            stopwatch.Stop();
+            RabbitMqTelemetry.RecordConsume(QueueName, nameof(HeroAddedDomainEvent), stopwatch.Elapsed);
             return;
         }
 
@@ -102,6 +106,8 @@ public class HeroAddedEventConsumer(
             message.Id, message.OccuredOn);
 
         await _channel!.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: cancellationToken);
+        stopwatch.Stop();
+        RabbitMqTelemetry.RecordConsume(QueueName, nameof(HeroAddedDomainEvent), stopwatch.Elapsed);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
