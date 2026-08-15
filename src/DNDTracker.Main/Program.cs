@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using DNDTracker.Application.Behaviors;
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using MediatR;
@@ -28,6 +29,8 @@ namespace DNDTracker.Main;
 
 public class Program
 {
+    private const string UiCorsPolicy = "UiCors";
+
     public static async Task Main(string[] args)
     {
         Activity.DefaultIdFormat = ActivityIdFormat.W3C;
@@ -102,7 +105,24 @@ public class Program
         AssemblyPart inboundRestAdapterPart = new(typeof(CampaignController).Assembly);
 
         builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
             .PartManager.ApplicationParts.Add(inboundRestAdapterPart);
+
+        string[] allowedOrigins = builder.Configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? [];
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(UiCorsPolicy, policy =>
+            {
+                policy
+                    .WithOrigins(allowedOrigins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
 
         builder.Services.AddOpenApi();
         builder.Services.AddMediatR(ConfigureMediatR);
@@ -151,7 +171,8 @@ public class Program
         }
 
         app.UseExceptionHandler();
-        app.UseMiddleware<BackpressureMiddleware>();
+        app.UseCors(UiCorsPolicy);
+    app.UseMiddleware<BackpressureMiddleware>();
         app.UseAuthorization();
         app.MapControllers();
         app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
