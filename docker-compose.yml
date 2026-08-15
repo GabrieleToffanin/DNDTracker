@@ -54,6 +54,20 @@ services:
     networks:
       - default
 
+  dndtracker.ui:
+    image: dndtracker.ui
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://dndtracker.api:8080
+    depends_on:
+      - dndtracker.api
+    networks:
+      - default
+
   init-dndtracker:
     image: dndtracker.main
     build:
@@ -147,7 +161,7 @@ services:
     volumes:
       - ./otel-collector/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
     environment:
-      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:?NEW_RELIC_LICENSE_KEY non impostata nell'ambiente locale}
+      - NEW_RELIC_LICENSE_KEY=${NEW_RELIC_LICENSE_KEY:-}
     ports:
       - "4317:4317"   # OTLP gRPC receiver
       - "4318:4318"   # OTLP HTTP receiver
