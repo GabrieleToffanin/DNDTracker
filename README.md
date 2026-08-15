@@ -134,16 +134,25 @@ dotnet test tst/DNDTracker.Main.IntegrationTests/DNDTracker.Main.IntegrationTest
 
 ### Fastest full-stack option
 
-The repository includes a helper script that loads the required user secret and starts Docker Compose:
+Copy the environment template and start Docker Compose:
 
-```powershell
-.\up-local.ps1 -Build
+```bash
+cp .env.example .env
+docker compose up --build
 ```
 
-Set the required secret with the shared secrets ID:
+`NEW_RELIC_LICENSE_KEY` in `.env` is optional. If left empty the full stack still starts; telemetry is exported locally to Jaeger, Prometheus, and Loki. Set the key only if you want to forward telemetry to New Relic:
+
+```bash
+# .env
+NEW_RELIC_LICENSE_KEY=<your-key>
+```
+
+#### Alternative: PowerShell helper (loads the key from dotnet user-secrets)
 
 ```powershell
 dotnet user-secrets set "NEW_RELIC_LICENSE_KEY" "<value>" --id DndTracker
+.\up-local.ps1 -Build
 ```
 
 ### Docker Compose services
