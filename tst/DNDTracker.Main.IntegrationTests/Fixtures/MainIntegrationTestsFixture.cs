@@ -1,4 +1,6 @@
+using DNDTracker.Outbound.PostgresDb.Database.Postgres;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
@@ -59,6 +61,10 @@ public class MainIntegrationTestsFixture : IAsyncLifetime
                     }!);
                 });
             });
+
+        using var scope = _factory.Services.CreateScope();
+        var database = scope.ServiceProvider.GetRequiredService<DNDTrackerPostgresDbContext>();
+        await database.Database.MigrateAsync();
     }
     
     public HttpClient CreateClient()
