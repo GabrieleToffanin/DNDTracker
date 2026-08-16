@@ -9,6 +9,7 @@ using Xunit;
 namespace DNDTracker.Main.IntegrationTests;
 
 [Collection("Integration Tests")]
+[Trait("Category", "Integration")]
 public class CampaignIntegrationTests(MainIntegrationTestsFixture fixture)
 {
     private readonly HttpClient _client = fixture.CreateClient();
