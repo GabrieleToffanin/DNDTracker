@@ -10,6 +10,14 @@ public class MonsterStatBlockConfiguration : IEntityTypeConfiguration<MonsterSta
     {
         builder.HasKey(monster => monster.Id);
         builder.Property(monster => monster.Id).ValueGeneratedNever();
+        builder.Property(monster => monster.Description).HasColumnType("text");
+        builder.Property(monster => monster.Statistics).HasColumnType("text");
+        builder.Property(monster => monster.Actions).HasColumnType("text");
+        builder.Property(monster => monster.BonusActions).HasColumnType("text");
+        builder.Property(monster => monster.Reactions).HasColumnType("text");
+        builder.Property(monster => monster.LegendaryActions).HasColumnType("text");
+        builder.Property(monster => monster.LairActions).HasColumnType("text");
+        builder.Property(monster => monster.Spells).HasColumnType("text");
         builder.HasOne(monster => monster.Campaign)
             .WithMany(campaign => campaign.MonsterLibrary)
             .HasForeignKey(monster => monster.CampaignId)

@@ -1,0 +1,15 @@
+@if (!string.IsNullOrWhiteSpace(Content))
+{
+    <section class="sheet-section">
+        <h3>@Title</h3>
+        @foreach (var line in Content.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            <p>@line</p>
+        }
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Content { get; set; } = string.Empty;
+}

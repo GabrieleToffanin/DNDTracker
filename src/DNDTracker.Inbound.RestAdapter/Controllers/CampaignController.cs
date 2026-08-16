@@ -123,7 +123,15 @@ public class CampaignController(
             request.ExperiencePoints,
             request.InitiativeModifier,
             request.Speed,
-            request.Notes);
+            request.Notes,
+            request.Description,
+            request.Statistics,
+            request.Actions,
+            request.BonusActions,
+            request.Reactions,
+            request.LegendaryActions,
+            request.LairActions,
+            request.Spells);
 
         await mediator.Send(new AddMonsterToLibraryCommand(campaignName, monster), cancellationToken);
         return NoContent();

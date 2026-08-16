@@ -1,7 +1,325 @@
 ﻿@page "/"
+@inject DndTrackerApi Api
 
-<PageTitle>Home</PageTitle>
+<PageTitle>DNDTracker — Campaign Tabletop</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="tabletop-shell">
+    <aside class="campaign-rail">
+        <div class="brand">
+            <span class="brand-mark">D20</span>
+            <div><strong>DNDTracker</strong><small>Game Master Console</small></div>
+        </div>
+        <button class="primary full" @onclick="ToggleCampaignForm">＋ Nuova campagna</button>
+        @if (showCampaignForm)
+        {
+            <div class="rail-form">
+                <input placeholder="Nome campagna" @bind="newCampaignName" />
+                <textarea placeholder="Descrizione" @bind="newCampaignDescription"></textarea>
+                <button class="gold full" @onclick="CreateCampaignAsync">Crea</button>
+            </div>
+        }
+        <p class="rail-heading">CAMPAGNE</p>
+        @foreach (var campaign in campaigns)
+        {
+            <button class="campaign-link @(tracker?.CampaignName == campaign.CampaignName ? "selected" : "")"
+                    @onclick="() => SelectCampaignAsync(campaign.CampaignName)">
+                <span class="seal">✦</span>
+                <span><strong>@campaign.CampaignName</strong><small>@campaign.CampaignDescription</small></span>
+            </button>
+        }
+    </aside>
 
-Welcome to your new app.
+    <section class="workspace">
+        <header class="topbar">
+            <div>
+                <span class="eyebrow">TAVOLO DEL DUNGEON MASTER</span>
+                <h1>@(tracker?.CampaignName ?? "Seleziona una campagna")</h1>
+            </div>
+            @if (tracker is not null)
+            {
+                <button class="icon-button" title="Aggiorna" @onclick="ReloadAsync">↻</button>
+            }
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(error))
+        {
+            <div class="error-banner">@error</div>
+        }
+        else if (loading)
+        {
+            <div class="loading-card">Consultando gli archivi…</div>
+        }
+        else if (tracker is null)
+        {
+            <div class="empty-table">
+                <div class="rune">✦</div>
+                <h2>Apri una campagna</h2>
+                <p>Scegli una cronaca dalla libreria o creane una nuova.</p>
+            </div>
+        }
+        else
+        {
+            <nav class="section-tabs">
+                @foreach (var item in tabs)
+                {
+                    <button class="@(activeTab == item.Key ? "active" : "")"
+                            @onclick="() => activeTab = item.Key">@item.Value</button>
+                }
+            </nav>
+
+            <div class="content-scroll">
+                @if (activeTab == "dashboard")
+                {
+                    <div class="dashboard-grid">
+                        <section class="parchment panel-wide">
+                            <span class="eyebrow">CRONACA</span>
+                            <h2>@tracker.CampaignName</h2>
+                            <p>@tracker.CampaignDescription</p>
+                            <div class="summary-strip">
+                                <span><b>@tracker.Characters.Count</b> Personaggi</span>
+                                <span><b>@tracker.MonsterLibrary.Count</b> Mostri</span>
+                                <span><b>@tracker.Npcs.Count</b> PNG</span>
+                                <span><b>@tracker.SessionLogs.Count</b> Sessioni</span>
+                            </div>
+                        </section>
+                        <section class="dark-panel">
+                            <h3>⚔ Incontro attivo</h3>
+                            @if (tracker.ActiveCombat is null)
+                            {
+                                <p class="muted">Nessun combattimento in corso.</p>
+                            }
+                            else
+                            {
+                                <p>Round <b>@tracker.ActiveCombat.Round</b></p>
+                                @foreach (var combatant in tracker.ActiveCombat.InitiativeOrder)
+                                {
+                                    <div class="initiative-row">
+                                        <span>@combatant.Initiative</span>
+                                        <b>@combatant.Name</b>
+                                        <small>@combatant.CurrentHitPoints / @combatant.MaxHitPoints PF</small>
+                                    </div>
+                                }
+                            }
+                        </section>
+                        <section class="dark-panel">
+                            <h3>📜 Diario recente</h3>
+                            @foreach (var entry in tracker.SessionLogs.Take(4))
+                            {
+                                <div class="journal-row"><small>@entry.Date.ToString("dd MMM")</small><span>@entry.Summary</span></div>
+                            }
+                            @if (tracker.SessionLogs.Count == 0)
+                            {
+                                <p class="muted">Il diario è ancora vuoto.</p>
+                            }
+                        </section>
+                    </div>
+                }
+                else if (activeTab == "characters")
+                {
+                    <div class="card-grid">
+                        @foreach (var character in tracker.Characters)
+                        {
+                            <article class="sheet-card">
+                                <div class="portrait">♙</div>
+                                <h3>@character.Name</h3>
+                                <small>Livello @character.Level</small>
+                                <div class="stat-row"><span>CA <b>@character.ArmorClass</b></span><span>PF <b>@character.CurrentHitPoints/@character.MaxHitPoints</b></span></div>
+                            </article>
+                        }
+                    </div>
+                }
+                else if (activeTab == "monsters")
+                {
+                    <div class="panel-heading">
+                        <div><span class="eyebrow">BESTIARIO</span><h2>Schede dei mostri</h2></div>
+                        <button class="primary" @onclick="OpenMonsterEditor">＋ Crea mostro</button>
+                    </div>
+                    <div class="bestiary-layout">
+                        <div class="monster-list">
+                            @foreach (var monster in tracker.MonsterLibrary)
+                            {
+                                <button class="monster-list-item @(selectedMonster?.Id == monster.Id ? "selected" : "")"
+                                        @onclick="() => selectedMonster = monster">
+                                    <span class="monster-icon">☠</span>
+                                    <span><b>@monster.Name</b><small>@monster.CreatureType · GS @monster.ChallengeRating</small></span>
+                                </button>
+                            }
+                        </div>
+                        @if (selectedMonster is not null)
+                        {
+                            <MonsterSheet Monster="selectedMonster" />
+                        }
+                        else
+                        {
+                            <div class="empty-selection">Seleziona una creatura dal bestiario.</div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    var resources = activeTab switch
+                    {
+                        "npcs" => tracker.Npcs,
+                        "locations" => tracker.Locations,
+                        "quests" => tracker.Quests,
+                        _ => tracker.Loot
+                    };
+                    <div class="panel-heading"><div><span class="eyebrow">ARCHIVIO</span><h2>@tabs[activeTab]</h2></div></div>
+                    <div class="card-grid">
+                        @foreach (var resource in resources)
+                        {
+                            <article class="resource-card"><span>✦</span><h3>@resource.DisplayName</h3></article>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@if (showMonsterEditor && tracker is not null)
+{
+    <div class="modal-backdrop">
+        <EditForm Model="monsterEditor" OnValidSubmit="SaveMonsterAsync" class="monster-editor">
+            <div class="modal-title">
+                <div><span class="eyebrow">NUOVA CREATURA</span><h2>Crea scheda mostro</h2></div>
+                <button type="button" class="close" @onclick="CloseMonsterEditor">×</button>
+            </div>
+            <div class="form-grid three">
+                <label>Nome<input required @bind="monsterEditor.Name" /></label>
+                <label>Tipo<input @bind="monsterEditor.CreatureType" /></label>
+                <label>Grado sfida<InputNumber @bind-Value="monsterEditor.ChallengeRating" /></label>
+                <label>Classe armatura<InputNumber @bind-Value="monsterEditor.ArmorClass" /></label>
+                <label>Punti ferita<InputNumber @bind-Value="monsterEditor.HitPoints" /></label>
+                <label>Velocità<InputNumber @bind-Value="monsterEditor.Speed" /></label>
+                <label>Esperienza<InputNumber @bind-Value="monsterEditor.ExperiencePoints" /></label>
+                <label>Iniziativa<InputNumber @bind-Value="monsterEditor.InitiativeModifier" /></label>
+            </div>
+            <label>Descrizione<textarea rows="3" @bind="monsterEditor.Description"></textarea></label>
+            <label>Statistiche e tratti<textarea rows="4" @bind="monsterEditor.Statistics"></textarea></label>
+            <div class="form-grid two">
+                <label>Azioni<textarea rows="4" @bind="monsterEditor.Actions"></textarea></label>
+                <label>Azioni bonus<textarea rows="4" @bind="monsterEditor.BonusActions"></textarea></label>
+                <label>Reazioni<textarea rows="4" @bind="monsterEditor.Reactions"></textarea></label>
+                <label>Azioni leggendarie<textarea rows="4" @bind="monsterEditor.LegendaryActions"></textarea></label>
+                <label>Azioni della tana<textarea rows="4" @bind="monsterEditor.LairActions"></textarea></label>
+                <label>Magie<textarea rows="4" @bind="monsterEditor.Spells"></textarea></label>
+            </div>
+            <label>Note del GM<textarea rows="2" @bind="monsterEditor.Notes"></textarea></label>
+            <div class="modal-actions">
+                <button type="button" @onclick="CloseMonsterEditor">Annulla</button>
+                <button type="submit" class="gold" disabled="@savingMonster">@(savingMonster ? "Salvataggio…" : "Salva nel bestiario")</button>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private readonly Dictionary<string, string> tabs = new()
+    {
+        ["dashboard"] = "Tavolo",
+        ["characters"] = "Personaggi",
+        ["monsters"] = "Mostri",
+        ["npcs"] = "PNG",
+        ["locations"] = "Luoghi",
+        ["quests"] = "Missioni",
+        ["loot"] = "Tesori"
+    };
+    private IReadOnlyList<CampaignSummary> campaigns = [];
+    private CampaignTracker? tracker;
+    private MonsterStatBlock? selectedMonster;
+    private MonsterEditorModel monsterEditor = new();
+    private string activeTab = "dashboard";
+    private string error = string.Empty;
+    private string newCampaignName = string.Empty;
+    private string newCampaignDescription = string.Empty;
+    private bool loading = true;
+    private bool showCampaignForm;
+    private bool showMonsterEditor;
+    private bool savingMonster;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            campaigns = await Api.GetCampaignsAsync();
+            if (campaigns.Count > 0)
+                await SelectCampaignAsync(campaigns[0].CampaignName);
+        }
+        catch
+        {
+            error = "Impossibile contattare il server DNDTracker.";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task SelectCampaignAsync(string name)
+    {
+        loading = true;
+        error = string.Empty;
+        try
+        {
+            tracker = await Api.GetTrackerAsync(name);
+            selectedMonster = tracker?.MonsterLibrary.FirstOrDefault();
+        }
+        catch
+        {
+            error = $"Impossibile aprire la campagna “{name}”.";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private Task ReloadAsync() => tracker is null ? Task.CompletedTask : SelectCampaignAsync(tracker.CampaignName);
+    private void ToggleCampaignForm() => showCampaignForm = !showCampaignForm;
+
+    private async Task CreateCampaignAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newCampaignName))
+            return;
+        await Api.CreateCampaignAsync(new(
+            newCampaignName.Trim(),
+            newCampaignDescription.Trim(),
+            string.Empty,
+            DateTime.UtcNow,
+            true));
+        campaigns = await Api.GetCampaignsAsync();
+        showCampaignForm = false;
+        await SelectCampaignAsync(newCampaignName.Trim());
+    }
+
+    private void OpenMonsterEditor()
+    {
+        monsterEditor = new();
+        showMonsterEditor = true;
+    }
+
+    private void CloseMonsterEditor() => showMonsterEditor = false;
+
+    private async Task SaveMonsterAsync()
+    {
+        if (tracker is null || string.IsNullOrWhiteSpace(monsterEditor.Name))
+            return;
+        savingMonster = true;
+        try
+        {
+            await Api.AddMonsterAsync(tracker.CampaignName, monsterEditor);
+            showMonsterEditor = false;
+            await ReloadAsync();
+            selectedMonster = tracker?.MonsterLibrary.LastOrDefault();
+        }
+        catch
+        {
+            error = "Non è stato possibile salvare la scheda del mostro.";
+        }
+        finally
+        {
+            savingMonster = false;
+        }
+    }
+}

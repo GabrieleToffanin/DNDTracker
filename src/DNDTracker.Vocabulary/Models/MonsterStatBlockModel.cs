@@ -16,6 +16,14 @@ public class MonsterStatBlockModel
     public int InitiativeModifier { get; set; }
     public int Speed { get; set; }
     public string? Notes { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string Statistics { get; set; } = string.Empty;
+    public string Actions { get; set; } = string.Empty;
+    public string BonusActions { get; set; } = string.Empty;
+    public string Reactions { get; set; } = string.Empty;
+    public string LegendaryActions { get; set; } = string.Empty;
+    public string LairActions { get; set; } = string.Empty;
+    public string Spells { get; set; } = string.Empty;
     public CampaignModel Campaign { get; set; } = null!;
 
     public static MonsterStatBlockModel From(MonsterStatBlock monster) => new()
@@ -29,7 +37,15 @@ public class MonsterStatBlockModel
         ExperiencePoints = monster.ExperiencePoints,
         InitiativeModifier = monster.InitiativeModifier,
         Speed = monster.Speed,
-        Notes = monster.Notes
+        Notes = monster.Notes,
+        Description = monster.Description,
+        Statistics = monster.Statistics,
+        Actions = monster.Actions,
+        BonusActions = monster.BonusActions,
+        Reactions = monster.Reactions,
+        LegendaryActions = monster.LegendaryActions,
+        LairActions = monster.LairActions,
+        Spells = monster.Spells
     };
 
     public MonsterStatBlock ToValueObject() => new(
@@ -42,7 +58,15 @@ public class MonsterStatBlockModel
         ExperiencePoints,
         InitiativeModifier,
         Speed,
-        Notes);
+        Notes,
+        Description,
+        Statistics,
+        Actions,
+        BonusActions,
+        Reactions,
+        LegendaryActions,
+        LairActions,
+        Spells);
 
     public void Apply(MonsterStatBlockModel source)
     {
@@ -55,5 +79,13 @@ public class MonsterStatBlockModel
         InitiativeModifier = source.InitiativeModifier;
         Speed = source.Speed;
         Notes = source.Notes;
+        Description = source.Description;
+        Statistics = source.Statistics;
+        Actions = source.Actions;
+        BonusActions = source.BonusActions;
+        Reactions = source.Reactions;
+        LegendaryActions = source.LegendaryActions;
+        LairActions = source.LairActions;
+        Spells = source.Spells;
     }
 }

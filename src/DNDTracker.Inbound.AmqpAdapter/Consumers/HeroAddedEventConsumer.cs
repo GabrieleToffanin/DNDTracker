@@ -25,6 +25,12 @@ public class HeroAddedEventConsumer(
         {
             _connection = await CreateConnectionAsync(stoppingToken);
             _channel = await _connection.CreateChannelAsync(cancellationToken: stoppingToken);
+            await _channel.QueueDeclareAsync(
+                queue: QueueName,
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                cancellationToken: stoppingToken);
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.ReceivedAsync += async (_, ea) =>
