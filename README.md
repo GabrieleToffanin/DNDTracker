@@ -160,6 +160,7 @@ dotnet user-secrets set "NEW_RELIC_LICENSE_KEY" "<value>" --id DndTracker
 `docker-compose.yml` starts:
 
 - `dndtracker.api`
+- `dndtracker.ui` (Blazor WebAssembly)
 - `postgres`
 - `postgres-init`
 - `rabbitmq`
@@ -173,6 +174,7 @@ Useful local URLs:
 
 | Service | URL |
 |---|---|
+| Blazor tabletop UI | `http://localhost:5173` |
 | API | http://localhost:5169 |
 | Scalar docs | http://localhost:5169/scalar/v1 |
 | RabbitMQ UI | http://localhost:15672 |

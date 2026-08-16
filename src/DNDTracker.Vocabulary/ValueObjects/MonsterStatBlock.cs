@@ -10,4 +10,12 @@ public sealed record MonsterStatBlock(
     int ExperiencePoints,
     int InitiativeModifier,
     int Speed,
-    string? Notes = null);
+    string? Notes = null,
+    string Description = "",
+    string Statistics = "",
+    string Actions = "",
+    string BonusActions = "",
+    string Reactions = "",
+    string LegendaryActions = "",
+    string LairActions = "",
+    string Spells = "");

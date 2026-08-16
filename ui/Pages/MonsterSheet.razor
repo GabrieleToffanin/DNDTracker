@@ -1,0 +1,29 @@
+<article class="monster-sheet">
+    <div class="statblock-header">
+        <div><h2>@Monster.Name</h2><i>@Monster.CreatureType</i></div>
+        <div class="challenge">GS <b>@Monster.ChallengeRating</b></div>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(Monster.Description))
+    {
+        <p class="monster-description">@Monster.Description</p>
+    }
+    <div class="monster-basics">
+        <span><b>Classe Armatura</b> @Monster.ArmorClass</span>
+        <span><b>Punti Ferita</b> @Monster.HitPoints</span>
+        <span><b>Velocità</b> @Monster.Speed ft.</span>
+        <span><b>Iniziativa</b> @(Monster.InitiativeModifier >= 0 ? "+" : "")@Monster.InitiativeModifier</span>
+        <span><b>PE</b> @Monster.ExperiencePoints</span>
+    </div>
+    <SheetSection Title="Statistiche e tratti" Content="@Monster.Statistics" />
+    <SheetSection Title="Azioni" Content="@Monster.Actions" />
+    <SheetSection Title="Azioni bonus" Content="@Monster.BonusActions" />
+    <SheetSection Title="Reazioni" Content="@Monster.Reactions" />
+    <SheetSection Title="Azioni leggendarie" Content="@Monster.LegendaryActions" />
+    <SheetSection Title="Azioni della tana" Content="@Monster.LairActions" />
+    <SheetSection Title="Magie" Content="@Monster.Spells" />
+    <SheetSection Title="Note del Game Master" Content="@Monster.Notes" />
+</article>
+
+@code {
+    [Parameter, EditorRequired] public MonsterStatBlock Monster { get; set; } = null!;
+}

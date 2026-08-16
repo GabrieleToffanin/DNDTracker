@@ -9,4 +9,12 @@ public sealed record AddMonsterToLibraryRequest(
     int ExperiencePoints,
     int InitiativeModifier,
     int Speed,
-    string? Notes);
+    string? Notes,
+    string Description = "",
+    string Statistics = "",
+    string Actions = "",
+    string BonusActions = "",
+    string Reactions = "",
+    string LegendaryActions = "",
+    string LairActions = "",
+    string Spells = "");
