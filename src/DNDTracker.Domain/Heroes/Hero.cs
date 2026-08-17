@@ -52,7 +52,7 @@ public sealed class Hero : AggregateRoot<HeroId>
     {
         get
         {
-            var wisdomMod = (AbilityScores.Wisdom - 10) / 2;
+            var wisdomMod = GetAbilityModifier(AbilityType.Wisdom);
             var profBonus = SkillProficiencies.IsProficient(SkillType.Perception) ? ProficiencyBonus : 0;
             return 10 + wisdomMod + profBonus;
         }
