@@ -54,7 +54,17 @@ public sealed class GetCampaignTrackerByNameHandler(ICampaignRepository campaign
                 hero.SpellSlots,
                 hero.Conditions,
                 hero.Notes,
-                hero.Background))
+                hero.Background,
+                hero.DeathSaves,
+                hero.SavingThrowProficiencies.Proficient,
+                hero.SkillProficiencies.Proficient,
+                hero.Personality,
+                hero.Feats,
+                hero.SpellcastingAbility,
+                hero.ProficiencyBonus,
+                hero.PassivePerception,
+                hero.SpellSaveDC,
+                hero.SpellAttackBonus))
             .ToList();
 
         return new CampaignTrackerDto(

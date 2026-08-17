@@ -29,17 +29,19 @@ public class HeroModel
     public string Notes { get; set; } = string.Empty;
     public string Background { get; set; } = string.Empty;
 
-    // Richness fields
+    // Richness fields — scalars
     public int DeathSaveSuccesses { get; set; }
     public int DeathSaveFailures { get; set; }
-    public string SavingThrowProficienciesJson { get; set; } = string.Empty;
-    public string SkillProficienciesJson { get; set; } = string.Empty;
     public string PersonalityTraits { get; set; } = string.Empty;
     public string Ideals { get; set; } = string.Empty;
     public string Bonds { get; set; } = string.Empty;
     public string Flaws { get; set; } = string.Empty;
-    public string FeatsJson { get; set; } = string.Empty;
     public AbilityType? SpellcastingAbility { get; set; }
+
+    // Richness fields — relational collections
+    public List<HeroSavingThrowProficiencyModel> SavingThrowProficiencies { get; private set; } = [];
+    public List<HeroSkillProficiencyModel> SkillProficiencies { get; private set; } = [];
+    public List<HeroFeatModel> Feats { get; private set; } = [];
 
     public List<InventoryItemModel> Inventory { get; private set; } = [];
     public List<EquipmentItemModel> Equipment { get; private set; } = [];
@@ -76,20 +78,35 @@ public class HeroModel
         Background = source.Background;
         DeathSaveSuccesses = source.DeathSaveSuccesses;
         DeathSaveFailures = source.DeathSaveFailures;
-        SavingThrowProficienciesJson = source.SavingThrowProficienciesJson;
-        SkillProficienciesJson = source.SkillProficienciesJson;
         PersonalityTraits = source.PersonalityTraits;
         Ideals = source.Ideals;
         Bonds = source.Bonds;
         Flaws = source.Flaws;
-        FeatsJson = source.FeatsJson;
         SpellcastingAbility = source.SpellcastingAbility;
+
+        SynchronizeSimple(SavingThrowProficiencies, source.SavingThrowProficiencies, m => m.Id);
+        SynchronizeSimple(SkillProficiencies, source.SkillProficiencies, m => m.Id);
+        SynchronizeSimple(Feats, source.Feats, m => m.Id);
 
         Synchronize(Inventory, source.Inventory, item => item.Id, (current, update) => current.Apply(update));
         Synchronize(Equipment, source.Equipment, item => item.Id, (current, update) => current.Apply(update));
         Synchronize(Spellbook, source.Spellbook, entry => entry.Id, (current, update) => current.Apply(update));
         Synchronize(SpellSlots, source.SpellSlots, slot => slot.Id, (current, update) => current.Apply(update));
         Synchronize(Conditions, source.Conditions, condition => condition.Id, (current, update) => current.Apply(update));
+    }
+
+    // For simple models that are replaced wholesale (no field-level apply needed)
+    private static void SynchronizeSimple<TEntity, TKey>(
+        List<TEntity> current,
+        IEnumerable<TEntity> updates,
+        Func<TEntity, TKey> keySelector)
+        where TKey : notnull
+    {
+        var updateList = updates.ToList();
+        var updateKeys = updateList.Select(keySelector).ToHashSet();
+        current.RemoveAll(item => !updateKeys.Contains(keySelector(item)));
+        var existingKeys = current.Select(keySelector).ToHashSet();
+        current.AddRange(updateList.Where(u => !existingKeys.Contains(keySelector(u))));
     }
 
     private static void Synchronize<TEntity, TKey>(
