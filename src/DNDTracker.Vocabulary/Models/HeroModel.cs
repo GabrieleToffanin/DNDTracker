@@ -84,9 +84,9 @@ public class HeroModel
         Flaws = source.Flaws;
         SpellcastingAbility = source.SpellcastingAbility;
 
-        SynchronizeSimple(SavingThrowProficiencies, source.SavingThrowProficiencies, m => m.Id);
-        SynchronizeSimple(SkillProficiencies, source.SkillProficiencies, m => m.Id);
-        SynchronizeSimple(Feats, source.Feats, m => m.Id);
+        SynchronizeSimple(SavingThrowProficiencies, source.SavingThrowProficiencies, m => m.Ability);
+        SynchronizeSimple(SkillProficiencies, source.SkillProficiencies, m => m.Skill);
+        SynchronizeSimple(Feats, source.Feats, m => m.FeatName);
 
         Synchronize(Inventory, source.Inventory, item => item.Id, (current, update) => current.Apply(update));
         Synchronize(Equipment, source.Equipment, item => item.Id, (current, update) => current.Apply(update));
