@@ -1,6 +1,3 @@
-using DNDTracker.Domain.Campaigns;
-using DNDTracker.Vocabulary.Enums;
-
 namespace DNDTracker.Vocabulary.Models;
 
 public class MonsterStatBlockModel
@@ -26,50 +23,6 @@ public class MonsterStatBlockModel
     public string LairActions { get; set; } = string.Empty;
     public string Spells { get; set; } = string.Empty;
     public CampaignModel Campaign { get; set; } = null!;
-
-    public static MonsterStatBlockModel From(MonsterStatBlock monster) => new()
-    {
-        Id = monster.Id,
-        Name = monster.Name,
-        CreatureType = monster.CreatureType,
-        ArmorClass = monster.ArmorClass,
-        HitPoints = monster.HitPoints,
-        ChallengeRating = monster.ChallengeRating,
-        ExperiencePoints = monster.ExperiencePoints,
-        InitiativeModifier = monster.InitiativeModifier,
-        Speed = monster.Speed,
-        Alignment = monster.Alignment,
-        Notes = monster.Notes,
-        Description = monster.Description,
-        Statistics = monster.Statistics,
-        Actions = monster.Actions,
-        BonusActions = monster.BonusActions,
-        Reactions = monster.Reactions,
-        LegendaryActions = monster.LegendaryActions,
-        LairActions = monster.LairActions,
-        Spells = monster.Spells
-    };
-
-    public MonsterStatBlock ToDomain() => MonsterStatBlock.Create(
-        Id,
-        Name,
-        CreatureType,
-        ArmorClass,
-        HitPoints,
-        ChallengeRating,
-        ExperiencePoints,
-        InitiativeModifier,
-        Speed,
-        Alignment,
-        Statistics,
-        Actions,
-        Notes,
-        Description,
-        BonusActions,
-        Reactions,
-        LegendaryActions,
-        LairActions,
-        Spells);
 
     public void Apply(MonsterStatBlockModel source)
     {

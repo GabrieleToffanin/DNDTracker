@@ -4,6 +4,7 @@ using DNDTracker.Domain.Heroes;
 using DNDTracker.SharedKernel.Primitives;
 using DNDTracker.Vocabulary.Enums;
 using DNDTracker.Vocabulary.Exceptions;
+using DNDTracker.Vocabulary.ValueObjects;
 namespace DNDTracker.Domain.Campaigns;
 
 public sealed class Campaign : AggregateRoot<CampaignId>
