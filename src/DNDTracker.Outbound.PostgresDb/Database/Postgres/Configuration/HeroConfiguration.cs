@@ -44,5 +44,20 @@ public class HeroConfiguration : IEntityTypeConfiguration<HeroModel>
             .WithOne(condition => condition.Hero)
             .HasForeignKey(condition => condition.HeroId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.SavingThrowProficiencies)
+            .WithOne(p => p.Hero)
+            .HasForeignKey(p => p.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.SkillProficiencies)
+            .WithOne(p => p.Hero)
+            .HasForeignKey(p => p.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(h => h.Feats)
+            .WithOne(f => f.Hero)
+            .HasForeignKey(f => f.HeroId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -1,5 +1,6 @@
 using DNDTracker.Application.Queries.UseCases.GetCampaign;
 using DNDTracker.Application.Queries.UseCases.GetCampaignTracker;
+using DNDTracker.Application.Queries.UseCases.GetResolvedEffects;
 using DNDTracker.Application.Queries.UseCases.RollDice;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
@@ -8,6 +9,7 @@ using DNDTracker.Domain.Heroes;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Dtos;
 using DNDTracker.SharedKernel;
+using DNDTracker.Vocabulary.Enums;
 using DNDTracker.Vocabulary.ValueObjects;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -300,6 +302,57 @@ public class CampaignController(
         return CreatedAtAction(nameof(CreateCampaign), new { campaignName = command.CampaignName }, null);
     }
 
+    [HttpPost("{campaignName}/heroes/{heroId:guid}/cast")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> CastSpell(
+        string campaignName,
+        Guid heroId,
+        [FromBody] CastSpellRequest request,
+        CancellationToken cancellationToken)
+    {
+        await mediator.Send(
+            new CastSpellCommand(campaignName, heroId, request.TargetHeroId, request.SpellId, request.SlotLevel, request.DiceRoll),
+            cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{campaignName}/heroes/{heroId:guid}/effects")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ApplyEffect(
+        string campaignName,
+        Guid heroId,
+        [FromBody] ApplyEffectCodeRequest request,
+        CancellationToken cancellationToken)
+    {
+        await mediator.Send(
+            new ApplyEffectCodeCommand(campaignName, heroId, request.RawEffectCode, request.DurationRounds),
+            cancellationToken);
+        return NoContent();
+    }
+
+    [HttpGet("{campaignName}/heroes/{heroId:guid}/resolved-effects")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResolvedEffects))]
+    public async Task<IActionResult> GetResolvedEffects(
+        string campaignName,
+        Guid heroId,
+        CancellationToken cancellationToken)
+    {
+        var result = await mediator.Send(new GetResolvedEffectsQuery(campaignName, heroId), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("{campaignName}/heroes/{heroId:guid}/rest")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Rest(
+        string campaignName,
+        Guid heroId,
+        [FromQuery] RestType restType,
+        CancellationToken cancellationToken)
+    {
+        await mediator.Send(new RecoverSpellSlotsCommand(campaignName, heroId, restType), cancellationToken);
+        return NoContent();
+    }
+
     public Hero ToDomain(HeroDto dto)
     {
         var abilityScores = dto.AbilityScores ?? DNDTracker.Vocabulary.ValueObjects.AbilityScores.Default;
@@ -330,6 +383,16 @@ public class CampaignController(
             dto.Equipment,
             dto.Spellbook,
             dto.SpellSlots,
-            dto.Conditions);
+            dto.Conditions,
+            new DeathSaves(dto.DeathSaveSuccesses, dto.DeathSaveFailures),
+            dto.SavingThrowProficiencies is not null
+                ? new SavingThrowProficiencies([.. dto.SavingThrowProficiencies])
+                : null,
+            dto.SkillProficiencies is not null
+                ? new SkillProficiencies([.. dto.SkillProficiencies])
+                : null,
+            new CharacterPersonality(dto.PersonalityTraits, dto.Ideals, dto.Bonds, dto.Flaws),
+            dto.Feats,
+            dto.SpellcastingAbility);
     }
 }
