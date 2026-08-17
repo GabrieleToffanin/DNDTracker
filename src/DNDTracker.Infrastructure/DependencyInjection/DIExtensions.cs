@@ -6,8 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DNDTracker.Infrastructure.DependencyInjection;
 
 /// <summary>
-/// The database registration should go there,
-/// at the moment I'll keep it in the Program.cs
+/// Extension methods for registering infrastructure services with the DI container.
 /// </summary>
 public static class DIExtensions
 {
