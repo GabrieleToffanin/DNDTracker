@@ -256,7 +256,7 @@
                                 <button type="button" class="chip" @onclick='() => InsertTemplate("Statistics", "Sensi: Scurovisione 60 ft., Percezione passiva ")'>👁 Sensi</button>
                             </div>
                         </div>
-                        <textarea required rows="4" @bind="monsterEditor.Statistics" placeholder="FOR 10 (+0)  DES 10 (+0)  COS 10 (+0)  INT 10 (+0)  SAG 10 (+0)  CAR 10 (+0)"></textarea>
+                        <InputTextArea required rows="4" @bind-Value="monsterEditor.Statistics" placeholder="FOR 10 (+0)  DES 10 (+0)  COS 10 (+0)  INT 10 (+0)  SAG 10 (+0)  CAR 10 (+0)" />
                     </div>
                     <div class="form-grid two">
                         <div class="textarea-with-templates">
@@ -269,7 +269,7 @@
                                     <button type="button" class="chip" @onclick='() => InsertTemplate("Actions", MultiattackTemplate)'>🔀 Multiattacco</button>
                                 </div>
                             </div>
-                            <textarea required rows="6" @bind="monsterEditor.Actions" placeholder="Aggiungi azioni tramite i template oppure scrivi manualmente..."></textarea>
+                            <InputTextArea required rows="6" @bind-Value="monsterEditor.Actions" placeholder="Aggiungi azioni tramite i template oppure scrivi manualmente..." />
                         </div>
                         <label>Azioni bonus<textarea rows="4" @bind="monsterEditor.BonusActions"></textarea></label>
                         <label>Reazioni<textarea rows="4" @bind="monsterEditor.Reactions"></textarea></label>
