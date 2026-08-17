@@ -163,6 +163,13 @@ input, textarea {
 .editor-preview > .eyebrow { display: block; margin-bottom: .55rem; }
 .modal-actions { display: flex; justify-content: end; gap: .6rem; padding-top: 1rem; border-top: 1px solid #514536; }
 .modal-actions button:not(.gold) { color: #d6c9b4; background: transparent; box-shadow: none; }
+.required-mark { color: var(--gold); }
+.textarea-with-templates { margin: .8rem 0; }
+.textarea-with-templates textarea { margin-top: .35rem; color: #f0e5ce; }
+.textarea-label-row { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; color: #bdae97; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; }
+.template-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-left: auto; }
+.chip { padding: .2rem .55rem; font-size: .72rem; color: #d4bf96; background: #2e2a24; border: 1px solid #5a4c38; border-radius: 4px; text-transform: none; letter-spacing: normal; }
+.chip:hover { background: #3c3528; border-color: var(--gold); color: var(--gold-light); }
 
 .roll-chat {
     position: fixed; z-index: 5; top: 122px; right: 1rem; bottom: 1rem; width: 325px;

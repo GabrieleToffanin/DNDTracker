@@ -226,6 +226,7 @@
 {
     <div class="modal-backdrop">
         <EditForm Model="monsterEditor" OnValidSubmit="SaveMonsterAsync" class="monster-editor">
+            <DataAnnotationsValidator />
             <div class="modal-title">
                 <div><span class="eyebrow">NUOVA CREATURA</span><h2>Crea scheda mostro</h2></div>
                 <button type="button" class="close" @onclick="CloseMonsterEditor">×</button>
@@ -233,8 +234,9 @@
             <div class="monster-editor-layout">
                 <div class="editor-fields">
                     <div class="form-grid three">
-                        <label>Nome<input required @bind="monsterEditor.Name" /></label>
-                        <label>Tipo<input @bind="monsterEditor.CreatureType" /></label>
+                        <label>Nome <span class="required-mark">*</span><InputText required @bind-Value="monsterEditor.Name" /></label>
+                        <label>Tipo / Taglia <span class="required-mark">*</span><InputText required @bind-Value="monsterEditor.CreatureType" /></label>
+                        <label>Allineamento <span class="required-mark">*</span><InputText required @bind-Value="monsterEditor.Alignment" placeholder="es. Caotico malvagio" /></label>
                         <label>Grado sfida<InputNumber @bind-Value="monsterEditor.ChallengeRating" /></label>
                         <label>Classe armatura<InputNumber @bind-Value="monsterEditor.ArmorClass" /></label>
                         <label>Punti ferita<InputNumber @bind-Value="monsterEditor.HitPoints" /></label>
@@ -242,10 +244,33 @@
                         <label>Esperienza<InputNumber @bind-Value="monsterEditor.ExperiencePoints" /></label>
                         <label>Iniziativa<InputNumber @bind-Value="monsterEditor.InitiativeModifier" /></label>
                     </div>
+                    <ValidationSummary />
                     <label>Descrizione<textarea rows="3" @bind="monsterEditor.Description"></textarea></label>
-                    <label>Statistiche e tratti<textarea rows="4" @bind="monsterEditor.Statistics"></textarea></label>
+                    <div class="textarea-with-templates">
+                        <div class="textarea-label-row">
+                            <span>Statistiche e tratti <span class="required-mark">*</span></span>
+                            <div class="template-chips">
+                                <button type="button" class="chip" @onclick='() => InsertTemplate("Statistics", StatsTemplate)'>📋 Tabella stat</button>
+                                <button type="button" class="chip" @onclick='() => InsertTemplate("Statistics", "Resistenza ai danni: ")'>🛡 Resistenza</button>
+                                <button type="button" class="chip" @onclick='() => InsertTemplate("Statistics", "Immunità alle condizioni: ")'>🔒 Immunità</button>
+                                <button type="button" class="chip" @onclick='() => InsertTemplate("Statistics", "Sensi: Scurovisione 60 ft., Percezione passiva ")'>👁 Sensi</button>
+                            </div>
+                        </div>
+                        <textarea required rows="4" @bind="monsterEditor.Statistics" placeholder="FOR 10 (+0)  DES 10 (+0)  COS 10 (+0)  INT 10 (+0)  SAG 10 (+0)  CAR 10 (+0)"></textarea>
+                    </div>
                     <div class="form-grid two">
-                        <label>Azioni<textarea rows="4" placeholder="Morso. Melee Weapon Attack: +9 to hit..." @bind="monsterEditor.Actions"></textarea></label>
+                        <div class="textarea-with-templates">
+                            <div class="textarea-label-row">
+                                <span>Azioni <span class="required-mark">*</span></span>
+                                <div class="template-chips">
+                                    <button type="button" class="chip" @onclick='() => InsertTemplate("Actions", MeleeAttackTemplate)'>⚔️ Mischia</button>
+                                    <button type="button" class="chip" @onclick='() => InsertTemplate("Actions", RangedAttackTemplate)'>🏹 A distanza</button>
+                                    <button type="button" class="chip" @onclick='() => InsertTemplate("Actions", SpellAttackTemplate)'>✨ Attacco magia</button>
+                                    <button type="button" class="chip" @onclick='() => InsertTemplate("Actions", MultiattackTemplate)'>🔀 Multiattacco</button>
+                                </div>
+                            </div>
+                            <textarea required rows="6" @bind="monsterEditor.Actions" placeholder="Aggiungi azioni tramite i template oppure scrivi manualmente..."></textarea>
+                        </div>
                         <label>Azioni bonus<textarea rows="4" @bind="monsterEditor.BonusActions"></textarea></label>
                         <label>Reazioni<textarea rows="4" @bind="monsterEditor.Reactions"></textarea></label>
                         <label>Azioni leggendarie<textarea rows="4" @bind="monsterEditor.LegendaryActions"></textarea></label>
@@ -304,6 +329,7 @@
         ExperiencePoints = monsterEditor.ExperiencePoints,
         InitiativeModifier = monsterEditor.InitiativeModifier,
         Speed = monsterEditor.Speed,
+        Alignment = monsterEditor.Alignment,
         Notes = monsterEditor.Notes,
         Description = monsterEditor.Description,
         Statistics = monsterEditor.Statistics,
@@ -377,6 +403,42 @@
     }
 
     private void CloseMonsterEditor() => showMonsterEditor = false;
+
+    private const string StatsTemplate =
+        "FOR 10 (+0)  DES 10 (+0)  COS 10 (+0)  INT 10 (+0)  SAG 10 (+0)  CAR 10 (+0)";
+
+    private const string MeleeAttackTemplate =
+        "Attacco (es. Morso). Melee Weapon Attack: +X to hit, reach 5 ft., un bersaglio. " +
+        "Hit: X (1dX + X) danni perforanti.";
+
+    private const string RangedAttackTemplate =
+        "Attacco (es. Arco). Ranged Weapon Attack: +X to hit, range 80/320 ft., un bersaglio. " +
+        "Hit: X (1dX + X) danni perforanti.";
+
+    private const string SpellAttackTemplate =
+        "Attacco (es. Raggio di fuoco). Ranged Spell Attack: +X to hit, range 60 ft., un bersaglio. " +
+        "Hit: X (XdX) danni da fuoco.";
+
+    private const string MultiattackTemplate =
+        "Multiattacco. La creatura effettua X attacchi con [arma].";
+
+    private void InsertTemplate(string field, string template)
+    {
+        var separator = "\n";
+        switch (field)
+        {
+            case "Statistics":
+                monsterEditor.Statistics = string.IsNullOrWhiteSpace(monsterEditor.Statistics)
+                    ? template
+                    : monsterEditor.Statistics + separator + template;
+                break;
+            case "Actions":
+                monsterEditor.Actions = string.IsNullOrWhiteSpace(monsterEditor.Actions)
+                    ? template
+                    : monsterEditor.Actions + separator + template;
+                break;
+        }
+    }
 
     private void BeginAttackDrag(ExecutableAttack attack) => draggedAttack = attack;
     private void EndAttackDrag() => draggedAttack = null;

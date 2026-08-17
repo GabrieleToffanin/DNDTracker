@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Json;
 
 namespace DNDTracker.Blazor.Api;
@@ -110,6 +111,7 @@ public sealed class MonsterStatBlock
     public int ExperiencePoints { get; set; }
     public int InitiativeModifier { get; set; }
     public int Speed { get; set; }
+    public string Alignment { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Statistics { get; set; } = string.Empty;
@@ -123,18 +125,30 @@ public sealed class MonsterStatBlock
 
 public sealed class MonsterEditorModel
 {
+    [Required(ErrorMessage = "Il nome è obbligatorio")]
     public string Name { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Il tipo / taglia è obbligatorio")]
     public string CreatureType { get; set; } = "Bestia";
+
     public int ArmorClass { get; set; } = 12;
     public int HitPoints { get; set; } = 20;
     public int ChallengeRating { get; set; } = 1;
     public int ExperiencePoints { get; set; } = 200;
     public int InitiativeModifier { get; set; }
     public int Speed { get; set; } = 30;
+
+    [Required(ErrorMessage = "L'allineamento è obbligatorio")]
+    public string Alignment { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Le statistiche e i tratti sono obbligatori")]
+    public string Statistics { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Le azioni sono obbligatorie")]
+    public string Actions { get; set; } = string.Empty;
+
     public string Notes { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public string Statistics { get; set; } = string.Empty;
-    public string Actions { get; set; } = string.Empty;
     public string BonusActions { get; set; } = string.Empty;
     public string Reactions { get; set; } = string.Empty;
     public string LegendaryActions { get; set; } = string.Empty;

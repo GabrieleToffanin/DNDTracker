@@ -3,6 +3,7 @@ using System;
 using DNDTracker.Outbound.PostgresDb.Database.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DNDTracker.Outbound.PostgresDb.Migrations
 {
     [DbContext(typeof(DNDTrackerPostgresDbContext))]
-    partial class DNDTrackerPostgresDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817092356_AddAlignmentToMonsterStatBlock")]
+    partial class AddAlignmentToMonsterStatBlock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,7 +38,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasKey("CampaignId");
 
-                    b.ToTable("ActiveCombatModel", (string)null);
+                    b.ToTable("ActiveCombatModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.CampaignMemberModel", b =>
@@ -60,7 +63,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("CampaignMemberModel", (string)null);
+                    b.ToTable("CampaignMemberModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.CampaignModel", b =>
@@ -94,7 +97,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CampaignModel", (string)null);
+                    b.ToTable("CampaignModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.CampaignTimelineEntryModel", b =>
@@ -116,7 +119,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("CampaignTimelineEntryModel", (string)null);
+                    b.ToTable("CampaignTimelineEntryModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.CombatantConditionModel", b =>
@@ -138,7 +141,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CombatantId");
 
-                    b.ToTable("CombatantConditionModel", (string)null);
+                    b.ToTable("CombatantConditionModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.CombatantStateModel", b =>
@@ -178,7 +181,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("ActiveCombatCampaignId");
 
-                    b.ToTable("CombatantStateModel", (string)null);
+                    b.ToTable("CombatantStateModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.EquipmentItemModel", b =>
@@ -203,7 +206,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("HeroId");
 
-                    b.ToTable("EquipmentItemModel", (string)null);
+                    b.ToTable("EquipmentItemModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.HeroConditionModel", b =>
@@ -225,7 +228,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("HeroId");
 
-                    b.ToTable("HeroConditionModel", (string)null);
+                    b.ToTable("HeroConditionModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.HeroModel", b =>
@@ -312,7 +315,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("HeroModel", (string)null);
+                    b.ToTable("HeroModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.InventoryItemModel", b =>
@@ -337,7 +340,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("HeroId");
 
-                    b.ToTable("InventoryItemModel", (string)null);
+                    b.ToTable("InventoryItemModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.LocationResourceModel", b =>
@@ -363,7 +366,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("LocationResourceModel", (string)null);
+                    b.ToTable("LocationResourceModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.LootResourceModel", b =>
@@ -389,7 +392,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("LootResourceModel", (string)null);
+                    b.ToTable("LootResourceModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.MonsterStatBlockModel", b =>
@@ -469,7 +472,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("MonsterStatBlockModel", (string)null);
+                    b.ToTable("MonsterStatBlockModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.NpcResourceModel", b =>
@@ -496,7 +499,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("NpcResourceModel", (string)null);
+                    b.ToTable("NpcResourceModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.QuestResourceModel", b =>
@@ -522,7 +525,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("QuestResourceModel", (string)null);
+                    b.ToTable("QuestResourceModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.SessionLogEntryModel", b =>
@@ -551,7 +554,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("SessionLogEntryModel", (string)null);
+                    b.ToTable("SessionLogEntryModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.SpellModel", b =>
@@ -609,7 +612,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SpellModel", (string)null);
+                    b.ToTable("SpellModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.SpellSlotUsageModel", b =>
@@ -633,7 +636,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("HeroId");
 
-                    b.ToTable("SpellSlotUsageModel", (string)null);
+                    b.ToTable("SpellSlotUsageModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.SpellbookEntryModel", b =>
@@ -658,7 +661,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("HeroId");
 
-                    b.ToTable("SpellbookEntryModel", (string)null);
+                    b.ToTable("SpellbookEntryModel");
                 });
 
             modelBuilder.Entity("HeroModelSpellModel", b =>
@@ -673,7 +676,7 @@ namespace DNDTracker.Outbound.PostgresDb.Migrations
 
                     b.HasIndex("SpellsId");
 
-                    b.ToTable("HeroModelSpellModel", (string)null);
+                    b.ToTable("HeroModelSpellModel");
                 });
 
             modelBuilder.Entity("DNDTracker.Vocabulary.Models.ActiveCombatModel", b =>
