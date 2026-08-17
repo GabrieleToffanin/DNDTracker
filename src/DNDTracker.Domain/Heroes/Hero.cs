@@ -119,7 +119,8 @@ public sealed class Hero : AggregateRoot<HeroId>
         IEnumerable<InventoryItem> equipment,
         IEnumerable<CharacterSpellEntry> spellbook,
         IEnumerable<SpellSlotUsage> spellSlots,
-        IEnumerable<CharacterCondition> conditions) : base(id)
+        IEnumerable<CharacterCondition> conditions,
+        IEnumerable<Spell> spells) : base(id)
     {
         this.Name = name;
         this.Class = @class;
@@ -147,6 +148,7 @@ public sealed class Hero : AggregateRoot<HeroId>
         this.SpellcastingAbility = spellcastingAbility;
         this.Inventory = [.. inventory];
         this.Equipment = [.. equipment];
+        this.Spells.UnionWith(spells);
         this.Spellbook = [.. spellbook];
         this.SpellSlots = [.. spellSlots];
         this.Conditions = [.. conditions];
@@ -182,7 +184,8 @@ public sealed class Hero : AggregateRoot<HeroId>
         SkillProficiencies? skillProficiencies = null,
         CharacterPersonality? personality = null,
         IEnumerable<string>? feats = null,
-        AbilityType? spellcastingAbility = null)
+        AbilityType? spellcastingAbility = null,
+        IEnumerable<Spell>? spells = null)
     {
         var currentId = id is not null ? HeroId.Create(id.Value) : HeroId.Create();
 
@@ -216,7 +219,8 @@ public sealed class Hero : AggregateRoot<HeroId>
             equipment ?? [],
             spellbook ?? [],
             spellSlots ?? [],
-            conditions ?? []);
+            conditions ?? [],
+            spells ?? []);
     }
 
     public static Hero Create(
@@ -281,7 +285,7 @@ public sealed class Hero : AggregateRoot<HeroId>
         this.Conditions.Add(condition);
     }
 
-    public void TickConditions()
+    private void TickConditions()
     {
         this.Conditions = this.Conditions
             .Select(c => c.RemainingRounds is > 0 ? c with { RemainingRounds = c.RemainingRounds - 1 } : c)

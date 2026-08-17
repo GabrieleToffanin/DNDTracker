@@ -53,7 +53,8 @@ public static class HeroModelMapping
                 heroModel.Bonds,
                 heroModel.Flaws),
             feats,
-            heroModel.SpellcastingAbility
+            heroModel.SpellcastingAbility,
+            heroModel.Spells.Select(MapToValueObject)
         );
     }
 
@@ -104,10 +105,53 @@ public static class HeroModelMapping
             hero.Feats.Select(f => HeroFeatModel.From(heroId, f)));
         heroModel.Inventory.AddRange(hero.Inventory.Select(InventoryItemModel.From));
         heroModel.Equipment.AddRange(hero.Equipment.Select(EquipmentItemModel.From));
+        heroModel.Spells.UnionWith(hero.Spells.Select(MapToModel));
         heroModel.Spellbook.AddRange(hero.Spellbook.Select(SpellbookEntryModel.From));
         heroModel.SpellSlots.AddRange(hero.SpellSlots.Select(SpellSlotUsageModel.From));
         heroModel.Conditions.AddRange(hero.Conditions.Select(HeroConditionModel.From));
 
         return heroModel;
     }
+
+    private static Spell MapToValueObject(SpellModel spellModel) => new()
+    {
+        Id = spellModel.Id,
+        Name = spellModel.Name,
+        Description = spellModel.Description,
+        Source = spellModel.Source,
+        Level = spellModel.Level,
+        School = spellModel.School,
+        Time = spellModel.Time,
+        Range = spellModel.Range,
+        Components = spellModel.Components,
+        Material = spellModel.Material,
+        IsRitual = spellModel.IsRitual,
+        Duration = spellModel.Duration,
+        Concentration = spellModel.Concentration,
+        CastingTime = spellModel.CastingTime,
+        Damage = spellModel.Damage,
+        Save = spellModel.Save,
+        EffectCode = spellModel.EffectCode is null ? null : new EffectCode(spellModel.EffectCode)
+    };
+
+    private static SpellModel MapToModel(Spell spell) => new()
+    {
+        Id = spell.Id,
+        Name = spell.Name,
+        Description = spell.Description,
+        Source = spell.Source,
+        Level = spell.Level,
+        School = spell.School,
+        Time = spell.Time,
+        Range = spell.Range,
+        Components = spell.Components,
+        Material = spell.Material,
+        IsRitual = spell.IsRitual,
+        Duration = spell.Duration,
+        Concentration = spell.Concentration,
+        CastingTime = spell.CastingTime,
+        Damage = spell.Damage,
+        Save = spell.Save,
+        EffectCode = spell.EffectCode?.Raw
+    };
 }

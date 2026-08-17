@@ -84,6 +84,8 @@ internal static class CampaignModelQueryableExtensions
             .Include(campaign => campaign.Heroes)
                 .ThenInclude(hero => hero.Equipment)
             .Include(campaign => campaign.Heroes)
+                .ThenInclude(hero => hero.Spells)
+            .Include(campaign => campaign.Heroes)
                 .ThenInclude(hero => hero.Spellbook)
             .Include(campaign => campaign.Heroes)
                 .ThenInclude(hero => hero.SpellSlots)
