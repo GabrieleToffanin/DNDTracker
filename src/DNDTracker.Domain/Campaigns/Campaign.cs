@@ -142,7 +142,6 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     public void AddMonsterToLibrary(MonsterStatBlock monster)
     {
         ArgumentNullException.ThrowIfNull(monster);
-        monster.EnsureIdentity();
         this.MonsterLibrary.Add(monster);
         this.UpdatedDate = DateTime.UtcNow;
     }
