@@ -1,6 +1,6 @@
-namespace DNDTracker.Vocabulary.ValueObjects;
+namespace DNDTracker.SharedKernel;
 
-public sealed record MonsterStatBlock(
+public sealed record MonsterStatBlockDto(
     Guid Id,
     string Name,
     string CreatureType,

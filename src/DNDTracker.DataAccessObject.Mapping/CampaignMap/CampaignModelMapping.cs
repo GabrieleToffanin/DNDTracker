@@ -16,7 +16,7 @@ public static class CampaignModelMapping
             campaignModel.CreatedDate,
             campaignModel.IsActive,
             campaignModel.Heroes.Select(h => h.MapToDomain()).ToList(),
-            campaignModel.MonsterLibrary.Select(monster => monster.ToValueObject()).ToList(),
+            campaignModel.MonsterLibrary.Select(monster => monster.ToDomain()).ToList(),
             campaignModel.ActiveCombat?.ToValueObject(),
             campaignModel.SessionLogs.Select(entry => entry.ToValueObject()).ToList(),
             campaignModel.TimelineEntries.Select(entry => entry.ToValueObject()).ToList(),

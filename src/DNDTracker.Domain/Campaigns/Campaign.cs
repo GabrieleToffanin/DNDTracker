@@ -4,8 +4,6 @@ using DNDTracker.Domain.Heroes;
 using DNDTracker.SharedKernel.Primitives;
 using DNDTracker.Vocabulary.Enums;
 using DNDTracker.Vocabulary.Exceptions;
-using DNDTracker.Vocabulary.ValueObjects;
-
 namespace DNDTracker.Domain.Campaigns;
 
 public sealed class Campaign : AggregateRoot<CampaignId>
@@ -143,10 +141,8 @@ public sealed class Campaign : AggregateRoot<CampaignId>
     public void AddMonsterToLibrary(MonsterStatBlock monster)
     {
         ArgumentNullException.ThrowIfNull(monster);
-        var resolvedMonster = monster.Id == Guid.Empty
-            ? monster with { Id = Guid.NewGuid() }
-            : monster;
-        this.MonsterLibrary.Add(resolvedMonster);
+        monster.EnsureIdentity();
+        this.MonsterLibrary.Add(monster);
         this.UpdatedDate = DateTime.UtcNow;
     }
 

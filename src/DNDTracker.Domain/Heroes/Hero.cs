@@ -1,5 +1,6 @@
 using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Heroes.DomainEvents;
+using DNDTracker.SharedKernel;
 using DNDTracker.SharedKernel.Primitives;
 using DNDTracker.Vocabulary.Enums;
 using DNDTracker.Vocabulary.Exceptions;
@@ -288,6 +289,151 @@ public sealed class Hero : AggregateRoot<HeroId>
             .ToList();
     }
 
+    public ResolvedEffects ResolveEffects()
+    {
+        var allTokens = new List<EffectToken>();
+
+        foreach (var condition in this.Conditions)
+        {
+            if (condition.EffectCode is not null)
+                allTokens.AddRange(condition.EffectCode.ParsedTokens);
+        }
+
+        foreach (var item in this.Equipment)
+        {
+            if (item.EffectCode is not null)
+                allTokens.AddRange(item.EffectCode.ParsedTokens);
+        }
+
+        int attackBonus = 0;
+        int damageBonus = 0;
+        bool advantageAttack = false;
+        bool disadvantageAttack = false;
+        int speedModifier = 0;
+        var resistances = new List<string>();
+        var immunities = new List<string>();
+        var vulnerabilities = new List<string>();
+
+        foreach (var token in allTokens)
+        {
+            switch (token.EffectType)
+            {
+                case EffectType.AttackBonus when TryParseInt(token.Magnitude, out var v):
+                    attackBonus += v;
+                    break;
+                case EffectType.DamageBonus when TryParseInt(token.Magnitude, out var v):
+                    damageBonus += v;
+                    break;
+                case EffectType.AdvantageAttack:
+                    advantageAttack = true;
+                    break;
+                case EffectType.DisadvantageAttack:
+                    disadvantageAttack = true;
+                    break;
+                case EffectType.Resistance when token.DamageType is not null:
+                    resistances.Add(token.DamageType);
+                    break;
+                case EffectType.Immunity when token.DamageType is not null:
+                    immunities.Add(token.DamageType);
+                    break;
+                case EffectType.Vulnerability when token.DamageType is not null:
+                    vulnerabilities.Add(token.DamageType);
+                    break;
+                case EffectType.Speed when TryParseInt(token.Magnitude, out var v):
+                    speedModifier += v;
+                    break;
+            }
+        }
+
+        return new ResolvedEffects(
+            AttackBonus: attackBonus,
+            DamageBonus: damageBonus,
+            HasAdvantageOnAttack: advantageAttack,
+            HasDisadvantageOnAttack: disadvantageAttack,
+            Resistances: resistances,
+            Immunities: immunities,
+            Vulnerabilities: vulnerabilities,
+            SpeedModifier: speedModifier,
+            AllTokens: allTokens);
+    }
+
+    public void ApplySpellEffectTo(Hero target, Spell spell, int? diceRoll = null)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(spell);
+
+        if (spell.EffectCode is null)
+        {
+            this.RecordSpellCast(target.Id.Id, spell);
+            return;
+        }
+
+        foreach (var token in spell.EffectCode.ParsedTokens)
+        {
+            switch (token.EffectType)
+            {
+                case EffectType.Heal:
+                {
+                    int healAmount = ResolveNumericValue(token.Magnitude, diceRoll);
+                    target.ApplyHitPointDelta(0, healAmount, 0);
+                    break;
+                }
+                case EffectType.DamageBonus:
+                {
+                    int damage = ResolveNumericValue(token.Magnitude, diceRoll);
+                    int finalDamage = target.ApplyDamageModifiers(damage, token.DamageType);
+                    target.ApplyHitPointDelta(finalDamage, 0, 0);
+                    break;
+                }
+                case EffectType.TemporaryHitPoints:
+                {
+                    int temporaryHitPoints = ResolveNumericValue(token.Magnitude, diceRoll);
+                    target.ApplyHitPointDelta(0, 0, temporaryHitPoints);
+                    break;
+                }
+                case EffectType.Condition when token.AbilityOrSkill is not null:
+                {
+                    target.AddCondition(new CharacterCondition(token.AbilityOrSkill, null));
+                    break;
+                }
+            }
+        }
+
+        this.RecordSpellCast(target.Id.Id, spell);
+    }
+
+    public void TickOngoingEffects()
+    {
+        foreach (var condition in this.Conditions.Where(c => c.EffectCode is not null))
+        {
+            foreach (var token in condition.EffectCode!.ParsedTokens)
+            {
+                switch (token.EffectType)
+                {
+                    case EffectType.Heal:
+                    {
+                        int healAmount = ResolveNumericValue(token.Magnitude, null);
+                        if (healAmount > 0)
+                            this.ApplyHitPointDelta(0, healAmount, 0);
+                        break;
+                    }
+                    case EffectType.DamageBonus:
+                    {
+                        int damage = ResolveNumericValue(token.Magnitude, null);
+                        if (damage > 0)
+                        {
+                            int finalDamage = this.ApplyDamageModifiers(damage, token.DamageType);
+                            this.ApplyHitPointDelta(finalDamage, 0, 0);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        this.TickConditions();
+    }
+
     public void AddInventoryItem(InventoryItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -422,6 +568,40 @@ public sealed class Hero : AggregateRoot<HeroId>
     public bool IsSpellAvailable(Spell spell)
     {
         return spell.Level <= this.Level;
+    }
+
+    private int ApplyDamageModifiers(int rawDamage, string? damageType)
+    {
+        var resolved = this.ResolveEffects();
+
+        if (damageType is not null)
+        {
+            if (resolved.Immunities.Any(i => i.Equals(damageType, StringComparison.OrdinalIgnoreCase)))
+                return 0;
+            if (resolved.Resistances.Any(r => r.Equals(damageType, StringComparison.OrdinalIgnoreCase)))
+                return rawDamage / 2;
+            if (resolved.Vulnerabilities.Any(v => v.Equals(damageType, StringComparison.OrdinalIgnoreCase)))
+                return rawDamage * 2;
+        }
+
+        return rawDamage;
+    }
+
+    private static int ResolveNumericValue(string? magnitude, int? diceRoll)
+    {
+        if (magnitude is null)
+            return diceRoll ?? 0;
+
+        if (int.TryParse(magnitude, out var intValue))
+            return intValue;
+
+        return diceRoll ?? 0;
+    }
+
+    private static bool TryParseInt(string? value, out int result)
+    {
+        result = 0;
+        return value is not null && int.TryParse(value, out result);
     }
 
     public int GetAbilityModifier(AbilityType ability)
