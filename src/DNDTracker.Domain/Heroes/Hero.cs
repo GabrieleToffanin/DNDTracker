@@ -368,6 +368,8 @@ public sealed class Hero : AggregateRoot<HeroId>
             return;
         }
 
+        var targetEffects = target.ResolveEffects();
+
         foreach (var token in spell.EffectCode.ParsedTokens)
         {
             switch (token.EffectType)
@@ -381,7 +383,7 @@ public sealed class Hero : AggregateRoot<HeroId>
                 case EffectType.DamageBonus:
                 {
                     int damage = ResolveNumericValue(token.Magnitude, diceRoll);
-                    int finalDamage = target.ApplyDamageModifiers(damage, token.DamageType);
+                    int finalDamage = target.ApplyDamageModifiers(damage, token.DamageType, targetEffects);
                     target.ApplyHitPointDelta(finalDamage, 0, 0);
                     break;
                 }
@@ -404,6 +406,8 @@ public sealed class Hero : AggregateRoot<HeroId>
 
     public void TickOngoingEffects()
     {
+        var resolvedEffects = this.ResolveEffects();
+
         foreach (var condition in this.Conditions.Where(c => c.EffectCode is not null))
         {
             foreach (var token in condition.EffectCode!.ParsedTokens)
@@ -422,7 +426,7 @@ public sealed class Hero : AggregateRoot<HeroId>
                         int damage = ResolveNumericValue(token.Magnitude, null);
                         if (damage > 0)
                         {
-                            int finalDamage = this.ApplyDamageModifiers(damage, token.DamageType);
+                            int finalDamage = this.ApplyDamageModifiers(damage, token.DamageType, resolvedEffects);
                             this.ApplyHitPointDelta(finalDamage, 0, 0);
                         }
                         break;
@@ -570,9 +574,9 @@ public sealed class Hero : AggregateRoot<HeroId>
         return spell.Level <= this.Level;
     }
 
-    private int ApplyDamageModifiers(int rawDamage, string? damageType)
+    private int ApplyDamageModifiers(int rawDamage, string? damageType, ResolvedEffects? resolvedEffects = null)
     {
-        var resolved = this.ResolveEffects();
+        var resolved = resolvedEffects ?? this.ResolveEffects();
 
         if (damageType is not null)
         {
