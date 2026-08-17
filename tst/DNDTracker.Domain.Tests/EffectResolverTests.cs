@@ -47,6 +47,23 @@ public class EffectResolverTests
     }
 
     [Fact]
+    public void ResolveEffects_DiceBasedBonuses_AreSurfacedSeparately()
+    {
+        var hero = CreateHero();
+        hero.AddCondition(new CharacterCondition("Bless", null, new EffectCode("ATK:1d4")));
+        hero.AddCondition(new CharacterCondition("Flame Tongue", null, new EffectCode("DMG:1d6 fire")));
+
+        var result = hero.ResolveEffects();
+
+        result.AttackBonus.Should().Be(0);
+        result.DamageBonus.Should().Be(0);
+        result.VariableAttackBonuses.Should().ContainSingle(token => token.Magnitude == "1d4");
+        result.VariableDamageBonuses.Should().ContainSingle(token =>
+            token.Magnitude == "1d6" &&
+            token.DamageType == "fire");
+    }
+
+    [Fact]
     public void ResolveEffects_AdvantageFlag_SetFromCondition()
     {
         var hero = CreateHero();

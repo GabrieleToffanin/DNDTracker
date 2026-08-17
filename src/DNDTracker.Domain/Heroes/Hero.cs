@@ -311,6 +311,8 @@ public sealed class Hero : AggregateRoot<HeroId>
 
         int attackBonus = 0;
         int damageBonus = 0;
+        var variableAttackBonuses = new List<EffectToken>();
+        var variableDamageBonuses = new List<EffectToken>();
         bool advantageAttack = false;
         bool disadvantageAttack = false;
         int speedModifier = 0;
@@ -325,8 +327,14 @@ public sealed class Hero : AggregateRoot<HeroId>
                 case EffectType.AttackBonus when TryParseInt(token.Magnitude, out var v):
                     attackBonus += v;
                     break;
+                case EffectType.AttackBonus when token.Magnitude is not null:
+                    variableAttackBonuses.Add(token);
+                    break;
                 case EffectType.DamageBonus when TryParseInt(token.Magnitude, out var v):
                     damageBonus += v;
+                    break;
+                case EffectType.DamageBonus when token.Magnitude is not null:
+                    variableDamageBonuses.Add(token);
                     break;
                 case EffectType.AdvantageAttack:
                     advantageAttack = true;
@@ -352,6 +360,8 @@ public sealed class Hero : AggregateRoot<HeroId>
         return new ResolvedEffects(
             AttackBonus: attackBonus,
             DamageBonus: damageBonus,
+            VariableAttackBonuses: variableAttackBonuses,
+            VariableDamageBonuses: variableDamageBonuses,
             HasAdvantageOnAttack: advantageAttack,
             HasDisadvantageOnAttack: disadvantageAttack,
             Resistances: resistances,

@@ -8,6 +8,8 @@ namespace DNDTracker.SharedKernel;
 public sealed record ResolvedEffects(
     int AttackBonus,
     int DamageBonus,
+    IReadOnlyList<EffectToken> VariableAttackBonuses,
+    IReadOnlyList<EffectToken> VariableDamageBonuses,
     bool HasAdvantageOnAttack,
     bool HasDisadvantageOnAttack,
     IReadOnlyList<string> Resistances,
@@ -19,6 +21,8 @@ public sealed record ResolvedEffects(
     public static readonly ResolvedEffects Empty = new(
         AttackBonus: 0,
         DamageBonus: 0,
+        VariableAttackBonuses: [],
+        VariableDamageBonuses: [],
         HasAdvantageOnAttack: false,
         HasDisadvantageOnAttack: false,
         Resistances: [],
