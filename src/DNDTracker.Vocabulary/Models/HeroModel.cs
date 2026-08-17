@@ -28,6 +28,19 @@ public class HeroModel
     public int Speed { get; set; }
     public string Notes { get; set; } = string.Empty;
     public string Background { get; set; } = string.Empty;
+
+    // Richness fields
+    public int DeathSaveSuccesses { get; set; }
+    public int DeathSaveFailures { get; set; }
+    public string SavingThrowProficienciesJson { get; set; } = string.Empty;
+    public string SkillProficienciesJson { get; set; } = string.Empty;
+    public string PersonalityTraits { get; set; } = string.Empty;
+    public string Ideals { get; set; } = string.Empty;
+    public string Bonds { get; set; } = string.Empty;
+    public string Flaws { get; set; } = string.Empty;
+    public string FeatsJson { get; set; } = string.Empty;
+    public AbilityType? SpellcastingAbility { get; set; }
+
     public List<InventoryItemModel> Inventory { get; private set; } = [];
     public List<EquipmentItemModel> Equipment { get; private set; } = [];
     public List<SpellbookEntryModel> Spellbook { get; private set; } = [];
@@ -61,6 +74,16 @@ public class HeroModel
         Speed = source.Speed;
         Notes = source.Notes;
         Background = source.Background;
+        DeathSaveSuccesses = source.DeathSaveSuccesses;
+        DeathSaveFailures = source.DeathSaveFailures;
+        SavingThrowProficienciesJson = source.SavingThrowProficienciesJson;
+        SkillProficienciesJson = source.SkillProficienciesJson;
+        PersonalityTraits = source.PersonalityTraits;
+        Ideals = source.Ideals;
+        Bonds = source.Bonds;
+        Flaws = source.Flaws;
+        FeatsJson = source.FeatsJson;
+        SpellcastingAbility = source.SpellcastingAbility;
 
         Synchronize(Inventory, source.Inventory, item => item.Id, (current, update) => current.Apply(update));
         Synchronize(Equipment, source.Equipment, item => item.Id, (current, update) => current.Apply(update));

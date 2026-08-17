@@ -1,4 +1,6 @@
+using System.Text.Json;
 using DNDTracker.Domain.Heroes;
+using DNDTracker.Vocabulary.Enums;
 using DNDTracker.Vocabulary.ValueObjects;
 using DNDTracker.Vocabulary.Models;
 
@@ -8,6 +10,10 @@ public static class HeroModelMapping
 {
     public static Hero MapToDomain(this HeroModel heroModel)
     {
+        var savingThrowProficiencies = DeserializeList<AbilityType>(heroModel.SavingThrowProficienciesJson);
+        var skillProficiencies = DeserializeList<SkillType>(heroModel.SkillProficienciesJson);
+        var feats = DeserializeList<string>(heroModel.FeatsJson);
+
         return Hero.Create(
             heroModel.Id,
             heroModel.Name,
@@ -38,7 +44,17 @@ public static class HeroModelMapping
             heroModel.Equipment.Select(item => item.ToValueObject()),
             heroModel.Spellbook.Select(entry => entry.ToValueObject()),
             heroModel.SpellSlots.Select(slot => slot.ToValueObject()),
-            heroModel.Conditions.Select(condition => condition.ToValueObject())
+            heroModel.Conditions.Select(condition => condition.ToValueObject()),
+            new DeathSaves(heroModel.DeathSaveSuccesses, heroModel.DeathSaveFailures),
+            new SavingThrowProficiencies(savingThrowProficiencies),
+            new SkillProficiencies(skillProficiencies),
+            new CharacterPersonality(
+                heroModel.PersonalityTraits,
+                heroModel.Ideals,
+                heroModel.Bonds,
+                heroModel.Flaws),
+            feats,
+            heroModel.SpellcastingAbility
         );
     }
 
@@ -69,7 +85,17 @@ public static class HeroModelMapping
             Initiative = hero.Initiative,
             Speed = hero.Speed,
             Notes = hero.Notes,
-            Background = hero.Background
+            Background = hero.Background,
+            DeathSaveSuccesses = hero.DeathSaves.Successes,
+            DeathSaveFailures = hero.DeathSaves.Failures,
+            SavingThrowProficienciesJson = SerializeList(hero.SavingThrowProficiencies.Proficient),
+            SkillProficienciesJson = SerializeList(hero.SkillProficiencies.Proficient),
+            PersonalityTraits = hero.Personality.PersonalityTraits,
+            Ideals = hero.Personality.Ideals,
+            Bonds = hero.Personality.Bonds,
+            Flaws = hero.Personality.Flaws,
+            FeatsJson = SerializeList(hero.Feats),
+            SpellcastingAbility = hero.SpellcastingAbility
         };
 
         heroModel.Inventory.AddRange(hero.Inventory.Select(InventoryItemModel.From));
@@ -79,5 +105,16 @@ public static class HeroModelMapping
         heroModel.Conditions.AddRange(hero.Conditions.Select(HeroConditionModel.From));
 
         return heroModel;
+    }
+
+    private static string SerializeList<T>(IEnumerable<T> list)
+        => JsonSerializer.Serialize(list);
+
+    private static List<T> DeserializeList<T>(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return [];
+
+        return JsonSerializer.Deserialize<List<T>>(json) ?? [];
     }
 }

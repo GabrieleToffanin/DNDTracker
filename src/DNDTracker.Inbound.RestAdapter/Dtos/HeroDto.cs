@@ -26,4 +26,14 @@ public record HeroDto(
     IReadOnlyCollection<InventoryItem>? Equipment = null,
     IReadOnlyCollection<CharacterSpellEntry>? Spellbook = null,
     IReadOnlyCollection<SpellSlotUsage>? SpellSlots = null,
-    IReadOnlyCollection<CharacterCondition>? Conditions = null);
+    IReadOnlyCollection<CharacterCondition>? Conditions = null,
+    int DeathSaveSuccesses = 0,
+    int DeathSaveFailures = 0,
+    IReadOnlyCollection<AbilityType>? SavingThrowProficiencies = null,
+    IReadOnlyCollection<SkillType>? SkillProficiencies = null,
+    string PersonalityTraits = "",
+    string Ideals = "",
+    string Bonds = "",
+    string Flaws = "",
+    IReadOnlyCollection<string>? Feats = null,
+    AbilityType? SpellcastingAbility = null);

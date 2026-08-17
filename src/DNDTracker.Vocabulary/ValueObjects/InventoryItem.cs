@@ -4,4 +4,5 @@ public sealed record InventoryItem(
     Guid Id,
     string Name,
     int Quantity,
-    string? Notes = null);
+    string? Notes = null,
+    EffectCode? EffectCode = null);

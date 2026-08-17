@@ -26,4 +26,14 @@ public sealed record CharacterSheetDto(
     IReadOnlyCollection<SpellSlotUsage> SpellSlots,
     IReadOnlyCollection<CharacterCondition> Conditions,
     string Notes,
-    string Background);
+    string Background,
+    DeathSaves DeathSaves,
+    IReadOnlyList<AbilityType> SavingThrowProficiencies,
+    IReadOnlyList<SkillType> SkillProficiencies,
+    CharacterPersonality Personality,
+    IReadOnlyList<string> Feats,
+    AbilityType? SpellcastingAbility,
+    int ProficiencyBonus,
+    int PassivePerception,
+    int SpellSaveDC,
+    int SpellAttackBonus);
