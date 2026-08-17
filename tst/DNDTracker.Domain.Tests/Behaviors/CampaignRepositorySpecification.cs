@@ -67,11 +67,21 @@ public abstract class CampaignRepositorySpecification
             30,
             "Hero notes",
             "Sage",
-            [new InventoryItem(Guid.NewGuid(), "Torch", 3, "Bright")],
-            [new InventoryItem(Guid.NewGuid(), "Wand", 1)],
-            [new CharacterSpellEntry(1, "Magic Missile", true)],
-            [new SpellSlotUsage(1, 4, 1)],
-            [new CharacterCondition("Blessed", 3)]);
+            inventory: [new InventoryItem(Guid.NewGuid(), "Torch", 3, "Bright")],
+            equipment: [new InventoryItem(Guid.NewGuid(), "Wand", 1)],
+            spellbook: [new CharacterSpellEntry(1, "Magic Missile", true)],
+            spellSlots: [new SpellSlotUsage(1, 4, 1)],
+            conditions: [new CharacterCondition("Blessed", 3)],
+            spells:
+            [
+                new Spell
+                {
+                    Id = 1,
+                    Name = "Magic Missile",
+                    Level = 1,
+                    EffectCode = new EffectCode("DMG:3")
+                }
+            ]);
 
         var combatantId = Guid.NewGuid();
         var campaign = Campaign.Create(

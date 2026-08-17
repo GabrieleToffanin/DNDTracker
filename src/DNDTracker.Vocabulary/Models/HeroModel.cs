@@ -90,6 +90,11 @@ public class HeroModel
 
         Synchronize(Inventory, source.Inventory, item => item.Id, (current, update) => current.Apply(update));
         Synchronize(Equipment, source.Equipment, item => item.Id, (current, update) => current.Apply(update));
+        var desiredSpellIds = source.Spells.Select(spell => spell.Id).ToHashSet();
+        Spells.RemoveWhere(spell => !desiredSpellIds.Contains(spell.Id));
+        var existingSpellIds = Spells.Select(spell => spell.Id).ToHashSet();
+        foreach (var spell in source.Spells.Where(spell => !existingSpellIds.Contains(spell.Id)))
+            Spells.Add(spell);
         Synchronize(Spellbook, source.Spellbook, entry => entry.Id, (current, update) => current.Apply(update));
         Synchronize(SpellSlots, source.SpellSlots, slot => slot.Id, (current, update) => current.Apply(update));
         Synchronize(Conditions, source.Conditions, condition => condition.Id, (current, update) => current.Apply(update));
