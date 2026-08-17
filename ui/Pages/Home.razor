@@ -29,7 +29,7 @@
         }
     </aside>
 
-    <section class="workspace">
+    <section class="workspace @(tracker is not null ? "with-chat" : "")">
         <header class="topbar">
             <div>
                 <span class="eyebrow">TAVOLO DEL DUNGEON MASTER</span>
@@ -147,7 +147,9 @@
                         </div>
                         @if (selectedMonster is not null)
                         {
-                            <MonsterSheet Monster="selectedMonster" />
+                            <MonsterSheet Monster="selectedMonster"
+                                          OnAttackDragStart="BeginAttackDrag"
+                                          OnAttackDragEnd="EndAttackDrag" />
                         }
                         else
                         {
@@ -174,6 +176,49 @@
                 }
             </div>
         }
+
+        @if (tracker is not null)
+        {
+            <aside class="roll-chat @(draggedAttack is not null ? "drop-ready" : "")"
+                   @ondragover:preventDefault
+                   @ondrop="RollDraggedAttackAsync">
+                <div class="chat-heading">
+                    <div><span class="eyebrow">SESSIONE</span><h2>Chat dei tiri</h2></div>
+                    <span class="live-indicator">● LIVE</span>
+                </div>
+                <div class="chat-log">
+                    @if (rollChat.Count == 0)
+                    {
+                        <div class="chat-empty">
+                            <span>⚄</span>
+                            <p>Trascina qui un attacco evidenziato dalla scheda del mostro.</p>
+                        </div>
+                    }
+                    @foreach (var entry in rollChat)
+                    {
+                        <article class="roll-message">
+                            <div><b>@entry.Actor</b><time>@entry.Timestamp.ToLocalTime().ToString("HH:mm")</time></div>
+                            <small>@entry.Action</small>
+                            <p><span class="die-result">@entry.DieRoll</span> @FormatModifier(entry.Modifier) = <strong>@entry.Total</strong></p>
+                        </article>
+                    }
+                </div>
+                <div class="chat-drop-zone">
+                    @if (rollingAttack)
+                    {
+                        <span>Tiro del dado in corso…</span>
+                    }
+                    else if (draggedAttack is not null)
+                    {
+                        <span>Rilascia per tirare 1d20 @FormatModifier(draggedAttack.Modifier)</span>
+                    }
+                    else
+                    {
+                        <span>Rilascia qui un comando d'attacco</span>
+                    }
+                </div>
+            </aside>
+        }
     </section>
 </div>
 
@@ -185,27 +230,35 @@
                 <div><span class="eyebrow">NUOVA CREATURA</span><h2>Crea scheda mostro</h2></div>
                 <button type="button" class="close" @onclick="CloseMonsterEditor">×</button>
             </div>
-            <div class="form-grid three">
-                <label>Nome<input required @bind="monsterEditor.Name" /></label>
-                <label>Tipo<input @bind="monsterEditor.CreatureType" /></label>
-                <label>Grado sfida<InputNumber @bind-Value="monsterEditor.ChallengeRating" /></label>
-                <label>Classe armatura<InputNumber @bind-Value="monsterEditor.ArmorClass" /></label>
-                <label>Punti ferita<InputNumber @bind-Value="monsterEditor.HitPoints" /></label>
-                <label>Velocità<InputNumber @bind-Value="monsterEditor.Speed" /></label>
-                <label>Esperienza<InputNumber @bind-Value="monsterEditor.ExperiencePoints" /></label>
-                <label>Iniziativa<InputNumber @bind-Value="monsterEditor.InitiativeModifier" /></label>
+            <div class="monster-editor-layout">
+                <div class="editor-fields">
+                    <div class="form-grid three">
+                        <label>Nome<input required @bind="monsterEditor.Name" /></label>
+                        <label>Tipo<input @bind="monsterEditor.CreatureType" /></label>
+                        <label>Grado sfida<InputNumber @bind-Value="monsterEditor.ChallengeRating" /></label>
+                        <label>Classe armatura<InputNumber @bind-Value="monsterEditor.ArmorClass" /></label>
+                        <label>Punti ferita<InputNumber @bind-Value="monsterEditor.HitPoints" /></label>
+                        <label>Velocità<InputNumber @bind-Value="monsterEditor.Speed" /></label>
+                        <label>Esperienza<InputNumber @bind-Value="monsterEditor.ExperiencePoints" /></label>
+                        <label>Iniziativa<InputNumber @bind-Value="monsterEditor.InitiativeModifier" /></label>
+                    </div>
+                    <label>Descrizione<textarea rows="3" @bind="monsterEditor.Description"></textarea></label>
+                    <label>Statistiche e tratti<textarea rows="4" @bind="monsterEditor.Statistics"></textarea></label>
+                    <div class="form-grid two">
+                        <label>Azioni<textarea rows="4" placeholder="Morso. Melee Weapon Attack: +9 to hit..." @bind="monsterEditor.Actions"></textarea></label>
+                        <label>Azioni bonus<textarea rows="4" @bind="monsterEditor.BonusActions"></textarea></label>
+                        <label>Reazioni<textarea rows="4" @bind="monsterEditor.Reactions"></textarea></label>
+                        <label>Azioni leggendarie<textarea rows="4" @bind="monsterEditor.LegendaryActions"></textarea></label>
+                        <label>Azioni della tana<textarea rows="4" @bind="monsterEditor.LairActions"></textarea></label>
+                        <label>Magie<textarea rows="4" @bind="monsterEditor.Spells"></textarea></label>
+                    </div>
+                    <label>Note del GM<textarea rows="2" @bind="monsterEditor.Notes"></textarea></label>
+                </div>
+                <div class="editor-preview">
+                    <span class="eyebrow">ANTEPRIMA SCHEDA</span>
+                    <MonsterSheet Monster="@PreviewMonster" />
+                </div>
             </div>
-            <label>Descrizione<textarea rows="3" @bind="monsterEditor.Description"></textarea></label>
-            <label>Statistiche e tratti<textarea rows="4" @bind="monsterEditor.Statistics"></textarea></label>
-            <div class="form-grid two">
-                <label>Azioni<textarea rows="4" @bind="monsterEditor.Actions"></textarea></label>
-                <label>Azioni bonus<textarea rows="4" @bind="monsterEditor.BonusActions"></textarea></label>
-                <label>Reazioni<textarea rows="4" @bind="monsterEditor.Reactions"></textarea></label>
-                <label>Azioni leggendarie<textarea rows="4" @bind="monsterEditor.LegendaryActions"></textarea></label>
-                <label>Azioni della tana<textarea rows="4" @bind="monsterEditor.LairActions"></textarea></label>
-                <label>Magie<textarea rows="4" @bind="monsterEditor.Spells"></textarea></label>
-            </div>
-            <label>Note del GM<textarea rows="2" @bind="monsterEditor.Notes"></textarea></label>
             <div class="modal-actions">
                 <button type="button" @onclick="CloseMonsterEditor">Annulla</button>
                 <button type="submit" class="gold" disabled="@savingMonster">@(savingMonster ? "Salvataggio…" : "Salva nel bestiario")</button>
@@ -237,6 +290,30 @@
     private bool showCampaignForm;
     private bool showMonsterEditor;
     private bool savingMonster;
+    private bool rollingAttack;
+    private ExecutableAttack? draggedAttack;
+    private readonly List<RollChatEntry> rollChat = [];
+
+    private MonsterStatBlock PreviewMonster => new()
+    {
+        Name = string.IsNullOrWhiteSpace(monsterEditor.Name) ? "Nuova creatura" : monsterEditor.Name,
+        CreatureType = monsterEditor.CreatureType,
+        ArmorClass = monsterEditor.ArmorClass,
+        HitPoints = monsterEditor.HitPoints,
+        ChallengeRating = monsterEditor.ChallengeRating,
+        ExperiencePoints = monsterEditor.ExperiencePoints,
+        InitiativeModifier = monsterEditor.InitiativeModifier,
+        Speed = monsterEditor.Speed,
+        Notes = monsterEditor.Notes,
+        Description = monsterEditor.Description,
+        Statistics = monsterEditor.Statistics,
+        Actions = monsterEditor.Actions,
+        BonusActions = monsterEditor.BonusActions,
+        Reactions = monsterEditor.Reactions,
+        LegendaryActions = monsterEditor.LegendaryActions,
+        LairActions = monsterEditor.LairActions,
+        Spells = monsterEditor.Spells
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -300,6 +377,43 @@
     }
 
     private void CloseMonsterEditor() => showMonsterEditor = false;
+
+    private void BeginAttackDrag(ExecutableAttack attack) => draggedAttack = attack;
+    private void EndAttackDrag() => draggedAttack = null;
+
+    private async Task RollDraggedAttackAsync()
+    {
+        if (tracker is null || draggedAttack is null || rollingAttack)
+            return;
+
+        var attack = draggedAttack;
+        rollingAttack = true;
+        try
+        {
+            var result = await Api.RollDiceAsync(
+                tracker.CampaignName,
+                attack.Modifier,
+                $"{attack.MonsterName}: {attack.Label}");
+            rollChat.Insert(0, new RollChatEntry(
+                DateTime.UtcNow,
+                attack.MonsterName,
+                attack.Label,
+                result.Rolls.FirstOrDefault(),
+                result.Modifier,
+                result.Total));
+        }
+        catch
+        {
+            error = "Non è stato possibile eseguire il tiro d'attacco.";
+        }
+        finally
+        {
+            draggedAttack = null;
+            rollingAttack = false;
+        }
+    }
+
+    private static string FormatModifier(int modifier) => modifier >= 0 ? $"+{modifier}" : modifier.ToString();
 
     private async Task SaveMonsterAsync()
     {

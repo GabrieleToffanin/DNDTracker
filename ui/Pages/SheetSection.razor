@@ -1,15 +1,57 @@
+@using System.Text.RegularExpressions
+
 @if (!string.IsNullOrWhiteSpace(Content))
 {
     <section class="sheet-section">
         <h3>@Title</h3>
         @foreach (var line in Content.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
-            <p>@line</p>
+            var attack = ParseAttack(line);
+            if (attack is not null)
+            {
+                <p class="executable-attack"
+                   draggable="true"
+                   title="Trascina nella chat per tirare 1d20 @FormatModifier(attack.Modifier)"
+                   @ondragstart="() => OnAttackDragStart.InvokeAsync(attack)"
+                   @ondragend="() => OnAttackDragEnd.InvokeAsync()">
+                    <span class="command-mark">⚔</span>@line
+                    <span class="command-hint">1d20 @FormatModifier(attack.Modifier)</span>
+                </p>
+            }
+            else
+            {
+                <p>@line</p>
+            }
         }
     </section>
 }
 
 @code {
+    private static readonly Regex AttackPattern = new(
+        @"(?:melee|ranged)\s+(?:weapon|spell)\s+attack\s*[:,]?\s*(?<modifier>[+-]\s*\d+)\s+to\s+hit",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
     [Parameter] public string Content { get; set; } = string.Empty;
+    [Parameter] public string MonsterName { get; set; } = string.Empty;
+    [Parameter] public bool RecognizeAttacks { get; set; }
+    [Parameter] public EventCallback<ExecutableAttack> OnAttackDragStart { get; set; }
+    [Parameter] public EventCallback OnAttackDragEnd { get; set; }
+
+    private ExecutableAttack? ParseAttack(string line)
+    {
+        if (!RecognizeAttacks)
+            return null;
+
+        var match = AttackPattern.Match(line);
+        if (!match.Success ||
+            !int.TryParse(match.Groups["modifier"].Value.Replace(" ", string.Empty), out var modifier))
+            return null;
+
+        var labelEnd = line.IndexOf('.');
+        var label = labelEnd > 0 ? line[..labelEnd].Trim() : line.Trim();
+        return new ExecutableAttack(label, modifier, MonsterName);
+    }
+
+    private static string FormatModifier(int modifier) => modifier >= 0 ? $"+{modifier}" : modifier.ToString();
 }
