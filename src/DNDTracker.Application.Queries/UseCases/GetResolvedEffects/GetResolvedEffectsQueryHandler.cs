@@ -1,5 +1,4 @@
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Domain.Services;
 using DNDTracker.SharedKernel;
 using DNDTracker.SharedKernel.Queries;
 using DNDTracker.Vocabulary.Exceptions;
@@ -18,6 +17,6 @@ public class GetResolvedEffectsQueryHandler(ICampaignRepository campaignReposito
         var hero = campaign.Heroes.FirstOrDefault(h => h.Id.Id == request.HeroId)
             ?? throw new CharacterNotFoundException($"Hero {request.HeroId} not found.");
 
-        return EffectResolver.ResolveEffectsForCombatant(hero);
+        return hero.ResolveEffects();
     }
 }

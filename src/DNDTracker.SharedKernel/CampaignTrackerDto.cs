@@ -6,7 +6,7 @@ public sealed record CampaignTrackerDto(
     string CampaignName,
     string CampaignDescription,
     IReadOnlyCollection<CharacterSheetDto> Characters,
-    IReadOnlyCollection<MonsterStatBlock> MonsterLibrary,
+    IReadOnlyCollection<MonsterStatBlockDto> MonsterLibrary,
     CombatState? ActiveCombat,
     IReadOnlyCollection<SessionLogEntry> SessionLogs,
     IReadOnlyCollection<CampaignTimelineEntry> TimelineEntries,

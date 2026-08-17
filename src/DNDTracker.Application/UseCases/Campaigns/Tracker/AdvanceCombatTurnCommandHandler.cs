@@ -1,5 +1,4 @@
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Domain.Services;
 using DNDTracker.SharedKernel.Commands;
 using DNDTracker.Vocabulary.Exceptions;
 
@@ -25,7 +24,7 @@ public sealed class AdvanceCombatTurnCommandHandler(ICampaignRepository campaign
             {
                 var hero = campaign.Heroes.FirstOrDefault(h => h.Id.Id == currentCombatant.Id);
                 if (hero is not null)
-                    EffectResolver.TickHeroConditions(hero);
+                    hero.TickOngoingEffects();
             }
         }
 

@@ -5,6 +5,7 @@ using DNDTracker.Application.Queries.UseCases.RollDice;
 using DNDTracker.Application.UseCases.Campaigns.AddHero;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Application.UseCases.Campaigns.Tracker;
+using DNDTracker.Domain.Campaigns;
 using DNDTracker.Domain.Heroes;
 using DNDTracker.Inbound.RestAdapter.Commands;
 using DNDTracker.Inbound.RestAdapter.Dtos;
@@ -115,8 +116,8 @@ public class CampaignController(
         [FromBody] AddMonsterToLibraryRequest request,
         CancellationToken cancellationToken)
     {
-        var monster = new MonsterStatBlock(
-            Guid.Empty,
+        var monster = MonsterStatBlock.Create(
+            null,
             request.Name,
             request.CreatureType,
             request.ArmorClass,

@@ -1,6 +1,5 @@
 using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Domain.Services;
 using DNDTracker.SharedKernel.Commands;
 using DNDTracker.Vocabulary.Exceptions;
 
@@ -27,7 +26,7 @@ public sealed class CastSpellCommandHandler(
             ?? throw new InvalidOperationException($"Spell {request.SpellId} not found in caster's spellbook.");
 
         caster.UseSpellSlot(request.SlotLevel);
-        EffectResolver.ApplySpellEffect(caster, target, spell, request.DiceRoll);
+        caster.ApplySpellEffectTo(target, spell, request.DiceRoll);
 
         foreach (var domainEvent in caster.DomainEvents)
             await eventPublisher.PublishAsync(domainEvent, cancellationToken);

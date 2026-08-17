@@ -82,7 +82,7 @@ public abstract class CampaignRepositorySpecification
             DateTime.UtcNow,
             true,
             [hero],
-            [new MonsterStatBlock(
+            [MonsterStatBlock.Create(
                 Guid.NewGuid(),
                 "Goblin",
                 "Humanoid",

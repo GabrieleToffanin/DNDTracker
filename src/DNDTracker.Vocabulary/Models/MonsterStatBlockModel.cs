@@ -1,5 +1,5 @@
+using DNDTracker.Domain.Campaigns;
 using DNDTracker.Vocabulary.Enums;
-using DNDTracker.Vocabulary.ValueObjects;
 
 namespace DNDTracker.Vocabulary.Models;
 
@@ -50,7 +50,7 @@ public class MonsterStatBlockModel
         Spells = monster.Spells
     };
 
-    public MonsterStatBlock ToValueObject() => new(
+    public MonsterStatBlock ToDomain() => MonsterStatBlock.Create(
         Id,
         Name,
         CreatureType,
