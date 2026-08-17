@@ -14,10 +14,20 @@ public sealed class AdvanceCombatTurnCommandHandler(ICampaignRepository campaign
         if (campaign is null)
             throw new CampaignNotFoundException(request.CampaignName);
 
-        // Apply per-turn condition ticks (Heal/Damage from EffectCode, round countdown)
-        // to hero characters whose turn is ending.
-        foreach (var hero in campaign.Heroes)
-            EffectResolver.TickHeroConditions(hero);
+        // Tick conditions only for the hero whose turn is currently ending, so each hero
+        // receives exactly one tick per full round (not once per every other combatant's turn).
+        if (campaign.ActiveCombat is not null)
+        {
+            var currentCombatant = campaign.ActiveCombat.InitiativeOrder
+                .ElementAtOrDefault(campaign.ActiveCombat.TurnIndex);
+
+            if (currentCombatant is not null)
+            {
+                var hero = campaign.Heroes.FirstOrDefault(h => h.Id.Id == currentCombatant.Id);
+                if (hero is not null)
+                    EffectResolver.TickHeroConditions(hero);
+            }
+        }
 
         campaign.AdvanceCombatTurn();
         await campaignRepository.UpdateAsync(campaign, cancellationToken);
