@@ -29,6 +29,21 @@ public sealed class DndTrackerApi(HttpClient client)
             cancellationToken);
         response.EnsureSuccessStatusCode();
     }
+
+    public async Task<DiceRollResult> RollDiceAsync(
+        string campaignName,
+        int modifier,
+        string context,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await client.PostAsJsonAsync(
+            $"api/campaign/{Uri.EscapeDataString(campaignName)}/dice/roll",
+            new RollDiceRequest("1d20", modifier, context),
+            cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<DiceRollResult>(cancellationToken)
+            ?? throw new InvalidOperationException("The dice roll response was empty.");
+    }
 }
 
 public sealed record CampaignSummary(string CampaignName, string CampaignDescription);
@@ -133,3 +148,14 @@ public sealed record CreateCampaignRequest(
     string CampaignImage,
     DateTime CreatedDate,
     bool IsActive);
+
+public sealed record RollDiceRequest(string Expression, int Modifier, string Context);
+
+public sealed class DiceRollResult
+{
+    public string Expression { get; set; } = string.Empty;
+    public int Total { get; set; }
+    public List<int> Rolls { get; set; } = [];
+    public int Modifier { get; set; }
+    public string? Context { get; set; }
+}

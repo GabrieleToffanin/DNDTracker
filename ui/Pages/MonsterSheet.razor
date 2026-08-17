@@ -15,10 +15,30 @@
         <span><b>PE</b> @Monster.ExperiencePoints</span>
     </div>
     <SheetSection Title="Statistiche e tratti" Content="@Monster.Statistics" />
-    <SheetSection Title="Azioni" Content="@Monster.Actions" />
-    <SheetSection Title="Azioni bonus" Content="@Monster.BonusActions" />
-    <SheetSection Title="Reazioni" Content="@Monster.Reactions" />
-    <SheetSection Title="Azioni leggendarie" Content="@Monster.LegendaryActions" />
+    <SheetSection Title="Azioni"
+                  Content="@Monster.Actions"
+                  MonsterName="@Monster.Name"
+                  RecognizeAttacks="true"
+                  OnAttackDragStart="@OnAttackDragStart"
+                  OnAttackDragEnd="@OnAttackDragEnd" />
+    <SheetSection Title="Azioni bonus"
+                  Content="@Monster.BonusActions"
+                  MonsterName="@Monster.Name"
+                  RecognizeAttacks="true"
+                  OnAttackDragStart="@OnAttackDragStart"
+                  OnAttackDragEnd="@OnAttackDragEnd" />
+    <SheetSection Title="Reazioni"
+                  Content="@Monster.Reactions"
+                  MonsterName="@Monster.Name"
+                  RecognizeAttacks="true"
+                  OnAttackDragStart="@OnAttackDragStart"
+                  OnAttackDragEnd="@OnAttackDragEnd" />
+    <SheetSection Title="Azioni leggendarie"
+                  Content="@Monster.LegendaryActions"
+                  MonsterName="@Monster.Name"
+                  RecognizeAttacks="true"
+                  OnAttackDragStart="@OnAttackDragStart"
+                  OnAttackDragEnd="@OnAttackDragEnd" />
     <SheetSection Title="Azioni della tana" Content="@Monster.LairActions" />
     <SheetSection Title="Magie" Content="@Monster.Spells" />
     <SheetSection Title="Note del Game Master" Content="@Monster.Notes" />
@@ -26,4 +46,6 @@
 
 @code {
     [Parameter, EditorRequired] public MonsterStatBlock Monster { get; set; } = null!;
+    [Parameter] public EventCallback<ExecutableAttack> OnAttackDragStart { get; set; }
+    [Parameter] public EventCallback OnAttackDragEnd { get; set; }
 }
