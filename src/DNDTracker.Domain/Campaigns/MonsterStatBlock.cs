@@ -118,12 +118,6 @@ public sealed class MonsterStatBlock
             spells);
     }
 
-    public void EnsureIdentity()
-    {
-        if (Id == Guid.Empty)
-            Id = Guid.NewGuid();
-    }
-
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowIfInvalidName(string name)
     {
