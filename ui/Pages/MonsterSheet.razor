@@ -13,6 +13,10 @@
         <span><b>Velocità</b> @Monster.Speed ft.</span>
         <span><b>Iniziativa</b> @(Monster.InitiativeModifier >= 0 ? "+" : "")@Monster.InitiativeModifier</span>
         <span><b>PE</b> @Monster.ExperiencePoints</span>
+        @if (!string.IsNullOrWhiteSpace(Monster.Alignment))
+        {
+            <span><b>Allineamento</b> @Monster.Alignment</span>
+        }
     </div>
     <SheetSection Title="Statistiche e tratti" Content="@Monster.Statistics" />
     <SheetSection Title="Azioni"

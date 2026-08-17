@@ -15,6 +15,7 @@ public class MonsterStatBlockModel
     public int ExperiencePoints { get; set; }
     public int InitiativeModifier { get; set; }
     public int Speed { get; set; }
+    public string Alignment { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public string Description { get; set; } = string.Empty;
     public string Statistics { get; set; } = string.Empty;
@@ -37,6 +38,7 @@ public class MonsterStatBlockModel
         ExperiencePoints = monster.ExperiencePoints,
         InitiativeModifier = monster.InitiativeModifier,
         Speed = monster.Speed,
+        Alignment = monster.Alignment,
         Notes = monster.Notes,
         Description = monster.Description,
         Statistics = monster.Statistics,
@@ -58,10 +60,11 @@ public class MonsterStatBlockModel
         ExperiencePoints,
         InitiativeModifier,
         Speed,
-        Notes,
-        Description,
+        Alignment,
         Statistics,
         Actions,
+        Notes,
+        Description,
         BonusActions,
         Reactions,
         LegendaryActions,
@@ -78,6 +81,7 @@ public class MonsterStatBlockModel
         ExperiencePoints = source.ExperiencePoints;
         InitiativeModifier = source.InitiativeModifier;
         Speed = source.Speed;
+        Alignment = source.Alignment;
         Notes = source.Notes;
         Description = source.Description;
         Statistics = source.Statistics;
