@@ -27,6 +27,59 @@ public sealed class Hero : AggregateRoot<HeroId>
     public int Speed { get; private set; }
     public string Notes { get; private set; }
     public string Background { get; private set; }
+
+    // Richness fields
+    public DeathSaves DeathSaves { get; private set; }
+    public SavingThrowProficiencies SavingThrowProficiencies { get; private set; }
+    public SkillProficiencies SkillProficiencies { get; private set; }
+    public CharacterPersonality Personality { get; private set; }
+    public List<string> Feats { get; private set; }
+    public AbilityType? SpellcastingAbility { get; private set; }
+
+    /// <summary>Proficiency bonus derived from character level (D&amp;D 5e standard).</summary>
+    public int ProficiencyBonus => Level switch
+    {
+        >= 17 => 6,
+        >= 13 => 5,
+        >= 9  => 4,
+        >= 5  => 3,
+        _     => 2
+    };
+
+    /// <summary>Passive Perception = 10 + Wisdom modifier + proficiency bonus (if proficient).</summary>
+    public int PassivePerception
+    {
+        get
+        {
+            var wisdomMod = (AbilityScores.Wisdom - 10) / 2;
+            var profBonus = SkillProficiencies.IsProficient(SkillType.Perception) ? ProficiencyBonus : 0;
+            return 10 + wisdomMod + profBonus;
+        }
+    }
+
+    /// <summary>Spell save DC = 8 + proficiency bonus + spellcasting ability modifier.</summary>
+    public int SpellSaveDC
+    {
+        get
+        {
+            if (SpellcastingAbility is null)
+                return 0;
+            var mod = GetAbilityModifier(SpellcastingAbility.Value);
+            return 8 + ProficiencyBonus + mod;
+        }
+    }
+
+    /// <summary>Spell attack bonus = proficiency bonus + spellcasting ability modifier.</summary>
+    public int SpellAttackBonus
+    {
+        get
+        {
+            if (SpellcastingAbility is null)
+                return 0;
+            return ProficiencyBonus + GetAbilityModifier(SpellcastingAbility.Value);
+        }
+    }
+
     public List<InventoryItem> Inventory { get; private set; }
     public List<InventoryItem> Equipment { get; private set; }
     public List<CharacterSpellEntry> Spellbook { get; private set; }
@@ -55,6 +108,12 @@ public sealed class Hero : AggregateRoot<HeroId>
         int speed,
         string notes,
         string background,
+        DeathSaves deathSaves,
+        SavingThrowProficiencies savingThrowProficiencies,
+        SkillProficiencies skillProficiencies,
+        CharacterPersonality personality,
+        IEnumerable<string> feats,
+        AbilityType? spellcastingAbility,
         IEnumerable<InventoryItem> inventory,
         IEnumerable<InventoryItem> equipment,
         IEnumerable<CharacterSpellEntry> spellbook,
@@ -79,6 +138,12 @@ public sealed class Hero : AggregateRoot<HeroId>
         this.Speed = speed;
         this.Notes = notes;
         this.Background = background;
+        this.DeathSaves = deathSaves;
+        this.SavingThrowProficiencies = savingThrowProficiencies;
+        this.SkillProficiencies = skillProficiencies;
+        this.Personality = personality;
+        this.Feats = [.. feats];
+        this.SpellcastingAbility = spellcastingAbility;
         this.Inventory = [.. inventory];
         this.Equipment = [.. equipment];
         this.Spellbook = [.. spellbook];
@@ -110,7 +175,13 @@ public sealed class Hero : AggregateRoot<HeroId>
         IEnumerable<InventoryItem>? equipment = null,
         IEnumerable<CharacterSpellEntry>? spellbook = null,
         IEnumerable<SpellSlotUsage>? spellSlots = null,
-        IEnumerable<CharacterCondition>? conditions = null)
+        IEnumerable<CharacterCondition>? conditions = null,
+        DeathSaves? deathSaves = null,
+        SavingThrowProficiencies? savingThrowProficiencies = null,
+        SkillProficiencies? skillProficiencies = null,
+        CharacterPersonality? personality = null,
+        IEnumerable<string>? feats = null,
+        AbilityType? spellcastingAbility = null)
     {
         var currentId = id is not null ? HeroId.Create(id.Value) : HeroId.Create();
 
@@ -134,6 +205,12 @@ public sealed class Hero : AggregateRoot<HeroId>
             speed,
             notes,
             background,
+            deathSaves ?? DeathSaves.None,
+            savingThrowProficiencies ?? SavingThrowProficiencies.None,
+            skillProficiencies ?? SkillProficiencies.None,
+            personality ?? CharacterPersonality.Empty,
+            feats ?? [],
+            spellcastingAbility,
             inventory ?? [],
             equipment ?? [],
             spellbook ?? [],
@@ -203,6 +280,14 @@ public sealed class Hero : AggregateRoot<HeroId>
         this.Conditions.Add(condition);
     }
 
+    public void TickConditions()
+    {
+        this.Conditions = this.Conditions
+            .Select(c => c.RemainingRounds is > 0 ? c with { RemainingRounds = c.RemainingRounds - 1 } : c)
+            .Where(c => c.RemainingRounds is null || c.RemainingRounds > 0)
+            .ToList();
+    }
+
     public void AddInventoryItem(InventoryItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -227,6 +312,96 @@ public sealed class Hero : AggregateRoot<HeroId>
         this.Background = background;
     }
 
+    public void UpdatePersonality(CharacterPersonality personality)
+    {
+        ArgumentNullException.ThrowIfNull(personality);
+        this.Personality = personality;
+    }
+
+    public void AddFeat(string featName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(featName);
+        if (!this.Feats.Contains(featName, StringComparer.OrdinalIgnoreCase))
+            this.Feats.Add(featName);
+    }
+
+    public void SetSpellcastingAbility(AbilityType? ability)
+    {
+        this.SpellcastingAbility = ability;
+    }
+
+    public void RecordDeathSave(bool success)
+    {
+        if (success)
+            this.DeathSaves = this.DeathSaves with { Successes = Math.Min(3, this.DeathSaves.Successes + 1) };
+        else
+            this.DeathSaves = this.DeathSaves with { Failures = Math.Min(3, this.DeathSaves.Failures + 1) };
+    }
+
+    public void ResetDeathSaves()
+    {
+        this.DeathSaves = DeathSaves.None;
+    }
+
+    public void UseSpellSlot(int slotLevel)
+    {
+        var slot = this.SpellSlots.FirstOrDefault(s => s.SlotLevel == slotLevel);
+        if (slot is null || slot.SlotsSpent >= slot.SlotsTotal)
+            throw new InvalidOperationException($"No available spell slots at level {slotLevel}.");
+
+        var index = this.SpellSlots.IndexOf(slot);
+        this.SpellSlots[index] = slot with { SlotsSpent = slot.SlotsSpent + 1 };
+    }
+
+    public void RecoverSpellSlots(RestType restType)
+    {
+        bool isWarlock = this.Class == HeroClass.Warlock;
+        bool isFighter = this.Class == HeroClass.Fighter;
+
+        if (restType == RestType.Long)
+        {
+            // Full recovery on long rest for all classes
+            this.SpellSlots = this.SpellSlots
+                .Select(s => s with { SlotsSpent = 0 })
+                .ToList();
+            return;
+        }
+
+        // Short rest: Warlock recovers all pact magic slots; Fighter (Arcane Knight) recovers one low-level slot
+        if (isWarlock)
+        {
+            this.SpellSlots = this.SpellSlots
+                .Select(s => s with { SlotsSpent = 0 })
+                .ToList();
+        }
+        else if (isFighter)
+        {
+            // Arcane Knight recovers one spell slot up to level 3 on short rest
+            var recoverableSlot = this.SpellSlots
+                .Where(s => s.SlotLevel <= 3 && s.SlotsSpent > 0)
+                .OrderBy(s => s.SlotLevel)
+                .FirstOrDefault();
+
+            if (recoverableSlot is not null)
+            {
+                var index = this.SpellSlots.IndexOf(recoverableSlot);
+                this.SpellSlots[index] = recoverableSlot with { SlotsSpent = recoverableSlot.SlotsSpent - 1 };
+            }
+        }
+        // Other classes do not recover spell slots on short rest
+    }
+
+    public void RecordSpellCast(Guid targetHeroId, Spell spell, int? slotLevel = null)
+    {
+        this.AddDomainEvent(new SpellCastDomainEvent(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            this.Id.Id,
+            targetHeroId,
+            spell,
+            slotLevel ?? spell.Level));
+    }
+
     public void AddSpell(Spell spell)
     {
         ArgumentNullException.ThrowIfNull(spell);
@@ -247,5 +422,20 @@ public sealed class Hero : AggregateRoot<HeroId>
     public bool IsSpellAvailable(Spell spell)
     {
         return spell.Level <= this.Level;
+    }
+
+    public int GetAbilityModifier(AbilityType ability)
+    {
+        var score = ability switch
+        {
+            AbilityType.Strength     => AbilityScores.Strength,
+            AbilityType.Dexterity    => AbilityScores.Dexterity,
+            AbilityType.Constitution => AbilityScores.Constitution,
+            AbilityType.Intelligence => AbilityScores.Intelligence,
+            AbilityType.Wisdom       => AbilityScores.Wisdom,
+            AbilityType.Charisma     => AbilityScores.Charisma,
+            _ => 10
+        };
+        return (score - 10) / 2;
     }
 }

@@ -18,4 +18,5 @@ public sealed record Spell
     public string? CastingTime { get; init; }
     public string? Damage { get; init; }
     public string? Save { get; init; }
+    public EffectCode? EffectCode { get; init; }
 }

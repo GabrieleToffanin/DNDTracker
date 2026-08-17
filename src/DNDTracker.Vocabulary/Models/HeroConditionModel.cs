@@ -8,20 +8,26 @@ public class HeroConditionModel
     public Guid HeroId { get; set; }
     public string Name { get; set; } = string.Empty;
     public int? RemainingRounds { get; set; }
+    public string? EffectCode { get; set; }
     public HeroModel Hero { get; set; } = null!;
 
     public static HeroConditionModel From(CharacterCondition condition) => new()
     {
         Id = Guid.NewGuid(),
         Name = condition.Name,
-        RemainingRounds = condition.RemainingRounds
+        RemainingRounds = condition.RemainingRounds,
+        EffectCode = condition.EffectCode?.Raw
     };
 
-    public CharacterCondition ToValueObject() => new(Name, RemainingRounds);
+    public CharacterCondition ToValueObject() => new(
+        Name,
+        RemainingRounds,
+        DNDTracker.Vocabulary.ValueObjects.EffectCode.TryCreate(EffectCode));
 
     public void Apply(HeroConditionModel source)
     {
         Name = source.Name;
         RemainingRounds = source.RemainingRounds;
+        EffectCode = source.EffectCode;
     }
 }

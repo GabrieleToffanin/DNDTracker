@@ -18,5 +18,6 @@ public class SpellModel
     public string? CastingTime { get; init; }
     public string? Damage { get; init; }
     public string? Save { get; init; }
+    public string? EffectCode { get; init; }
     public List<HeroModel> Heroes { get; init; }
 }
