@@ -6,21 +6,22 @@ using MediatR;
 using DNDTracker.Application.UseCases.Campaigns.CreateCampaign;
 using DNDTracker.Domain;
 using DNDTracker.Domain.Campaigns;
-using DNDTracker.Inbound.AmqpAdapter;
 using DNDTracker.Inbound.RestAdapter.Controllers;
 using DNDTracker.Main.Middleware;
 using DNDTracker.Outbound.RabbitMq;
 using DNDTracker.Outbound.RabbitMq.Configuration;
-using DNDTracker.Outbound.RabbitMq.Messaging;
 using DNDTracker.Outbound.PostgresDb.Database.Postgres;
 using DNDTracker.Outbound.PostgresDb.Repositories;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NetPub;
+using NetPub.Contracts.Diagnostics;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using RabbitMQ.Client;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Sinks.OpenTelemetry;
@@ -82,13 +83,17 @@ public class Program
                 .AddHttpClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
                 .AddSource("Npgsql")
+                .AddSource("NetPub")
                 .AddSource(TracingPipelineBehavior<object, object>.ActivitySource.Name)
-                .AddSource(RabbitMqTelemetry.ActivitySourceName)
+                .AddSource(NetPubDiagnostics.ActivitySourceName)
+                .AddSource(RabbitMQActivitySource.PublisherSourceName)
+                .AddSource(RabbitMQActivitySource.SubscriberSourceName)
                 .AddOtlpExporter(opts => opts.Endpoint = new Uri(otlpEndpoint)))
             .WithMetrics(metrics => metrics
                 .SetResourceBuilder(resourceBuilder)
                 .AddMeter(TracingPipelineBehavior<object, object>.Meter.Name)
-                .AddMeter(RabbitMqTelemetry.Meter.Name)
+                .AddMeter(NetPubDiagnostics.MeterName)
+                .AddMeter("NetPub")
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddRuntimeInstrumentation()
@@ -130,10 +135,16 @@ public class Program
             typeof(IPipelineBehavior<,>),
             typeof(TracingPipelineBehavior<,>));
         builder.Services.AddScoped<ICampaignRepository, PostgreCampaignRepository>();
-        builder.Services.Configure<RabbitMqConfiguration>(
-            builder.Configuration.GetSection("RabbitMQ"));
+
+        RabbitMqConfiguration rabbitMqConfiguration = builder.Configuration
+            .GetSection("RabbitMQ")
+            .Get<RabbitMqConfiguration>() ?? new RabbitMqConfiguration();
+
+        // AddNetPub is source-generated: it aggregates every message, topic configuration and
+        // subscriber declared in the referenced adapters (Outbound.RabbitMq, Inbound.AmqpAdapter).
+        builder.Services.AddNetPub(netPub =>
+            netPub.UseRabbitMq(rabbitMqConfiguration.CreateConnectionFactory()));
         builder.Services.AddRabbitMqMessaging();
-        builder.Services.AddAmqpAdapter();
 
         builder.Services.Configure<BackpressureOptions>(
             builder.Configuration.GetSection("Backpressure"));

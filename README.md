@@ -23,9 +23,9 @@ src/
 ├── DNDTracker.Application            # Command handlers and write-side orchestration
 ├── DNDTracker.Application.Queries    # Query handlers and read-side orchestration
 ├── DNDTracker.Inbound.RestAdapter    # HTTP DTOs and controllers
-├── DNDTracker.Inbound.AmqpAdapter    # RabbitMQ consumers / hosted services
+├── DNDTracker.Inbound.AmqpAdapter    # NetPub RabbitMQ subscribers
 ├── DNDTracker.Outbound.PostgresDb    # EF Core DbContext, repositories, migrations
-├── DNDTracker.Outbound.RabbitMq      # RabbitMQ publisher and topology setup
+├── DNDTracker.Outbound.RabbitMq      # NetPub message contracts, topic configuration and IEventPublisher adapter
 ├── DNDTracker.DataAccessObject.Mapping # Domain <-> persistence mapping
 ├── DNDTracker.SharedKernel           # CQRS abstractions and base primitives
 ├── DNDTracker.Vocabulary             # Enums, exceptions, persistence models, value objects
@@ -56,9 +56,9 @@ tst/
 
 ### Infrastructure
 - PostgreSQL repositories are implemented in `DNDTracker.Outbound.PostgresDb`
-- RabbitMQ event publishing is implemented in `DNDTracker.Outbound.RabbitMq`
-- Consumer hosting is implemented in `DNDTracker.Inbound.AmqpAdapter`
-- `DNDTracker.Main/Program.cs` wires the application together, applies migrations at startup, and initializes RabbitMQ topology
+- RabbitMQ event publishing is implemented in `DNDTracker.Outbound.RabbitMq` on top of [NetPub](https://www.nuget.org/packages/NetPub)
+- RabbitMQ subscribers live in `DNDTracker.Inbound.AmqpAdapter`
+- `DNDTracker.Main/Program.cs` wires the application together and applies migrations at startup; the RabbitMQ topology is declared by NetPub's hosted services when the host starts
 
 ## Main API endpoints
 
@@ -222,20 +222,26 @@ Notes:
 
 ## Messaging
 
-RabbitMQ topology is configured in `src/DNDTracker.Main/appsettings.json`.
+RabbitMQ messaging is built on the [NetPub](https://www.nuget.org/packages/NetPub) package. Connection
+settings come from the `RabbitMQ` section of `src/DNDTracker.Main/appsettings.json`; the topology is
+declared in code through NetPub attributes and registered by the source-generated `AddNetPub(...)`
+called in `Program.cs`. Exchanges, queues and bindings are created idempotently on host startup.
 
-Current queues and bindings include:
+Current message contracts (`src/DNDTracker.Outbound.RabbitMq/Messages`) and their fanout exchanges:
 
-- `HeroAddedDomainEvent` → `dndtracking.campaign.hero-added`
-- `SpellLearnedDomainEvent` → `dndtracking.campaigns.spell-learned`
-- Exchange: `dnd.events`
+- `HeroAddedMessage` (`HeroAddedDomainEvent`) → `dnd.events.hero-added`, consumed from queue `dndtracking.campaign.hero-added`
+- `SpellLearnedMessage` (`SpellLearnedDomainEvent`) → `dnd.events.spell-learned`
+- `SpellCastMessage` (`SpellCastDomainEvent`) → `dnd.events.spell-cast`
+
+Application handlers keep publishing domain events through the domain `IEventPublisher` port;
+`NetPubEventPublisher` wraps each event in its message contract and hands it to NetPub's `IPublisher`.
 
 When adding a new event:
 
 1. Raise the event from the domain model
 2. Publish it from the application handler
-3. Add queue and binding configuration in `appsettings.json`
-4. Register a consumer hosted service when needed
+3. Add a `Message<TEvent>` record with `[Provider(MessagingProvider.RabbitMq)]` / `[Transport(Transport.Topic)]` and a `[TopicConfiguration<TMessage>]` class in `DNDTracker.Outbound.RabbitMq/Messages`, then map the event in `NetPubEventPublisher`
+4. When inbound processing is needed, add a `partial` subscriber with `[HandlesMessage<TMessage>]` (plus an optional `[SubscriberConfiguration<TSubscriber>]` for the queue name) in `DNDTracker.Inbound.AmqpAdapter/Subscribers` — registration is source-generated
 
 ## Testing strategy
 

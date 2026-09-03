@@ -28,9 +28,9 @@ Repository root: `.`
 | `src/DNDTracker.Application` | Command handlers and write-side use cases |
 | `src/DNDTracker.Application.Queries` | Query handlers and read-side use cases |
 | `src/DNDTracker.Inbound.RestAdapter` | HTTP controllers and transport DTOs |
-| `src/DNDTracker.Inbound.AmqpAdapter` | RabbitMQ consumers and hosted services |
+| `src/DNDTracker.Inbound.AmqpAdapter` | NetPub RabbitMQ subscribers |
 | `src/DNDTracker.Outbound.PostgresDb` | DbContext, EF configuration, migrations, repositories |
-| `src/DNDTracker.Outbound.RabbitMq` | Event publisher and topology initialization |
+| `src/DNDTracker.Outbound.RabbitMq` | NetPub message contracts, topic configuration, `IEventPublisher` adapter |
 | `src/DNDTracker.DataAccessObject.Mapping` | Domain/persistence mapping extensions |
 | `src/DNDTracker.Vocabulary` | Enums, exceptions, persistence models, value objects |
 | `src/DNDTracker.Main` | Composition root and host startup |
@@ -41,7 +41,7 @@ Repository root: `.`
 
 - Main program: `src/DNDTracker.Main/Program.cs`
 - REST API controller surface: `src/DNDTracker.Inbound.RestAdapter/Controllers`
-- RabbitMQ topology config: `src/DNDTracker.Main/appsettings.json`
+- RabbitMQ connection config: `RabbitMQ` section of `src/DNDTracker.Main/appsettings.json` (topology is code-declared via NetPub attributes)
 - Local stack: `docker-compose.yml`
 - Local bootstrap script: `up-local.ps1`
 
@@ -108,13 +108,16 @@ Whenever persistence shape changes:
 
 ### Pattern C — add a new domain event workflow
 
+Messaging runs on the NetPub NuGet package; topology and subscriber registration are source-generated
+from attributes and aggregated by the generated `AddNetPub(...)` called in `Program.cs`.
+
 1. Raise the event from aggregate/entity behavior.
-2. Publish the event in the application handler.
-3. Add queue metadata under `RabbitMQ:Topology:Queues` in `src/DNDTracker.Main/appsettings.json`.
-4. Add a matching binding under `RabbitMQ:Topology:Bindings`.
-5. Implement a consumer when the event needs inbound processing.
-6. Register the consumer/hosted service through the AMQP adapter setup.
-7. Add tests around the use case and any new consumer behavior.
+2. Publish the event in the application handler through `IEventPublisher`.
+3. Add a `record XxxMessage(string Id, string Source, XxxDomainEvent Payload) : Message<XxxDomainEvent>` in `src/DNDTracker.Outbound.RabbitMq/Messages` with `[Provider(MessagingProvider.RabbitMq)]` and `[Transport(Transport.Topic)]`, plus a `partial` `[TopicConfiguration<XxxMessage>]` class that sets the exchange name.
+4. Map the domain event to the message in `NetPubEventPublisher`.
+5. When inbound processing is needed, add a `partial` class with `[HandlesMessage<XxxMessage>]` and `[Transport(Transport.Topic)]` in `src/DNDTracker.Inbound.AmqpAdapter/Subscribers`, implementing `ValueTask HandleAsync(XxxMessage message, CancellationToken cancellationToken = default)`; use `[SubscriberConfiguration<TSubscriber>]` to name the queue.
+6. Do not register subscribers, hosted services or topology manually — the generator does it.
+7. Add tests around the use case and any new subscriber behavior.
 
 ### Pattern D — change persistence
 
@@ -261,13 +264,15 @@ Current public controller surface is centered on campaigns and health.
 
 ## 10. Messaging conventions
 
-RabbitMQ is part of the normal architecture, not an afterthought.
+RabbitMQ is part of the normal architecture, not an afterthought. It is implemented with NetPub
+(`IPublisher`, `[HandlesMessage<T>]` subscribers, source-generated registration).
 
 When editing event-driven behavior:
 
-- ensure event names stay aligned with topology keys
-- ensure queue names used in bindings match configured queue names
-- ensure consumer registration exists when a consumer is introduced
+- every published domain event needs a `Message<TEvent>` contract and a mapping in `NetPubEventPublisher`
+- exchange and queue names live in `[TopicConfiguration<T>]` / `[SubscriberConfiguration<T>]` classes, not in `appsettings.json`
+- subscribers must be `partial`, non-generic, non-nested classes; the generator emits the NetPub base list
+- `NetPub` must stay referenced by `DNDTracker.Main` so the generated `AddNetPub` aggregates the adapter modules
 - verify handlers explicitly publish domain events when expected
 
 ## 11. Documentation expectations
@@ -293,7 +298,7 @@ Primary docs in this repo:
 - Forgetting domain-to-model mapping updates after persistence changes
 - Forgetting migrations after schema changes
 - Assuming EF Core auto-publishes domain events
-- Adding RabbitMQ consumers without topology config
+- Adding RabbitMQ subscribers or registering topology by hand instead of relying on NetPub attributes/generators
 - Running only one narrow test suite for a broad cross-layer change
 - Documenting the wrong target framework
 

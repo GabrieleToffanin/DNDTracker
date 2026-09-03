@@ -1,5 +1,4 @@
 using DNDTracker.Outbound.PostgresDb.Database.Postgres;
-using DNDTracker.Outbound.RabbitMq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,9 +15,5 @@ internal static class InfrastructureBootstrapper
         DNDTrackerPostgresDbContext dbContext = services.GetRequiredService<DNDTrackerPostgresDbContext>();
         await dbContext.Database.MigrateAsync();
         app.Logger.LogInformation("PostgreSQL migrations completed.");
-
-        app.Logger.LogInformation("Initializing RabbitMQ topology...");
-        await app.Services.InitializeRabbitMqTopologyAsync();
-        app.Logger.LogInformation("Database migrations and RabbitMQ topology initialized successfully");
     }
 }

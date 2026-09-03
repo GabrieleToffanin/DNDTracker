@@ -41,10 +41,46 @@ public class CampaignIntegrationTests(MainIntegrationTestsFixture fixture)
         var content = await getResponse.Content.ReadAsStringAsync();
         var result = JsonConvert.DeserializeObject<GetCampaignResponse[]>(content);
         
-        var fetchedCampaign = result?.First();
+        var fetchedCampaign = result?.SingleOrDefault(c => c.CampaignName == campaign.CampaignName);
         
         fetchedCampaign.Should().NotBeNull();
-        fetchedCampaign?.CampaignName.Should().Be(campaign.CampaignName);
         fetchedCampaign?.CampaignDescription.Should().Be(campaign.CampaignDescription);
+    }
+
+    [Fact]
+    public async Task AddHero_PublishesHeroAddedEventThroughNetPub_ReturnsCreated()
+    {
+        // Arrange
+        var campaignName = $"Messaging Campaign {Guid.NewGuid():N}";
+        var createResponse = await _client.PostAsJsonAsync("/api/Campaign", new
+        {
+            CampaignName = campaignName,
+            CampaignDescription = "Publishes HeroAddedDomainEvent to RabbitMQ",
+            CampaignImage = "test-image.jpg",
+            CreatedDate = DateTime.UtcNow
+        });
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var request = new
+        {
+            Hero = new
+            {
+                Name = "Bruenor",
+                Class = "Barbarian",
+                Race = "Human",
+                Alignment = "Lawful",
+                Level = 1,
+                Experience = 0,
+                HitPoints = 12,
+                HitDice = "D12"
+            }
+        };
+
+        // Act: the handler publishes HeroAddedDomainEvent through IEventPublisher -> NetPub -> RabbitMQ
+        // with publisher confirms, so a 201 proves the broker accepted the message.
+        var response = await _client.PostAsJsonAsync($"/api/Campaign/{campaignName}/heroes", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }

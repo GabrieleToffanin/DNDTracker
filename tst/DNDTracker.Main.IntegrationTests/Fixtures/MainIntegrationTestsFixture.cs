@@ -42,6 +42,11 @@ public class MainIntegrationTestsFixture : IAsyncLifetime
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
+                // NetPub's connection factory is configured while services are registered, so the
+                // broker endpoint must be visible before Build(): UseSetting flows through the args.
+                builder.UseSetting("RabbitMQ:Host", _rabbitMqContainer.Hostname);
+                builder.UseSetting("RabbitMQ:Port", _rabbitMqContainer.GetMappedPublicPort(5672).ToString());
+
                 builder.ConfigureAppConfiguration((context, config) =>
                 {
                     // Clear existing configuration sources

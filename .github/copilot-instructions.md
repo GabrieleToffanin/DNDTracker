@@ -18,9 +18,9 @@ DNDTracker is a backend organized with Clean Architecture, DDD, CQRS, and hexago
 - `src/DNDTracker.Application` — command handlers only
 - `src/DNDTracker.Application.Queries` — query handlers only
 - `src/DNDTracker.Inbound.RestAdapter` — controllers and HTTP DTOs
-- `src/DNDTracker.Inbound.AmqpAdapter` — RabbitMQ consumers and hosted services
+- `src/DNDTracker.Inbound.AmqpAdapter` — NetPub RabbitMQ subscribers
 - `src/DNDTracker.Outbound.PostgresDb` — DbContext, EF configuration, migrations, repositories
-- `src/DNDTracker.Outbound.RabbitMq` — event publishing and topology initialization
+- `src/DNDTracker.Outbound.RabbitMq` — NetPub message contracts, topic configuration, `IEventPublisher` adapter
 - `src/DNDTracker.DataAccessObject.Mapping` — domain/model mapping extensions
 - `src/DNDTracker.Vocabulary` — enums, exceptions, models, value objects
 - `tst/*` — unit, adapter, repository, and integration tests
@@ -52,9 +52,10 @@ DNDTracker is a backend organized with Clean Architecture, DDD, CQRS, and hexago
 - Domain/model conversions belong in `src/DNDTracker.DataAccessObject.Mapping`.
 
 ### Messaging
-- RabbitMQ topology is configuration-driven from `src/DNDTracker.Main/appsettings.json`.
-- Domain events are currently published explicitly by application handlers; saving with EF Core does not auto-dispatch them.
-- When adding a new event, update queue configuration, binding configuration, and AMQP consumer registration when needed.
+- RabbitMQ runs on the NetPub NuGet package: publishing via `IPublisher`, subscribers via `[HandlesMessage<T>]` partial classes, registration via the source-generated `AddNetPub(...)` in `Program.cs`.
+- Connection settings come from the `RabbitMQ` section of `appsettings.json`; topology (exchanges/queues) is declared in code with `[TopicConfiguration<T>]` / `[SubscriberConfiguration<T>]`.
+- Domain events are published explicitly by application handlers through `IEventPublisher`; `NetPubEventPublisher` maps each event to its `Message<TEvent>` contract. Saving with EF Core does not auto-dispatch them.
+- Never register subscribers, hosted services or topology manually — the generator does it.
 
 ## Feature delivery playbook
 
@@ -89,10 +90,10 @@ DNDTracker is a backend organized with Clean Architecture, DDD, CQRS, and hexago
 
 ### Adding a RabbitMQ-driven feature
 1. Define or reuse the domain event.
-2. Publish it from the command handler.
-3. Add queue topology entries in `appsettings.json`.
-4. Implement a consumer in `src/DNDTracker.Inbound.AmqpAdapter/Consumers` when needed.
-5. Register the hosted service through the AMQP adapter extension.
+2. Publish it from the command handler via `IEventPublisher`.
+3. Add a `Message<TEvent>` record (`[Provider(MessagingProvider.RabbitMq)]`, `[Transport(Transport.Topic)]`) and a `[TopicConfiguration<TMessage>]` class in `src/DNDTracker.Outbound.RabbitMq/Messages`; map the event in `NetPubEventPublisher`.
+4. Implement a `partial` `[HandlesMessage<TMessage>]` subscriber in `src/DNDTracker.Inbound.AmqpAdapter/Subscribers` when needed.
+5. Nothing to register: NetPub source generators wire subscribers and topology into `AddNetPub`.
 
 ## Testing and validation
 
